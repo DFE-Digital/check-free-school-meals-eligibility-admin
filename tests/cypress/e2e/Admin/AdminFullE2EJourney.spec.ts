@@ -14,7 +14,7 @@ describe('Full journey of creating an application through school portal through 
                 cy.wait(1);
             });
         });
-        
+
         it('Will allow a school user to create an application that may not be elligible and send it for appeal', () => {
             cy.visit(Cypress.config().baseUrl ?? "");
             cy.wait(1);
@@ -37,7 +37,6 @@ describe('Full journey of creating an application through school portal through 
 
             cy.url().should('include', 'Check/Loader');
             cy.get('.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
-            // UPDATED: Changed selector for Appeal now button
             cy.contains('.govuk-button', 'Appeal now').click();
 
             cy.url().should('include', '/Enter_Child_Details');
@@ -50,11 +49,11 @@ describe('Full journey of creating an application through school portal through 
 
             cy.get('h1').should('include.text', 'Check your answers before submitting');
 
-            cy.CheckValuesInSummaryCard('Parent or guardian details','Name', `${parentFirstName} ${parentLastName}`);
-            cy.CheckValuesInSummaryCard('Parent or guardian details','Date of birth', '1990-01-01');
-            cy.CheckValuesInSummaryCard('Parent or guardian details','National Insurance number', NIN);
-            cy.CheckValuesInSummaryCard('Parent or guardian details','Email address', parentEmailAddress);
-            cy.CheckValuesInSummaryCard('Child 1 details',"Name", childFirstName + " " + childLastName);
+            cy.CheckValuesInSummaryCard('Parent or guardian details', 'Name', `${parentFirstName} ${parentLastName}`);
+            cy.CheckValuesInSummaryCard('Parent or guardian details', 'Date of birth', '1990-01-01');
+            cy.CheckValuesInSummaryCard('Parent or guardian details', 'National Insurance number', NIN);
+            cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
+            cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
             cy.contains('button', 'Add details').click();
 
             cy.url().should('include', '/Check/AppealsRegistered');
@@ -120,11 +119,11 @@ describe('Full journey of creating an application through school portal through 
 
             cy.get('h1').should('include.text', 'Check your answers before submitting');
 
-            cy.CheckValuesInSummaryCard('Parent or guardian details','Name', `${parentFirstName} ${parentLastName}`);
-            cy.CheckValuesInSummaryCard('Parent or guardian details','Date of birth', '1990-01-01');
-            cy.CheckValuesInSummaryCard('Parent or guardian details','National Insurance number', "NN123456C");
-            cy.CheckValuesInSummaryCard('Parent or guardian details','Email address', parentEmailAddress);
-            cy.CheckValuesInSummaryCard('Child 1 details',"Name", childFirstName + " " + childLastName);
+            cy.CheckValuesInSummaryCard('Parent or guardian details', 'Name', `${parentFirstName} ${parentLastName}`);
+            cy.CheckValuesInSummaryCard('Parent or guardian details', 'Date of birth', '1990-01-01');
+            cy.CheckValuesInSummaryCard('Parent or guardian details', 'National Insurance number', "NN123456C");
+            cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
+            cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
             cy.contains('button', 'Add details').click();
 
             cy.url().should('include', '/Check/ApplicationsRegistered');

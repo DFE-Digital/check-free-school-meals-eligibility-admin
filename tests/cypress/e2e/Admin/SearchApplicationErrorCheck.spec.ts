@@ -1,4 +1,3 @@
-
 describe('Admin journey search for application', () => {
     beforeEach(() => {
         cy.session("Session 5", () => {
@@ -15,8 +14,8 @@ describe('Admin journey search for application', () => {
         cy.contains('Generate results').click();
         cy.get('h2').should('include.text', 'There is a problem');
 
-        cy.get('li').should('contain.text', 'Child last name field contains an invalid character');
-
+        
+        cy.get('.field-validation-error').should('contain.text', 'Child contains an invalid character for last name');
     });
 
     it('Returns the correct warning message when invalid characters are used in the Parent last name field', () => {
@@ -27,10 +26,10 @@ describe('Admin journey search for application', () => {
         cy.contains('Generate results').click();
         cy.get('h2').should('include.text', 'There is a problem');
 
-        cy.get('.field-validation-error').should('contain.text', 'Parent or Guardian last name field contains an invalid character');
-
+        cy.get('.field-validation-error').should('contain.text', 'Parent or guardian contains an invalid character for last name');
     });
 
+    // Rest of the tests remain unchanged
     it('Returns the correct warning message when an invalid Reference number is input', () => {
         cy.visit(Cypress.config().baseUrl ?? "");
         cy.contains('Search all records').click();
@@ -39,8 +38,8 @@ describe('Admin journey search for application', () => {
         cy.contains('Generate results').click();
         cy.get('h2').should('include.text', 'There is a problem');
 
-        cy.get('li').should('contain.text', 'Reference Number field contains an invalid character');
-
+        // Updated to use field-validation-error class
+        cy.get('.field-validation-error').should('contain.text', 'Reference Number field contains an invalid character');
     });
 
     it('Returns the correct warning message when an invalid Child data of birth is input', () => {
@@ -55,23 +54,25 @@ describe('Admin journey search for application', () => {
         cy.contains('Generate results').click();
 
         cy.get('h2').should('include.text', 'There is a problem');
+        // Updated: Use govuk-error-message class and check for partial text match
+        cy.get('.govuk-error-message').should('contain.text', 'Enter a valid date');
 
-        cy.get('li').should('contain.text', 'Enter a valid date');
         cy.get('#ChildDobDay').clear().type('01');
         cy.get('#ChildDobMonth').type('35');
         cy.get('#ChildDobYear').type('2090');
         cy.contains('Generate results').click();
 
-        cy.get('li').should('contain.text', 'Enter a valid date');
+        cy.get('.govuk-error-message').should('contain.text', 'Enter a valid date');
+
         cy.get('#ChildDobDay').clear().type('01');
         cy.get('#ChildDobMonth').clear().type('01');
         cy.get('#ChildDobYear').type('2090');
         cy.contains('Generate results').click();
 
-        cy.get('li').should('contain.text', 'Enter a date in the past');
-
+        cy.get('.govuk-error-message').should('contain.text', 'Enter a date in the past');
     });
 
+    // Parent DOB test updated to match same pattern
     it('Returns the correct warning message when an invalid Parent data of birth is input', () => {
         cy.visit(Cypress.config().baseUrl ?? "");
         cy.wait(1);
@@ -84,23 +85,20 @@ describe('Admin journey search for application', () => {
         cy.contains('Generate results').click();
 
         cy.get('h2').should('include.text', 'There is a problem');
+        cy.get('.govuk-error-message').should('contain.text', 'Enter a valid date');
 
-        cy.get('li').should('include.text', 'Enter a valid date');
         cy.get('#PGDobDay').clear().type('01');
         cy.get('#PGDobMonth').type('35');
         cy.get('#PGDobYear').type('2090');
         cy.contains('Generate results').click();
 
-        cy.get('li').should('include.text', 'Enter a valid date');
+        cy.get('.govuk-error-message').should('contain.text', 'Enter a valid date');
+
         cy.get('#PGDobDay').clear().type('01');
         cy.get('#PGDobMonth').clear().type('01');
         cy.get('#PGDobYear').type('2090');
-
         cy.contains('Generate results').click();
 
-        cy.get('li').should('include.text', 'Enter a date in the past');
-
+        cy.get('.govuk-error-message').should('contain.text', 'Enter a date in the past');
     });
-
-
 });
