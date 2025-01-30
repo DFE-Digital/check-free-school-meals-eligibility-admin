@@ -15,7 +15,7 @@ describe('Admin journey search for application', () => {
         cy.get('h2').should('include.text', 'There is a problem');
 
         
-        cy.get('.field-validation-error').should('contain.text', 'Child last name field contains an invalid character');
+        cy.get('.field-validation-error').should('contain.text', 'Child last name field contains an invalid character for last name');
     });
 
     it('Returns the correct warning message when invalid characters are used in the Parent last name field', () => {
@@ -26,7 +26,7 @@ describe('Admin journey search for application', () => {
         cy.contains('Generate results').click();
         cy.get('h2').should('include.text', 'There is a problem');
 
-        cy.get('.field-validation-error').should('contain.text', 'Parent or guardian contains an invalid character for last name');
+        cy.get('.field-validation-error').should('contain.text', 'Parent or guardian last name field contains an invalid character');
     });
 
     // Rest of the tests remain unchanged
