@@ -8,16 +8,20 @@ using CheckYourEligibility_FrontEnd.Models;
 using CheckYourEligibility_FrontEnd.Services;
 using CheckYourEligibility_FrontEnd.UseCases.Admin;
 using CheckYourEligibility_FrontEnd.ViewModels;
-using CsvHelper.Configuration.Attributes;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Child = CheckYourEligibility_FrontEnd.Models.Child;
 using School = CheckYourEligibility_FrontEnd.Models.School;
+using static CheckYourEligibility_FrontEnd.Models.Constants;
 
 namespace CheckYourEligibility_Admin.Tests.Controllers
 {
@@ -28,22 +32,27 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
         private Mock<IEcsServiceParent> _parentServiceMock;
         private Mock<IEcsCheckService> _checkServiceMock;
         private Mock<IAdminLoadParentDetailsUseCase> _adminLoadParentDetailsUseCaseMock;
+        private Mock<IAdminProcessParentDetailsUseCase> _adminProcessParentDetailsUseCaseMock;
         private CheckController _sut;
+        private IFixture _fixture;
 
         [SetUp]
         public void SetUp()
         {
+            _fixture = new Fixture();
             _parentServiceMock = new Mock<IEcsServiceParent>();
             _checkServiceMock = new Mock<IEcsCheckService>();
             _loggerMock = Mock.Of<ILogger<CheckController>>();
             _adminLoadParentDetailsUseCaseMock = new Mock<IAdminLoadParentDetailsUseCase>();
+            _adminProcessParentDetailsUseCaseMock = new Mock<IAdminProcessParentDetailsUseCase>();
 
             _sut = new CheckController(
                 _loggerMock,
                 _parentServiceMock.Object,
                 _checkServiceMock.Object,
                 _configMock.Object,
-                _adminLoadParentDetailsUseCaseMock.Object
+                _adminLoadParentDetailsUseCaseMock.Object,
+                _adminProcessParentDetailsUseCaseMock.Object
             );
 
             base.SetUp();
@@ -56,6 +65,40 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
         public void TearDown()
         {
             _sut.Dispose();
+        }
+
+        [Test]
+        public async Task Given_Enter_Details_When_NIN_ASR_ValidationErrors_Exist_Should_Handle_Special_Case()
+        {
+            // Arrange
+            var errors = new Dictionary<string, List<string>>
+            {
+                { "NationalInsuranceNumber", new List<string> { "Please select one option" } },
+                { "NationalAsylumSeekerServiceNumber", new List<string> { "Please select one option" } }
+            };
+            var errorsJson = JsonConvert.SerializeObject(errors);
+            _sut.TempData["Errors"] = errorsJson;
+
+            var expectedViewModel = new AdminLoadParentDetailsViewModel
+            {
+                ValidationErrors = new Dictionary<string, List<string>>
+                {
+                    { "NINAS", new List<string> { "Please select one option" } }
+                }
+            };
+
+            _adminLoadParentDetailsUseCaseMock
+                .Setup(x => x.ExecuteAsync(null, errorsJson))
+                .ReturnsAsync(expectedViewModel);
+
+            // Act
+            var result = await _sut.Enter_Details();
+
+            // Assert
+            _sut.ModelState["NINAS"].Errors.Should().ContainSingle()
+                .Which.ErrorMessage.Should().Be("Please select one option");
+            _sut.ModelState.Should().NotContainKey("NationalInsuranceNumber");
+            _sut.ModelState.Should().NotContainKey("NationalAsylumSeekerServiceNumber");
         }
 
         [Test]
@@ -110,9 +153,9 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
         {
             // Arrange
             var errors = new Dictionary<string, List<string>>
-        {
-            { "Field1", new List<string> { "Error1" } }
-        };
+            {
+                { "Field1", new List<string> { "Error1" } }
+            };
             var errorsJson = JsonConvert.SerializeObject(errors);
             _sut.TempData["Errors"] = errorsJson;
 
@@ -137,37 +180,64 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
         }
 
         [Test]
-        public async Task Given_Enter_Details_When_NIN_ASR_ValidationErrors_Exist_Should_Handle_Special_Case()
+        public async Task Given_Enter_Details_Post_When_ModelStateInvalid_ShouldStoreTempDataAndRedirect()
         {
             // Arrange
-            var errors = new Dictionary<string, List<string>>
-        {
-            { "NationalInsuranceNumber", new List<string> { "Please select one option" } },
-            { "NationalAsylumSeekerServiceNumber", new List<string> { "Please select one option" } }
-        };
-            var errorsJson = JsonConvert.SerializeObject(errors);
-            _sut.TempData["Errors"] = errorsJson;
-
-            var expectedViewModel = new AdminLoadParentDetailsViewModel
-            {
-                ValidationErrors = new Dictionary<string, List<string>>
-            {
-                { "NINAS", new List<string> { "Please select one option" } }
-            }
-            };
-
-            _adminLoadParentDetailsUseCaseMock
-                .Setup(x => x.ExecuteAsync(null, errorsJson))
-                .ReturnsAsync(expectedViewModel);
+            var request = _fixture.Create<ParentGuardian>();
+            _sut.ModelState.AddModelError("test", "error");
 
             // Act
-            var result = await _sut.Enter_Details();
+            var result = await _sut.Enter_Details(request);
 
             // Assert
-            _sut.ModelState["NINAS"].Errors.Should().ContainSingle()
-                .Which.ErrorMessage.Should().Be("Please select one option");
-            _sut.ModelState.Should().NotContainKey("NationalInsuranceNumber");
-            _sut.ModelState.Should().NotContainKey("NationalAsylumSeekerServiceNumber");
+            var redirectResult = result.Should().BeOfType<RedirectToActionResult>().Subject;
+            redirectResult.ActionName.Should().Be("Enter_Details");
+
+            _sut.TempData["ParentDetails"].Should().Be(JsonConvert.SerializeObject(request));
+            _sut.TempData["Errors"].Should().NotBeNull();
+        }
+
+        [Test]
+        public async Task Given_Enter_Details_Post_When_Valid_ShouldProcessAndRedirect()
+        {
+            // Arrange
+            var request = _fixture.Create<ParentGuardian>();
+            var response = _fixture.Create<CheckEligibilityResponse>();
+
+            _adminProcessParentDetailsUseCaseMock
+                .Setup(x => x.Execute(request, _httpContext.Object.Session))
+                .ReturnsAsync((true, response, "Loader"));
+
+            // Act
+            var result = await _sut.Enter_Details(request);
+
+            // Assert
+            var redirectResult = result.Should().BeOfType<RedirectToActionResult>().Subject;
+            redirectResult.ActionName.Should().Be("Loader");
+
+            _sut.TempData["Response"].Should().Be(JsonConvert.SerializeObject(response));
+        }
+
+        [Test]
+        public async Task Given_Enter_Details_Post_When_ValidationException_ShouldRedirectWithErrors()
+        {
+            // Arrange
+            var request = _fixture.Create<ParentGuardian>();
+            var errorMessage = "{\"NINAS\":[\"Please select one option\"]}";
+
+            _adminProcessParentDetailsUseCaseMock
+                .Setup(x => x.Execute(request, _httpContext.Object.Session))
+                .ThrowsAsync(new AdminParentDetailsValidationException(errorMessage));
+
+            // Act
+            var result = await _sut.Enter_Details(request);
+
+            // Assert
+            var redirectResult = result.Should().BeOfType<RedirectToActionResult>().Subject;
+            redirectResult.ActionName.Should().Be("Enter_Details");
+
+            _sut.TempData["ParentDetails"].Should().Be(JsonConvert.SerializeObject(request));
+            _sut.TempData["Errors"].Should().Be(errorMessage);
         }
 
         [Test]
@@ -216,11 +286,9 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
 
             // Assert
             var viewResult = result as ViewResult;
-            var model = viewResult.Model;
-
             viewResult.ViewName.Should().Be("Enter_Child_Details");
-            model.Should().BeSameAs(request);
-            _sut.ModelState.IsValid.Should().Be(true);
+            viewResult.Model.Should().BeSameAs(request);
+            _sut.ModelState.IsValid.Should().BeTrue();
         }
 
         [Test]
@@ -235,11 +303,9 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
 
             // Assert
             var viewResult = result as ViewResult;
-            var model = viewResult.Model as Children;
-
             viewResult.ViewName.Should().Be("Enter_Child_Details");
-            model.Should().BeSameAs(request);
-            _sut.ModelState.IsValid.Should().Be(false);
+            viewResult.Model.Should().BeSameAs(request);
+            _sut.ModelState.IsValid.Should().BeFalse();
         }
 
         [Test]
@@ -256,7 +322,7 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
             viewResult.ViewName.Should().Be("Check_Answers");
             var model = viewResult.Model as FsmApplication;
             model.Children.Should().BeSameAs(request);
-            _sut.ModelState.IsValid.Should().Be(true);
+            _sut.ModelState.IsValid.Should().BeTrue();
         }
 
         [Test]
@@ -282,7 +348,6 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
         [Test]
         public void Given_Add_Child_When_ChildList_ContainsExactly99Children_ItDoesNotAddNewChild_And_Redirects_To_Enter_Child_Details_Page()
         {
-
             var request = _fixture.Create<Children>();
             var children = _fixture.CreateMany<Child>(99).ToList();
             request.ChildList.Clear();
@@ -342,7 +407,6 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
             // Arrange
             var serviceMockRequest = _fixture.Create<ApplicationRequest>();
             var serviceMockResponse = _fixture.Create<Task<ApplicationSaveItemResponse>>();
-            //var serviceMockResponse = Task.FromResult(_fixture.Create<ApplicationSaveItemResponse>());
             var userCreateResponse = _fixture.Create<UserSaveItemResponse>();
             var request = _fixture.Create<FsmApplication>();
             request.Children = new Children()
@@ -366,9 +430,7 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
                         Month = "02",
                         Year = "2019",
                         School = _fixture.Create<School>()
-
                     }
-
                 }
             };
             _parentServiceMock.Setup(x => x.CreateUser(It.IsAny<UserCreateRequest>()))
@@ -384,14 +446,12 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
             var redirectToActionResult = result.Result as RedirectToActionResult;
             redirectToActionResult.ActionName.Should().Be("AppealsRegistered");
             tempData.Children[0].ChildName.Should().Be($"{serviceMockResponse.Result.Data.ChildFirstName} {serviceMockResponse.Result.Data.ChildLastName}");
-
         }
 
         [Test]
         public void Given_Check_Answers_With_Valid_FsmApplication_Not_Eligible_RedirectsTo_ApplicationsRegistered_Page()
         {
             // Arrange
-            var serviceMockRequest = _fixture.Create<ApplicationRequest>();
             var serviceMockItemResponse = _fixture.Create<ApplicationSaveItemResponse>();
             serviceMockItemResponse.Data = new ApplicationResponse()
             {
@@ -497,8 +557,6 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
         public async Task Given_Poll_Status_With_Valid_Status_Returns_Correct_View(CheckEligibilityStatus status, string expectedView)
         {
             // Arrange
-
-            // Build status value fixture first since AutoFixture With() does not allow assignment on nested properties like x.Data.Status
             var statusValue = _fixture.Build<StatusValue>()
                 .With(x => x.Status, status.ToString())
                 .Create();
@@ -517,16 +575,16 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
             _checkServiceMock.Setup(x => x.GetStatus(It.IsAny<CheckEligibilityResponse>()))
                 .ReturnsAsync(checkEligibilityStatusResponse);
 
-            // Mock the _Claims object with all necessary claims
+            // Set up a basic HttpContext with claims
             _sut.ControllerContext.HttpContext = new DefaultHttpContext();
             _sut.ControllerContext.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-    {
-        new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", "12345"),
-        new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", "test@example.com"),
-        new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname", "John"),
-        new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname", "Doe"),
-        new Claim("OrganisationCategoryName", CheckYourEligibility_FrontEnd.Models.Constants.CategoryTypeLA)
-    }));
+            {
+                new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", "12345"),
+                new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", "test@example.com"),
+                new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname", "John"),
+                new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname", "Doe"),
+                new Claim("OrganisationCategoryName", Constants.CategoryTypeLA)
+            }));
 
             // Act
             var result = await _sut.Loader();
@@ -538,7 +596,7 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
             }
             else if (result is RedirectToActionResult redirectResult)
             {
-                redirectResult.ActionName.Should().Be("Application_Sent"); // Adjust this if you expect a different action
+                redirectResult.ActionName.Should().Be("Application_Sent");
             }
             else
             {
@@ -582,9 +640,5 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
             var viewResult = result as ViewResult;
             viewResult.ViewName.Should().Be("Loader");
         }
-
-
-
-
     }
 }

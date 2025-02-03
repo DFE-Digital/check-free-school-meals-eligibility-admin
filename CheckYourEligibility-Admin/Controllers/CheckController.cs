@@ -20,18 +20,24 @@ namespace CheckYourEligibility_FrontEnd.Controllers
         private readonly IEcsCheckService _checkService;
         private readonly IEcsServiceParent _parentService;
         private readonly IConfiguration _config;
-        private ILogger<CheckController> _loggerMock;
-        private IEcsServiceParent _object;
-        DfeClaims? _Claims;
         private readonly IAdminLoadParentDetailsUseCase _adminLoadParentDetailsUseCase;
+        private readonly IAdminProcessParentDetailsUseCase _adminProcessParentDetailsUseCase;
+        DfeClaims? _Claims;
 
-        public CheckController(ILogger<CheckController> logger, IEcsServiceParent ecsServiceParent, IEcsCheckService ecsCheckService, IConfiguration configuration, IAdminLoadParentDetailsUseCase adminLoadParentDetailsUseCase)
+        public CheckController(
+            ILogger<CheckController> logger,
+            IEcsServiceParent ecsServiceParent,
+            IEcsCheckService ecsCheckService,
+            IConfiguration configuration,
+            IAdminLoadParentDetailsUseCase adminLoadParentDetailsUseCase,
+            IAdminProcessParentDetailsUseCase adminProcessParentDetailsUseCase)
         {
             _config = configuration;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _parentService = ecsServiceParent ?? throw new ArgumentNullException(nameof(ecsServiceParent));
             _checkService = ecsCheckService ?? throw new ArgumentNullException(nameof(ecsCheckService));
             _adminLoadParentDetailsUseCase = adminLoadParentDetailsUseCase ?? throw new ArgumentNullException(nameof(adminLoadParentDetailsUseCase));
+            _adminProcessParentDetailsUseCase = adminProcessParentDetailsUseCase ?? throw new ArgumentNullException(nameof(adminProcessParentDetailsUseCase));
         }
 
         [HttpGet]
@@ -59,119 +65,33 @@ namespace CheckYourEligibility_FrontEnd.Controllers
         [HttpPost]
         public async Task<IActionResult> Enter_Details(ParentGuardian request)
         {
-            if (request.NinAsrSelection == ParentGuardian.NinAsrSelect.None)
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    // Use PRG pattern so that after this POST the page retrieve informaton from data and performs a GET to avoid browser resubmit confirm error
-                    TempData["ParentDetails"] = JsonConvert.SerializeObject(request);
-                    var errors = ModelState
-                        .Where(x => x.Value.Errors.Count > 0)
-                        .ToDictionary(k => k.Key, v => v.Value.Errors.Select(e => e.ErrorMessage).ToList());
-
-                    if (errors.ContainsKey("NationalInsuranceNumber") && errors.ContainsKey("NationalAsylumSeekerServiceNumber"))
-                    {
-                        string targetValue = "Please select one option";
-
-                        if (errors["NationalInsuranceNumber"].Contains(targetValue) && errors["NationalAsylumSeekerServiceNumber"].Contains(targetValue))
-                        {
-                            errors.Remove("NationalInsuranceNumber");
-                            errors.Remove("NationalAsylumSeekerServiceNumber");
-                            errors["NINAS"] = new List<string> { targetValue };
-                        }
-                    }
-                    TempData["Errors"] = JsonConvert.SerializeObject(errors);
-                    return RedirectToAction("Enter_Details");
-                }
+                TempData["ParentDetails"] = JsonConvert.SerializeObject(request);
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .ToDictionary(k => k.Key, v => v.Value.Errors.Select(e => e.ErrorMessage).ToList());
+                TempData["Errors"] = JsonConvert.SerializeObject(errors);
+                return RedirectToAction("Enter_Details");
             }
 
-            if (request.NinAsrSelection == ParentGuardian.NinAsrSelect.AsrnSelected)
+            try
             {
-                ModelState.Remove("NationalInsuranceNumber");
+                var (isValid, response, redirectAction) = await _adminProcessParentDetailsUseCase.Execute(request, HttpContext.Session);
 
-                if (!ModelState.IsValid)
+                if (response != null)
                 {
-                    // Use PRG pattern so that after this POST the page retrieve informaton from data and performs a GET to avoid browser resubmit confirm error
-                    TempData["ParentDetails"] = JsonConvert.SerializeObject(request);
-                    var errors = ModelState
-                        .Where(x => x.Value.Errors.Count > 0)
-                        .ToDictionary(k => k.Key, v => v.Value.Errors.Select(e => e.ErrorMessage).ToList());
-                    TempData["Errors"] = JsonConvert.SerializeObject(errors);
-                    return RedirectToAction("Enter_Details");
+                    TempData["Response"] = JsonConvert.SerializeObject(response);
                 }
 
-                // build object for api soft-check
-                var checkEligibilityRequest = new CheckEligibilityRequest_Fsm()
-                {
-                    Data = new CheckEligibilityRequestData_Fsm
-                    {
-                        LastName = request.LastName,
-                        NationalAsylumSeekerServiceNumber = request.NationalAsylumSeekerServiceNumber,
-                        DateOfBirth = new DateOnly(int.Parse(request.Year), int.Parse(request.Month), int.Parse(request.Day)).ToString("yyyy-MM-dd"),
-                    }
-                };
-
-                // set important parent details in session storage
-                HttpContext.Session.SetString("ParentFirstName", request.FirstName);
-                HttpContext.Session.SetString("ParentLastName", request.LastName);
-                HttpContext.Session.SetString("ParentDOB", checkEligibilityRequest.Data.DateOfBirth);
-                HttpContext.Session.SetString("ParentEmail", request.EmailAddress);
-
-                // set nass detail in session aswell
-                HttpContext.Session.SetString("ParentNASS", request.NationalAsylumSeekerServiceNumber);
-
-                // queue api soft-check
-                var response = await _checkService.PostCheck(checkEligibilityRequest);
-
-                TempData["Response"] = JsonConvert.SerializeObject(response);
-
-                _logger.LogInformation($"Check processed:- {response.Data.Status} {response.Links.Get_EligibilityCheck}");
+                return RedirectToAction(redirectAction);
             }
-            else
+            catch (AdminParentDetailsValidationException ex)
             {
-                ModelState.Remove("NationalAsylumSeekerServiceNumber");
-
-                if (!ModelState.IsValid)
-                {
-                    // Use PRG pattern so that after this POST the page retrieve informaton from data and performs a GET to avoid browser resubmit confirm error
-                    TempData["ParentDetails"] = JsonConvert.SerializeObject(request);
-                    var errors = ModelState
-                        .Where(x => x.Value.Errors.Count > 0)
-                        .ToDictionary(k => k.Key, v => v.Value.Errors.Select(e => e.ErrorMessage).ToList());
-                    TempData["Errors"] = JsonConvert.SerializeObject(errors);
-                    return RedirectToAction("Enter_Details");
-                }
-
-                // build object for api soft-check
-                var checkEligibilityRequest = new CheckEligibilityRequest_Fsm()
-                {
-                    Data = new CheckEligibilityRequestData_Fsm
-                    {
-                        LastName = request.LastName,
-                        NationalInsuranceNumber = request.NationalInsuranceNumber?.ToUpper(),
-                        DateOfBirth = new DateOnly(int.Parse(request.Year), int.Parse(request.Month), int.Parse(request.Day)).ToString("yyyy-MM-dd")
-                    }
-                };
-
-                // set important parent details in session storage
-                HttpContext.Session.SetString("ParentFirstName", request.FirstName);
-                HttpContext.Session.SetString("ParentLastName", request.LastName);
-                HttpContext.Session.SetString("ParentDOB", checkEligibilityRequest.Data.DateOfBirth);
-                HttpContext.Session.SetString("ParentEmail", request.EmailAddress);
-
-                // set nino detail in session aswell
-                HttpContext.Session.SetString("ParentNINO", request.NationalInsuranceNumber);
-
-                // queue api soft-check
-                var response = await _checkService.PostCheck(checkEligibilityRequest);
-
-                TempData["Response"] = JsonConvert.SerializeObject(response);
-
-                _logger.LogInformation($"Check processed:- {response.Data.Status} {response.Links.Get_EligibilityCheck}");
-
+                TempData["ParentDetails"] = JsonConvert.SerializeObject(request);
+                TempData["Errors"] = ex.Message;
+                return RedirectToAction("Enter_Details");
             }
-
-            return RedirectToAction("Loader");
         }
 
         public async Task<IActionResult> Loader()
