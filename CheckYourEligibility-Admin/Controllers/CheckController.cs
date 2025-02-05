@@ -22,6 +22,7 @@ namespace CheckYourEligibility_FrontEnd.Controllers
         private readonly IConfiguration _config;
         private readonly IAdminLoadParentDetailsUseCase _adminLoadParentDetailsUseCase;
         private readonly IAdminProcessParentDetailsUseCase _adminProcessParentDetailsUseCase;
+        private readonly IAdminProcessFSMApplicationUseCase _adminProcessFSMApplicationUseCase;
         DfeClaims? _Claims;
 
         public CheckController(
@@ -30,7 +31,9 @@ namespace CheckYourEligibility_FrontEnd.Controllers
             IEcsCheckService ecsCheckService,
             IConfiguration configuration,
             IAdminLoadParentDetailsUseCase adminLoadParentDetailsUseCase,
-            IAdminProcessParentDetailsUseCase adminProcessParentDetailsUseCase)
+            IAdminProcessParentDetailsUseCase adminProcessParentDetailsUseCase,
+            IAdminProcessFSMApplicationUseCase adminProcessFSMApplicationUseCase)
+            
         {
             _config = configuration;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -38,6 +41,7 @@ namespace CheckYourEligibility_FrontEnd.Controllers
             _checkService = ecsCheckService ?? throw new ArgumentNullException(nameof(ecsCheckService));
             _adminLoadParentDetailsUseCase = adminLoadParentDetailsUseCase ?? throw new ArgumentNullException(nameof(adminLoadParentDetailsUseCase));
             _adminProcessParentDetailsUseCase = adminProcessParentDetailsUseCase ?? throw new ArgumentNullException(nameof(adminProcessParentDetailsUseCase));
+            _adminProcessFSMApplicationUseCase = adminProcessFSMApplicationUseCase ?? throw new ArgumentNullException(nameof(adminProcessFSMApplicationUseCase));
         }
 
         [HttpGet]
@@ -238,48 +242,42 @@ namespace CheckYourEligibility_FrontEnd.Controllers
         [HttpPost]
         public async Task<IActionResult> Check_Answers(FsmApplication request)
         {
-            _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
-            var user = await _parentService.CreateUser(new UserCreateRequest { Data = new UserData { Email = _Claims.User.Email, Reference = _Claims.User.Id } });
-            var parentName = $"{request.ParentFirstName} {request.ParentLastName}";
-            var response = new ApplicationConfirmationEntitledViewModel { ParentName = parentName, Children = new List<ApplicationConfirmationEntitledChildViewModel>() };
-            ApplicationSaveItemResponse responseApplication = null;
-
-            foreach (var child in request.Children.ChildList)
+            try
             {
-                var fsmApplication = new ApplicationRequest
+                _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
+
+                if (_Claims == null || string.IsNullOrEmpty(_Claims.User.Email) ||
+                    string.IsNullOrEmpty(_Claims.User.Id) || string.IsNullOrEmpty(_Claims.Organisation?.Urn))
                 {
-                    Data = new ApplicationRequestData()
-                    {
-                        Type = CheckEligibilityType.FreeSchoolMeals,
-                        // Set the properties for each child
-                        ParentFirstName = request.ParentFirstName,
-                        ParentLastName = request.ParentLastName,
-                        ParentEmail = request.ParentEmail,
-                        ParentDateOfBirth = request.ParentDateOfBirth,
-                        ParentNationalInsuranceNumber = request.ParentNino,
-                        ParentNationalAsylumSeekerServiceNumber = request.ParentNass,
-                        ChildFirstName = child.FirstName,
-                        ChildLastName = child.LastName,
-                        ChildDateOfBirth = new DateOnly(int.Parse(child.Year), int.Parse(child.Month), int.Parse(child.Day)).ToString("yyyy-MM-dd"),
-                        Establishment = int.Parse(_Claims.Organisation.Urn),
-                        UserId = user.Data
-                    }
+                    _logger.LogWarning("Missing required claims for FSM application");
+                    return View("Outcome/Technical_Error");
+                }
+
+                var (applications, redirectAction) = await _adminProcessFSMApplicationUseCase.Execute(
+                    request,
+                    _Claims.User.Email,
+                    _Claims.User.Id,
+                    _Claims.Organisation.Urn);
+
+                var viewModel = new ApplicationConfirmationEntitledViewModel
+                {
+                    ParentName = $"{request.ParentFirstName} {request.ParentLastName}",
+                    Children = applications
                 };
 
-                // Send each application individually
-                responseApplication = await _parentService.PostApplication_Fsm(fsmApplication);
-                response.Children.Add(new ApplicationConfirmationEntitledChildViewModel
-                { ParentName = parentName, ChildName = $"{responseApplication.Data.ChildFirstName} {responseApplication.Data.ChildLastName}", Reference = responseApplication.Data.Reference });
-            }
+                TempData["confirmationApplication"] = JsonConvert.SerializeObject(viewModel);
 
-            TempData["confirmationApplication"] = JsonConvert.SerializeObject(response);
-            if (responseApplication.Data.Status == "Entitled")
-            {
-                return RedirectToAction("ApplicationsRegistered");
+                return RedirectToAction(redirectAction);
             }
-            else
+            catch (AdminProcessFSMApplicationException ex)
             {
-                return RedirectToAction("AppealsRegistered");
+                _logger.LogError(ex, "Error processing FSM application");
+                return View("Outcome/Technical_Error");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error processing FSM application");
+                return View("Outcome/Technical_Error");
             }
         }
 

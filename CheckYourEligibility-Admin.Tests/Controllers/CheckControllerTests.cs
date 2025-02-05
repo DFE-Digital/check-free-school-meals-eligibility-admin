@@ -33,6 +33,7 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
         private Mock<IEcsCheckService> _checkServiceMock;
         private Mock<IAdminLoadParentDetailsUseCase> _adminLoadParentDetailsUseCaseMock;
         private Mock<IAdminProcessParentDetailsUseCase> _adminProcessParentDetailsUseCaseMock;
+        private Mock<IAdminProcessFSMApplicationUseCase> _adminProcessFSMApplicationUseCaseMock;
         private CheckController _sut;
         private IFixture _fixture;
 
@@ -45,6 +46,7 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
             _loggerMock = Mock.Of<ILogger<CheckController>>();
             _adminLoadParentDetailsUseCaseMock = new Mock<IAdminLoadParentDetailsUseCase>();
             _adminProcessParentDetailsUseCaseMock = new Mock<IAdminProcessParentDetailsUseCase>();
+            _adminProcessFSMApplicationUseCaseMock = new Mock<IAdminProcessFSMApplicationUseCase>();
 
             _sut = new CheckController(
                 _loggerMock,
@@ -52,7 +54,8 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
                 _checkServiceMock.Object,
                 _configMock.Object,
                 _adminLoadParentDetailsUseCaseMock.Object,
-                _adminProcessParentDetailsUseCaseMock.Object
+                _adminProcessParentDetailsUseCaseMock.Object,
+                _adminProcessFSMApplicationUseCaseMock.Object
             );
 
             base.SetUp();
@@ -390,125 +393,130 @@ namespace CheckYourEligibility_Admin.Tests.Controllers
         }
 
         [Test]
-        public void Given_Check_Answers_PageLoads()
-        {
-            // Act
-            var result = _sut.Check_Answers();
-
-            // Assert
-            var viewResult = result as ViewResult;
-            viewResult.ViewName.Should().Be("Check_Answers");
-            viewResult.Model.Should().BeNull();
-        }
-
-        [Test]
-        public void Given_Check_Answers_With_Valid_FsmApplication_Not_Eligible_RedirectsTo_AppealsRegistered_Page()
+        public async Task Given_Check_Answers_When_MissingClaims_Returns_TechnicalError()
         {
             // Arrange
-            var serviceMockRequest = _fixture.Create<ApplicationRequest>();
-            var serviceMockResponse = _fixture.Create<Task<ApplicationSaveItemResponse>>();
-            var userCreateResponse = _fixture.Create<UserSaveItemResponse>();
             var request = _fixture.Create<FsmApplication>();
-            request.Children = new Children()
-            {
-                ChildList = new List<Child>()
-                {
-                    new Child()
-                    {
-                        FirstName = "Tomothy",
-                        LastName = "Smithothy",
-                        Day = "01",
-                        Month = "01",
-                        Year = "2018",
-                        School = _fixture.Create<School>()
-                    },
-                    new Child()
-                    {
-                        FirstName = "Tony",
-                        LastName = "Smith",
-                        Day = "01",
-                        Month = "02",
-                        Year = "2019",
-                        School = _fixture.Create<School>()
-                    }
-                }
-            };
-            _parentServiceMock.Setup(x => x.CreateUser(It.IsAny<UserCreateRequest>()))
-                .ReturnsAsync(userCreateResponse);
-            _parentServiceMock.Setup(x => x.PostApplication_Fsm(It.IsAny<ApplicationRequest>()))
-                .Returns(serviceMockResponse);
+
+            // Create empty claims - simulating no auth
+            _sut.ControllerContext.HttpContext = new DefaultHttpContext();
+            _sut.ControllerContext.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
 
             // Act
-            var result = _sut.Check_Answers(request);
-            var tempData = JsonConvert.DeserializeObject<ApplicationConfirmationEntitledViewModel>(_sut.TempData["confirmationApplication"] as string);
+            var result = await _sut.Check_Answers(request);
 
             // Assert
-            var redirectToActionResult = result.Result as RedirectToActionResult;
-            redirectToActionResult.ActionName.Should().Be("AppealsRegistered");
-            tempData.Children[0].ChildName.Should().Be($"{serviceMockResponse.Result.Data.ChildFirstName} {serviceMockResponse.Result.Data.ChildLastName}");
+            var viewResult = result.Should().BeOfType<ViewResult>().Subject;
+            viewResult.ViewName.Should().Be("Outcome/Technical_Error");
         }
 
+
+
         [Test]
-        public void Given_Check_Answers_With_Valid_FsmApplication_Not_Eligible_RedirectsTo_ApplicationsRegistered_Page()
+        public async Task Given_Check_Answers_When_Valid_Returns_ApplicationsRegistered()
         {
             // Arrange
-            var serviceMockItemResponse = _fixture.Create<ApplicationSaveItemResponse>();
-            serviceMockItemResponse.Data = new ApplicationResponse()
-            {
-                Status = "Entitled"
-            };
-            var serviceMockResponse = Task.FromResult(serviceMockItemResponse);
-            var userCreateResponse = _fixture.Create<UserSaveItemResponse>();
             var request = _fixture.Create<FsmApplication>();
-            request.Children = new Children()
-            {
-                ChildList = new List<Child>()
-                {
-                    new Child()
-                    {
-                        FirstName = "Tomothy",
-                        LastName = "Smithothy",
-                        Day = "01",
-                        Month = "01",
-                        Year = "2018",
-                        School = _fixture.Create<School>()
-                    },
-                    new Child()
-                    {
-                        FirstName = "Tony",
-                        LastName = "Smith",
-                        Day = "01",
-                        Month = "02",
-                        Year = "2019",
-                        School = _fixture.Create<School>()
-                    }
-                }
-            };
-            _parentServiceMock.Setup(x => x.CreateUser(It.IsAny<UserCreateRequest>()))
-                .ReturnsAsync(userCreateResponse);
-            _parentServiceMock.Setup(x => x.PostApplication_Fsm(It.IsAny<ApplicationRequest>()))
-                .Returns(serviceMockResponse);
+            var applications = new List<ApplicationConfirmationEntitledChildViewModel>
+    {
+        new()
+        {
+            ChildName = "Test Child",
+            ParentName = "Test Parent",
+            Reference = "REF123"
+        }
+    };
+
+            SetupUserClaims();
+
+            _adminProcessFSMApplicationUseCaseMock
+                .Setup(x => x.Execute(
+                    request,
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((applications, "ApplicationsRegistered"));
+
             // Act
-            var result = _sut.Check_Answers(request);
-            var tempData = JsonConvert.DeserializeObject<ApplicationConfirmationEntitledViewModel>(_sut.TempData["confirmationApplication"] as string);
+            var result = await _sut.Check_Answers(request);
 
             // Assert
-            var redirectToActionResult = result.Result as RedirectToActionResult;
-            redirectToActionResult.ActionName.Should().Be("ApplicationsRegistered");
-            tempData.Children[0].ChildName.Should().Be($"{serviceMockResponse.Result.Data.ChildFirstName} {serviceMockResponse.Result.Data.ChildLastName}");
+            result.Should().BeOfType<RedirectToActionResult>()
+                .Which.ActionName.Should().Be("ApplicationsRegistered");
+
+            var savedViewModel = JsonConvert.DeserializeObject<ApplicationConfirmationEntitledViewModel>(
+                _sut.TempData["confirmationApplication"] as string);
+
+            savedViewModel.Children.Should().BeEquivalentTo(applications);
+            savedViewModel.ParentName.Should().Be($"{request.ParentFirstName} {request.ParentLastName}");
         }
 
         [Test]
-        public void Given_Check_Answers_With_Invalid_FsmApplication_ThrowsException()
+        public async Task Given_Check_Answers_When_NotEntitled_Returns_AppealsRegistered()
         {
             // Arrange
-            var request = new FsmApplication(); // Invalid request with missing required fields
+            var request = _fixture.Create<FsmApplication>();
+            var applications = new List<ApplicationConfirmationEntitledChildViewModel>
+    {
+        new() { ChildName = "Test Child", ParentName = "Test Parent" }
+    };
 
-            _parentServiceMock.Setup(x => x.PostApplication_Fsm(It.IsAny<ApplicationRequest>()))
-                .Throws(new NullReferenceException("Invalid request"));
+            SetupUserClaims();
 
-            // Act & Assert
-            Assert.ThrowsAsync<NullReferenceException>(() => _sut.Check_Answers(request));
+            _adminProcessFSMApplicationUseCaseMock
+                .Setup(x => x.Execute(
+                    request,
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((applications, "AppealsRegistered"));
+
+            // Act
+            var result = await _sut.Check_Answers(request);
+
+            // Assert
+            result.Should().BeOfType<RedirectToActionResult>()
+                .Which.ActionName.Should().Be("AppealsRegistered");
+        }
+
+        [Test]
+        public async Task Given_Check_Answers_When_ProcessingFails_Returns_TechnicalError()
+        {
+            // Arrange
+            var request = _fixture.Create<FsmApplication>();
+
+            SetupUserClaims();
+
+            _adminProcessFSMApplicationUseCaseMock
+                .Setup(x => x.Execute(
+                    request,
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ThrowsAsync(new AdminProcessFSMApplicationException("Test error"));
+
+            // Act
+            var result = await _sut.Check_Answers(request);
+
+            // Assert
+            result.Should().BeOfType<ViewResult>()
+                .Which.ViewName.Should().Be("Outcome/Technical_Error");
+        }
+
+        private void SetupUserClaims()
+        {
+            var claims = new List<Claim>
+    {
+        new("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", "12345"),
+        new("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", "test@example.com"),
+        new("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname", "John"),
+        new("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname", "Doe"),
+        new("OrganisationCategoryName", Constants.CategoryTypeLA),
+        new("OrganisationUrn", "54321")
+    };
+
+            _sut.ControllerContext.HttpContext.User = new ClaimsPrincipal(
+                new ClaimsIdentity(claims));
         }
 
         [Test]

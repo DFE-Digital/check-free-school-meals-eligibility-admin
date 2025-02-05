@@ -21,7 +21,7 @@ builder.Services.AddServices(builder.Configuration);
 builder.Services.AddSession();
 builder.Services.AddScoped<IAdminLoadParentDetailsUseCase, AdminLoadParentDetailsUseCase>();
 builder.Services.AddScoped<IAdminProcessParentDetailsUseCase, AdminProcessParentDetailsUseCase>();
-
+builder.Services.AddScoped<IAdminProcessFSMApplicationUseCase, AdminProcessFSMApplicationUseCase>();
 
 var dfeSignInConfiguration = new DfeSignInConfiguration();
 builder.Configuration.GetSection("DfeSignIn").Bind(dfeSignInConfiguration);
