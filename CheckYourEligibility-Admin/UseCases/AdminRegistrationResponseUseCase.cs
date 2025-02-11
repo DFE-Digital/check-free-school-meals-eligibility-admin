@@ -43,8 +43,9 @@ namespace CheckYourEligibility_FrontEnd.UseCases.Admin
                     // Add other properties as needed
                 };
 
+                var sanitizedParentName = confirmation.ParentName.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
                 _logger.LogInformation("Successfully created registration confirmation for {ParentName}",
-                    confirmation.ParentName);
+                    sanitizedParentName);
 
                 return confirmation;
             }
