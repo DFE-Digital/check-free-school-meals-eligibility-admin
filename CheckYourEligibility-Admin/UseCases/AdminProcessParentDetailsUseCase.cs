@@ -51,7 +51,8 @@ namespace CheckYourEligibility_FrontEnd.UseCases.Admin
         {
             try
             {
-                _logger.LogInformation("Processing parent details for {LastName}", request.LastName);
+                var sanitizedLastName = request.LastName.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+                _logger.LogInformation("Processing parent details for {LastName}", sanitizedLastName);
 
                 if (request.NinAsrSelection == ParentGuardian.NinAsrSelect.None)
                 {
