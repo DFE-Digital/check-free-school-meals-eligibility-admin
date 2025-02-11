@@ -63,7 +63,7 @@ namespace CheckYourEligibility_FrontEnd.UseCases.Admin
                     }
                 };
 
-                _logger.LogInformation("Creating user with email: {email}", emailClaim.Value);
+                _logger.LogInformation("Creating user with provided email.");
 
                 var response = await _parentService.CreateUser(userRequest);
 
