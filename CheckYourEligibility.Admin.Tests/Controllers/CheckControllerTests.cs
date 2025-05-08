@@ -5,6 +5,7 @@ using CheckYourEligibility.Admin.Controllers;
 using CheckYourEligibility.Admin.Gateways;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Models;
+using CheckYourEligibility.Admin.Usecases;
 using CheckYourEligibility.Admin.UseCases;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +45,7 @@ public class CheckControllerTests : TestBase
         _initializeCheckAnswersUseCaseMock = new Mock<IInitializeCheckAnswersUseCase>();
         _blobStorageGateway = new Mock<IBlobStorageGateway>();
         _uploadEvidenceFileUseCaseMock = new Mock<IUploadEvidenceFileUseCase>();
+        _validateEvidenceFileUseCaseMock = new Mock<IValidateEvidenceFileUseCase>();
         _deleteEvidenceFileUseCaseMock = new Mock<IDeleteEvidenceFileUseCase>();
 
         // Initialize controller with all dependencies
@@ -64,6 +66,7 @@ public class CheckControllerTests : TestBase
             _submitApplicationUseCaseMock.Object,
             _validateParentDetailsUseCaseMock.Object,
             _uploadEvidenceFileUseCaseMock.Object,
+            _validateEvidenceFileUseCaseMock.Object,
             _deleteEvidenceFileUseCaseMock.Object
         );
 
@@ -99,6 +102,7 @@ public class CheckControllerTests : TestBase
     private Mock<IInitializeCheckAnswersUseCase> _initializeCheckAnswersUseCaseMock;
     private Mock<IBlobStorageGateway> _blobStorageGateway;
     private Mock<IUploadEvidenceFileUseCase> _uploadEvidenceFileUseCaseMock;
+    private Mock<IValidateEvidenceFileUseCase> _validateEvidenceFileUseCaseMock;
     private Mock<IDeleteEvidenceFileUseCase> _deleteEvidenceFileUseCaseMock;
 
     // Legacy service mocks - keep temporarily during transition
@@ -838,7 +842,11 @@ public class CheckControllerTests : TestBase
         _uploadEvidenceFileUseCaseMock
             .Setup(x => x.Execute(It.IsAny<IFormFile>(), It.IsAny<string>()))
             .ReturnsAsync("blob-url");
-        
+
+        _validateEvidenceFileUseCaseMock
+            .Setup(x => x.Execute(It.IsAny<IFormFile>()))
+            .Returns(new EvidenceFileValidationResult() { IsValid = true });
+
         // Act
         var result = await _sut.UploadEvidence(request);
         
@@ -915,7 +923,11 @@ public class CheckControllerTests : TestBase
         _uploadEvidenceFileUseCaseMock
             .Setup(x => x.Execute(It.IsAny<IFormFile>(), It.IsAny<string>()))
             .ThrowsAsync(new Exception("Upload failed"));
-        
+
+        _validateEvidenceFileUseCaseMock
+            .Setup(x => x.Execute(It.IsAny<IFormFile>()))
+            .Returns(new EvidenceFileValidationResult() { IsValid = true });
+
         // Act
         var result = await _sut.UploadEvidence(request);
         
@@ -932,7 +944,48 @@ public class CheckControllerTests : TestBase
             x => x.Execute(It.IsAny<IFormFile>(), It.IsAny<string>()), 
             Times.Once);
     }
-    
+
+    [Test]
+    public async Task UploadEvidence_Post_When_UploadInvalid_Should_Add_ErrorMessage_And_Redirect()
+    {
+        // Arrange
+        var request = _fixture.Create<FsmApplication>();
+
+        // Create a mock file that will fail to upload
+        var fileMock = new Mock<IFormFile>();
+        var fileName = "error-file.txt";
+        fileMock.Setup(f => f.FileName).Returns(fileName);
+        fileMock.Setup(f => f.Length).Returns(100);
+        fileMock.Setup(f => f.ContentType).Returns("plain/text");
+
+        request.EvidenceFiles = new List<IFormFile> { fileMock.Object };
+
+        // Make the upload throw an exception
+        _uploadEvidenceFileUseCaseMock
+            .Setup(x => x.Execute(It.IsAny<IFormFile>(), It.IsAny<string>()))
+            .ThrowsAsync(new Exception("Upload failed"));
+
+        _validateEvidenceFileUseCaseMock
+            .Setup(x => x.Execute(It.IsAny<IFormFile>()))
+            .Returns(new EvidenceFileValidationResult() { IsValid = false, ErrorMessage = "Invalid file type" });
+
+        // Act
+        var result = await _sut.UploadEvidence(request);
+
+        // Assert
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("UploadEvidence");
+
+        // Verify model state has errors
+        _sut.TempData.Should().NotBeNull();
+        _sut.TempData["ErrorMessage"].ToString().Should().Match("Invalid file type");
+
+        _uploadEvidenceFileUseCaseMock.Verify(
+            x => x.Execute(It.IsAny<IFormFile>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
     [Test]
     public async Task UploadEvidence_Post_When_Multiple_Files_Should_Upload_All()
     {
@@ -956,7 +1009,10 @@ public class CheckControllerTests : TestBase
         _uploadEvidenceFileUseCaseMock
             .Setup(x => x.Execute(It.IsAny<IFormFile>(), It.IsAny<string>()))
             .ReturnsAsync("blob-url");
-        
+
+        _validateEvidenceFileUseCaseMock
+            .Setup(x => x.Execute(It.IsAny<IFormFile>()))
+            .Returns(new EvidenceFileValidationResult() { IsValid = true });
         // Act
         var result = await _sut.UploadEvidence(request);
         
