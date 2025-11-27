@@ -19,20 +19,36 @@ Cypress.Commands.add('checkSession', (userType: string) => {
     if (data && data.cookies) {
       if (data.cookies.length > 0) {
         cy.loadCookies(userType);
-        cy.visit(Cypress.config().baseUrl ?? "");
-        let expectedText: string;
-        switch (userType) {
-          case 'school':
-            expectedText = 'The Telford Park School';
-            break;
-          case 'MAT':
-            expectedText = 'THOMAS TELFORD MULTI ACADEMY TRUST';
-            break;
-          default:
-            expectedText = 'Telford and Wrekin Council';
-            break;
-        }
-        cy.get('h1').should('include.text', expectedText);
+        cy.visit(Cypress.config().baseUrl ?? "", { failOnStatusCode: false });
+
+        cy.get('body').then(($body) => {
+          let expectedText: string;
+          switch (userType) {
+            case 'school':
+              expectedText = 'The Telford Park School';
+              break;
+            case 'MAT':
+              expectedText = 'THOMAS TELFORD MULTI ACADEMY TRUST';
+              break;
+            default:
+              expectedText = 'Telford and Wrekin Council';
+              break;
+          }
+
+          if ($body.text().includes(expectedText)) {
+            cy.get('h1').should('include.text', expectedText);
+          } else {
+            cy.log('Cookies were rejected by server (403 or redirect), forcing new login');
+            cy.clearCookies();
+            if (userType === 'school') {
+              cy.login('school');
+            } else if (userType === 'MAT') {
+              cy.login('MAT');
+            } else {
+              cy.login('LA');
+            }
+          }
+        });
       } else {
         cy.log('No cookies found, forcing new login');
         if (userType === 'school') {
