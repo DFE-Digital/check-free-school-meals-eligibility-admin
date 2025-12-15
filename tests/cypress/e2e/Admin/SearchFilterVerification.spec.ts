@@ -181,7 +181,7 @@ describe('Keyword search validation', () => {
     cy.contains(".govuk-button", "Apply filters").click();
     cy.wait(100);
     cy.contains('td.govuk-table__cell', 'No results found.').should('not.exist');
-    cy.contains(".moj-filter__tag", "Reviewed Entitled").click();
+    cy.contains(".moj-filter__tag", "Reviewed entitled").click();
     cy.contains(".moj-filter__tag").should('not.exist');
   });
 
