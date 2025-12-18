@@ -62,6 +62,9 @@ public static class DfeSignInExtensions
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.SlidingExpiration = configuration.SlidingExpiration;
             });
+
+        // Register the DfE Sign-in API service for fetching user roles
+        services.AddHttpClient<IDfeSignInApiService, DfeSignInApiService>();
     }
 
     public static DfeClaims? GetDfeClaims(IEnumerable<Claim> claims)
@@ -70,7 +73,8 @@ public static class DfeSignInExtensions
         var result = new DfeClaims
         {
             Organisation = GetOrganisation(claims),
-            User = GetUser(claims)
+            User = GetUser(claims),
+            Roles = GetRoles(claims)
         };
 
         return result;
@@ -111,5 +115,57 @@ public static class DfeSignInExtensions
             .Select(c => c.Value).First();
 
         return userInformation;
+    }
+
+    private static IList<Role> GetRoles(IEnumerable<Claim> claims)
+    {
+        var roles = new List<Role>();
+        if (claims == null) return roles;
+
+        // Try to get roles from a JSON claim (if roles come as a JSON array)
+        var rolesJson = claims.Where(c => c.Type == ClaimConstants.Role || c.Type == "roles")
+            .Select(c => c.Value)
+            .FirstOrDefault();
+
+        if (!string.IsNullOrEmpty(rolesJson) && rolesJson.TrimStart().StartsWith("["))
+        {
+            try
+            {
+                var parsedRoles = JsonHelpers.Deserialize<List<Role>>(rolesJson);
+                if (parsedRoles != null)
+                {
+                    return parsedRoles;
+                }
+            }
+            catch
+            {
+                // If JSON parsing fails, continue to try individual claims
+            }
+        }
+
+        // Try to get role from individual claims
+        var roleId = claims.FirstOrDefault(c => c.Type == ClaimConstants.RoleId)?.Value;
+        var roleName = claims.FirstOrDefault(c => c.Type == ClaimConstants.RoleName)?.Value;
+        var roleCode = claims.FirstOrDefault(c => c.Type == ClaimConstants.RoleCode)?.Value;
+        var roleNumericId = claims.FirstOrDefault(c => c.Type == ClaimConstants.RoleNumericId)?.Value;
+
+        if (!string.IsNullOrEmpty(roleCode) || !string.IsNullOrEmpty(roleName))
+        {
+            var role = new Role
+            {
+                Code = roleCode ?? string.Empty,
+                Name = roleName ?? string.Empty,
+                NumericId = roleNumericId ?? string.Empty
+            };
+
+            if (Guid.TryParse(roleId, out var parsedRoleId))
+            {
+                role.Id = parsedRoleId;
+            }
+
+            roles.Add(role);
+        }
+
+        return roles;
     }
 }
