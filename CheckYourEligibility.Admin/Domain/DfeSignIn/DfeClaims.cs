@@ -4,6 +4,7 @@ public sealed class DfeClaims
 {
     public Organisation? Organisation { get; set; }
     public UserInformation User { get; set; }
+    public IList<Role> Roles { get; set; } = new List<Role>();
 }
 
 public sealed class UserInformation

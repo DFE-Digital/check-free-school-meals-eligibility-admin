@@ -12,6 +12,9 @@ public sealed class DfeSignInConfiguration : IDfeSignInConfiguration
     public string APIServiceProxyUrl { get; set; } = null!;
 
     /// <inheritdoc />
+    public string APIServiceSecret { get; set; } = null!;
+
+    /// <inheritdoc />
     public string CallbackUrl { get; set; } = null!;
 
     /// <inheritdoc />

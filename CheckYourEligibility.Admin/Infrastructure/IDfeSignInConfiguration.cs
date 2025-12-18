@@ -40,6 +40,11 @@ public interface IDfeSignInConfiguration
     string APIServiceProxyUrl { get; }
 
     /// <summary>
+    ///     Gets the API secret used to authenticate with the DfE Sign-in public API.
+    /// </summary>
+    string APIServiceSecret { get; }
+
+    /// <summary>
     ///     Gets the callback URL which the DfE Sign-in service will invoke to continue the
     ///     sign-in user flow (eg. "/auth/cb").
     /// </summary>
