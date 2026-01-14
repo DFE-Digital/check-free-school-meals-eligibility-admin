@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Child = CheckYourEligibility.Admin.Models.Child;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
@@ -169,8 +170,9 @@ public class DobAttribute : ValidationAttribute
 
                     if (ageOnAcademicYearStart < 4 || ageOnAcademicYearStart > 19)
                     {
+                        TextInfo ti = CultureInfo.CurrentCulture.TextInfo;
                         return new ValidationResult(
-                            $"Enter an age between 4 and 19 for {_objectName} {childIndex}",
+                            $"{ti.ToTitleCase(_objectName)} {childIndex} must have been aged between 4 and 19 at the beginning of the academic year to be eligible",
                             new[] { "DateOfBirth", "Day", "Month", "Year" });
                     }
                 }
