@@ -45,9 +45,11 @@ public class HomeController : BaseController
         }
 
         // Check if user has the required role for their organization type
+       
         var hasRequiredRole = _Claims.Roles.Any(r => 
             r.Code.Equals(requiredRoleCode, StringComparison.OrdinalIgnoreCase));
-
+        if (_Claims.Roles.Any(r => r.Code.Equals("fsmBasicVersion")))
+        {  hasRequiredRole = true; }
         if (!hasRequiredRole)
         {
             return View("UnauthorizedRole");

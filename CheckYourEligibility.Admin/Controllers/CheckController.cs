@@ -113,7 +113,22 @@ public class CheckController : BaseController
             foreach (var (key, errorList) in validationErrors)
                 foreach (var error in errorList)
                     ModelState.AddModelError(key, error);
-        if(_Claims.Organisation.)
+        return View(parent);
+    }
+    [HttpGet]
+    public async Task<IActionResult> Enter_Details_Basic()
+    {
+        _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
+
+        var (parent, validationErrors) = await _loadParentDetailsUseCase.Execute(
+            TempData["ParentDetails"]?.ToString(),
+            TempData["Errors"]?.ToString()
+        );
+
+        if (validationErrors != null)
+            foreach (var (key, errorList) in validationErrors)
+                foreach (var error in errorList)
+                    ModelState.AddModelError(key, error);
         return View(parent);
     }
 
