@@ -153,7 +153,27 @@ public class CheckController : BaseController
 
         return RedirectToAction("Loader", request);
     }
+    [HttpPost]
+    public async Task<IActionResult> Enter_Details_Basic(ParentGuardian request)
+    {
+        var validationResult = _validateParentDetailsUseCase.Execute(request, ModelState);
 
+        if (!validationResult.IsValid)
+        {
+            TempData["ParentDetails"] = JsonConvert.SerializeObject(request);
+            TempData["Errors"] = JsonConvert.SerializeObject(validationResult.Errors);
+            return RedirectToAction("Enter_Details");
+        }
+
+        // Clear data when starting a new application
+        TempData.Remove("FsmApplication");
+        TempData.Remove("FsmEvidence");
+
+        var response = await _performEligibilityCheckUseCase.Execute(request, HttpContext.Session);
+        TempData["Response"] = JsonConvert.SerializeObject(response);
+
+        return RedirectToAction("Loader", request);
+    }
     public async Task<IActionResult> Loader(ParentGuardian request)
     {
         if (TempData["ParentGuardianRequest"] != null) // Means it was queued previously and stored in temp
