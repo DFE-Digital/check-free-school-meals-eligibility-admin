@@ -24,16 +24,16 @@ public class HomeController : BaseController
             return View("UnauthorizedOrganization");
         }
 
-        // Determine the required role based on organization type
-        string? requiredRoleCode = categoryName switch
+        // Determine the required roles based on organization type
+        List<string>? requiredRoleCodes = categoryName switch
         {
-            Constants.CategoryTypeLA => Constants.RoleCodeLA,
-            Constants.CategoryTypeSchool => Constants.RoleCodeSchool,
-            Constants.CategoryTypeMAT => Constants.RoleCodeMAT,
+            Constants.CategoryTypeLA => [Constants.RoleCodeLA, Constants.RoleCodeBasic],
+            Constants.CategoryTypeSchool => [Constants.RoleCodeSchool],
+            Constants.CategoryTypeMAT => [Constants.RoleCodeMAT],
             _ => null
         };
 
-        if (requiredRoleCode == null)
+        if (requiredRoleCodes == null)
         {
             return View("UnauthorizedOrganization");
         }
@@ -44,12 +44,10 @@ public class HomeController : BaseController
             _Claims.Roles = await _dfeSignInApiService.GetUserRolesAsync(_Claims.User.Id, _Claims.Organisation.Id);
         }
 
-        // Check if user has the required role for their organization type
-       
+        // Check if user has any of the required roles for their organization type
         var hasRequiredRole = _Claims.Roles.Any(r => 
-            r.Code.Equals(requiredRoleCode, StringComparison.OrdinalIgnoreCase));
-        if (_Claims.Roles.Any(r => r.Code.Equals("fsmBasicVersion")))
-        {  hasRequiredRole = true; }
+            requiredRoleCodes.Any(code => code.Equals(r.Code, StringComparison.OrdinalIgnoreCase)));
+
         if (!hasRequiredRole)
         {
             return View("UnauthorizedRole");
@@ -78,7 +76,11 @@ public class HomeController : BaseController
     {
         return View("Guidance");
     }
-
+    public IActionResult Guidance_Redirect()
+    {
+        ViewData["Expand"] = "asylum-support";
+        return View("Guidance");
+    }
     public IActionResult FSMFormDownload()
     {
         return View("FSMFormDownload");

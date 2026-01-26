@@ -8,6 +8,7 @@ public class Constants
 
     // DfE Sign-in Role Codes
     public const string RoleCodeLA = "fsmLocalAuthority";
+    public const string RoleCodeBasic = "fsmBasicVersion";
     public const string RoleCodeSchool = "fsmSchoolRole";
     public const string RoleCodeMAT = "fsmMATRole";
 }

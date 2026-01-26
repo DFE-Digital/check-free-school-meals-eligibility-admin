@@ -32,10 +32,11 @@ namespace CheckYourEligibility.Admin.Models
 
         public string? Year { get; set; }
 
-        [Nino][MaxLength(13)] public string NationalInsuranceNumber { get; set; }
+        [NinValidator(nameof(NinAsrSelection))]
+        [MaxLength(13)] public string? NationalInsuranceNumber { get; set; }
 
         [NotMapped] public bool? NINAS { get; set; }
 
-        public NinAsrSelect NinAsrSelection { get; set; }
+        public NinAsrSelect NinAsrSelection { get; set; } = NinAsrSelect.NinSelected;
     }
 }
