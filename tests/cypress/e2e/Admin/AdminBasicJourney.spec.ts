@@ -1,3 +1,5 @@
+skipSetup = false
+
 describe('Full journey of creating an application through school portal through to approving in LA portal', () => {
     const parentFirstName = 'Tim';
     let referenceNumber: string;
