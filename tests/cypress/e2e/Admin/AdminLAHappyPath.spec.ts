@@ -28,8 +28,9 @@ it('Will allow an LA user to create an application is eligible and submit an app
         cy.url().should('include', 'Check/Loader');
 
         //Eligible outcome page
-        cy.get('.govuk-body', { timeout: 80000 }).should('include.text', 'This information should be passed on to their school.');
-        cy.get('a.govuk-link').contains('Continue to add child details').click();
+        
+        cy.contains('.govuk-body', "Continue to the next page to add these children's details.", {timeout: 80000,});
+        cy.get('a.govuk-button').contains("Add children's details").click();
         //Enter child details
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
@@ -49,7 +50,16 @@ it('Will allow an LA user to create an application is eligible and submit an app
         cy.get('h1').should('include.text', 'Check your answers before submitting');
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Name', `${parentFirstName} ${parentLastName}`);
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Date of birth', '1 January 1990');
-        cy.CheckValuesInSummaryCard('Parent or guardian details', 'National Insurance number', "NN123456C");
+         cy.get('dd.govuk-summary-list__value')
+            .eq(2)
+            .invoke('text')
+            .then(text => {
+                const clean = text
+                    .replace(/\u00A0/g, ' ')  
+                    .replace(/\s+/g, ' ')      
+                    .trim();                   
+        expect(clean).to.eq('nn123456c');
+        });
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
         cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
         cy.contains('button', 'Add details').click();

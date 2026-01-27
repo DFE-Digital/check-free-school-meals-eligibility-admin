@@ -76,7 +76,11 @@ public class HomeController : BaseController
     {
         return View("Guidance");
     }
-
+    public IActionResult Guidance_Redirect()
+    {
+        ViewData["Expand"] = "asylum-support";
+        return View("Guidance");
+    }
     public IActionResult FSMFormDownload()
     {
         return View("FSMFormDownload");

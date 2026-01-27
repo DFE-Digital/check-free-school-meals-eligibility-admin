@@ -33,6 +33,10 @@ public class PerformEligibilityCheckUseCaseTests
                 return result;
             });
 
+        _sessionMock.Setup(s => s.Remove(It.IsAny<string>()))
+             .Callback<string>(key => sessionStorage.Remove(key));
+
+
         _parent = new ParentGuardian
         {
             FirstName = "John",
@@ -42,6 +46,16 @@ public class PerformEligibilityCheckUseCaseTests
             Year = "1980",
             NationalInsuranceNumber = "AB123456C",
             EmailAddress = "a@b.c"
+        };
+
+        _parentBasic = new ParentGuardianBasic
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Day = "01",
+            Month = "01",
+            Year = "1980",
+            NationalInsuranceNumber = "ab123456c"
         };
 
         _eligibilityResponse = new CheckEligibilityResponse
@@ -56,6 +70,7 @@ public class PerformEligibilityCheckUseCaseTests
     private Mock<ISession> _sessionMock;
 
     private ParentGuardian _parent;
+    private ParentGuardianBasic _parentBasic;
     private CheckEligibilityResponse _eligibilityResponse;
 
     [Test]
@@ -96,6 +111,7 @@ public class PerformEligibilityCheckUseCaseTests
         Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentLastName")).Should().Be("Doe");
         Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentDOB")).Should().Be("1980-01-01");
         Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentNASS")).Should().Be("NASS123456");
+
     }
 
     [Test]
@@ -107,6 +123,47 @@ public class PerformEligibilityCheckUseCaseTests
 
         // Act
         Func<Task> act = async () => await _sut.Execute(_parent, _sessionMock.Object);
+
+        // Assert
+        await act.Should().ThrowAsync<Exception>().WithMessage("API Error");
+    }
+
+
+    [Test]
+    public async Task ExecuteBasic_WithValidParent_ShouldReturnValidResponse_AndSetExpectedSessionValues()
+    {
+        // Arrange
+        CheckEligibilityRequest_Fsm? capturedRequest = null;
+        _checkGatewayMock
+            .Setup(s => s.PostCheck(It.IsAny<CheckEligibilityRequest_Fsm>()))
+            .Callback<CheckEligibilityRequest_Fsm>(r => capturedRequest = r)
+            .ReturnsAsync(_eligibilityResponse);
+
+        // Act
+        var response = await _sut.ExecuteBasic(_parentBasic, _sessionMock.Object);
+
+        // Assert: return value
+
+        Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentFirstName")).Should().Be("John");
+        Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentLastName")).Should().Be("Doe");
+        Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentDOB")).Should().Be("1980-01-01");
+
+        // ExecuteBasic stores the raw value as provided (not uppercased in session)
+        Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentNINO")).Should().Be("ab123456c");
+
+    }
+
+
+    [Test]
+    public async Task ExecuteBasic_WhenApiThrowsException_ShouldThrow()
+    {
+        // Arrange
+        _checkGatewayMock
+            .Setup(s => s.PostCheck(It.IsAny<CheckEligibilityRequest_Fsm>()))
+            .ThrowsAsync(new Exception("API Error"));
+
+        // Act
+        Func<Task> act = async () => await _sut.ExecuteBasic(_parentBasic, _sessionMock.Object);
 
         // Assert
         await act.Should().ThrowAsync<Exception>().WithMessage("API Error");

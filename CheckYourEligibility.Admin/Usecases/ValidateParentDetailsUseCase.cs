@@ -12,6 +12,7 @@ public class ValidationResult
 public interface IValidateParentDetailsUseCase
 {
     ValidationResult Execute(ParentGuardian request, ModelStateDictionary modelState);
+    ValidationResult ExecuteBasic(ParentGuardianBasic request, ModelStateDictionary modelState);
 }
 
 public class ValidateParentDetailsUseCase : IValidateParentDetailsUseCase
@@ -53,6 +54,16 @@ public class ValidateParentDetailsUseCase : IValidateParentDetailsUseCase
         }
 
         return new ValidationResult { IsValid = true };
+    }
+
+    public ValidationResult ExecuteBasic(ParentGuardianBasic request, ModelStateDictionary modelState)
+    {
+        var errors = ProcessModelStateErrors(modelState);
+        if (!modelState.IsValid)
+        {
+            return new ValidationResult { IsValid=false, Errors = errors };
+        }
+        return new ValidationResult { IsValid = true, Errors = errors };
     }
 
     private Dictionary<string, List<string>> ProcessModelStateErrors(ModelStateDictionary modelState)

@@ -30,6 +30,9 @@ Cypress.Commands.add('checkSession', (userType: string) => {
             case 'MAT':
               expectedText = 'THOMAS TELFORD MULTI ACADEMY TRUST';
               break;
+            case 'basic':
+              expectedText = 'MANCHESTER CITY COUNCIL';
+              break;
             default:
               expectedText = 'Telford and Wrekin Council';
               break;
@@ -44,6 +47,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
               cy.login('school');
             } else if (userType === 'MAT') {
               cy.login('MAT');
+            } else if (userType === 'basic'){
+              cy.login('basic');
             } else {
               cy.login('LA');
             }
@@ -55,6 +60,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
           cy.login('school');
         } else if (userType === 'MAT') {
           cy.login('MAT');
+        } else if (userType === 'basic'){
+          cy.login('basic');
         } else {
           cy.login('LA');
         }
@@ -65,6 +72,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
         cy.login('school');
       } else if (userType === 'MAT') {
         cy.login('MAT');
+      } else if (userType === 'basic'){
+        cy.login('basic');
       } else {
         cy.login('LA');
       }
@@ -79,6 +88,8 @@ Cypress.Commands.add('login', (userType) => {
       cy.loginSchoolUser();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
+    } else if (userType === "basic"){
+      cy.loginBasicUser();
     } else {
       cy.loginLocalAuthorityUser();
     }
@@ -117,6 +128,21 @@ Cypress.Commands.add('loginLocalAuthorityUser', () => {
   cy.contains('Continue').click();
 });
 
+Cypress.Commands.add('loginBasicUser', () => {
+  // Log in as a local authority user - For persisting session use checkSession('LA')
+  cy.reload(true);
+  cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
+  cy.get('button[type="submit"]').click();
+  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
+  cy.get('button[type="submit"]').click();
+  cy.contains('MANCHESTER CITY COUNCIL')
+    .parent()
+    .find('input[type="radio"]')
+    .check();
+  cy.contains('Continue').click();
+});
+
 Cypress.Commands.add('loginMultiAcademyTrustUser', () => {
   // Log in as a Multi Academy Trust user - For persisting session use checkSession('MAT')
   cy.reload(true);
@@ -139,7 +165,8 @@ Cypress.Commands.add('storeCookies', (userType: string) => {
       timestamp: Date.now(),
       cookies: cookies
     };
-    cy.writeFile(filePath, data);
+    if(userType === 'basic'){}
+    else {cy.writeFile(filePath, data);}
   });
 });
 
@@ -165,7 +192,9 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
           cy.login('school');
         } else if (userType === 'MAT') {
           cy.login('MAT');
-        } else {
+        }else if(userType ==='Basic'){
+          cy.login('basic');
+         } else {
           cy.login('LA');
         }
       }
@@ -175,6 +204,8 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
         cy.login('school');
       } else if (userType === 'MAT') {
         cy.login('MAT');
+      } else if (userType === 'basic'){
+        cy.login('basic');
       } else {
         cy.login('LA');
       }

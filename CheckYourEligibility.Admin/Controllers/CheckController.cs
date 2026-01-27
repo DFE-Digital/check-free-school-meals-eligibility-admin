@@ -102,6 +102,8 @@ public class CheckController : BaseController
     [HttpGet]
     public async Task<IActionResult> Enter_Details()
     {
+        _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
+
         var (parent, validationErrors) = await _loadParentDetailsUseCase.Execute(
             TempData["ParentDetails"]?.ToString(),
             TempData["Errors"]?.ToString()
@@ -111,7 +113,22 @@ public class CheckController : BaseController
             foreach (var (key, errorList) in validationErrors)
                 foreach (var error in errorList)
                     ModelState.AddModelError(key, error);
+        return View(parent);
+    }
+    [HttpGet]
+    public async Task<IActionResult> Enter_Details_Basic()
+    {
+        _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
 
+        var (parent, validationErrors) = await _loadParentDetailsUseCase.Execute(
+            TempData["ParentDetails"]?.ToString(),
+            TempData["Errors"]?.ToString()
+        );
+
+        if (validationErrors != null)
+            foreach (var (key, errorList) in validationErrors)
+                foreach (var error in errorList)
+                    ModelState.AddModelError(key, error);
         return View(parent);
     }
 
@@ -136,7 +153,27 @@ public class CheckController : BaseController
 
         return RedirectToAction("Loader", request);
     }
+    [HttpPost]
+    public async Task<IActionResult> Enter_Details_Basic(ParentGuardianBasic request)
+    {
+        var validationResult = _validateParentDetailsUseCase.ExecuteBasic(request, ModelState);
 
+        if (!validationResult.IsValid)
+        {
+            TempData["ParentDetails"] = JsonConvert.SerializeObject(request);
+            TempData["Errors"] = JsonConvert.SerializeObject(validationResult.Errors);
+            return RedirectToAction("Enter_Details_Basic");
+        }
+
+        // Clear data when starting a new application
+        TempData.Remove("FsmApplication");
+        TempData.Remove("FsmEvidence");
+
+        var response = await _performEligibilityCheckUseCase.ExecuteBasic(request, HttpContext.Session);
+        TempData["Response"] = JsonConvert.SerializeObject(response);
+
+        return RedirectToAction("Loader_Basic", request);
+    }
     public async Task<IActionResult> Loader(ParentGuardian request)
     {
         if (TempData["ParentGuardianRequest"] != null) // Means it was queued previously and stored in temp
@@ -166,7 +203,7 @@ public class CheckController : BaseController
                     switch (organisationType)
                     {
                         case OrganisationCategory.LocalAuthority:
-                            return View("Outcome/Eligible_LA", request);
+                            return View("Outcome/Eligible", request);
                         case OrganisationCategory.MultiAcademyTrust:
                             return View("Outcome/Eligible_LA", request);
                         case OrganisationCategory.Establishment: //school
@@ -200,7 +237,69 @@ public class CheckController : BaseController
             return View("Outcome/Technical_Error");
         }
     }
+    public async Task<IActionResult> Loader_Basic(ParentGuardianBasic request)
+    {
+        if (TempData["ParentGuardianRequest"] != null) // Means it was queued previously and stored in temp
+        {
+            var json = TempData["ParentGuardianRequest"] as string;
+            request = JsonConvert.DeserializeObject<ParentGuardianBasic>(json);
+        }
 
+        var responseJson = TempData["Response"] as string;
+        try
+        {
+            var outcome = await _getCheckStatusUseCase.Execute(responseJson, HttpContext.Session);
+
+            if (outcome == "queuedForProcessing")
+                // Save the response back to TempData for the next poll
+                TempData["Response"] = responseJson;
+
+            _logger.LogError(outcome);
+
+            _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
+            OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
+            TempData["organisationType"] = organisationType;
+
+            switch (outcome)
+            {
+                case "eligible":
+                    switch (organisationType)
+                    {
+                        case OrganisationCategory.LocalAuthority:
+                            return View("Outcome/Eligible_Basic", request);
+                        case OrganisationCategory.MultiAcademyTrust:
+                            return View("Outcome/Eligible_LA", request);
+                        case OrganisationCategory.Establishment: //school
+                            return View("Outcome/Eligible", request);
+                        default:
+                            return View("Outcome/Technical_Error");
+                    }
+                case "notEligible":
+                    switch (organisationType)
+                    {
+                        case OrganisationCategory.LocalAuthority:
+                            return View("Outcome/Not_Eligible_LA", request);
+                        case OrganisationCategory.MultiAcademyTrust:
+                            return View("Outcome/Not_Eligible_LA", request);
+                        case OrganisationCategory.Establishment: //school:
+                            return View("Outcome/Not_Eligible", request);
+                        default:
+                            return View("Outcome/Technical_Error");
+                    }
+                case "parentNotFound":
+                    return View("Outcome/Not_Found");
+                case "queuedForProcessing":
+                    TempData["ParentGuardianRequest"] = JsonConvert.SerializeObject(request);
+                    return View("Loader");
+                default:
+                    return View("Outcome/Technical_Error");
+            }
+        }
+        catch (Exception ex)
+        {
+            return View("Outcome/Technical_Error");
+        }
+    }
     [HttpGet]
     public IActionResult Enter_Child_Details()
     {

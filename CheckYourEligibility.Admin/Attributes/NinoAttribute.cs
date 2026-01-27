@@ -1,55 +1,76 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
-using CheckYourEligibility.Admin.Models;
-using static CheckYourEligibility.Admin.Models.ParentGuardian;
 
-namespace CheckYourEligibility.Admin.Attributes;
-
-public class NinoAttribute : ValidationAttribute
+public enum NinAsrSelect
 {
-    private static readonly string FirstLetterPattern = "[ABCEGHJKLMNOPRSTWXYZ]";
-    private static readonly string SecondLetterPattern = "[ABCEGHJKLMNPRSTWXYZ]";
-    private static readonly string DisallowedPrefixesPattern = "^(?!BG|GB|KN|NK|NT|TN|ZZ)";
-    private static readonly string NumericPattern = "[0-9]{6}";
-    private static readonly string LastLetterPattern = "[ABCD]";
+    None = 0,
+    NinSelected = 1,
+    AsrnSelected = 2
+}
 
-    private static readonly string Pattern = DisallowedPrefixesPattern + FirstLetterPattern + SecondLetterPattern +
-                                             NumericPattern + LastLetterPattern;
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+public class NinValidatorAttribute : ValidationAttribute
+{
+    private readonly string _selectionPropertyName;
+    private readonly Regex _regex;
 
-    private static readonly Regex regex = new(Pattern);
+    public NinValidatorAttribute(string selectionPropertyName)
+    {
+        _selectionPropertyName = selectionPropertyName ?? throw new ArgumentNullException(nameof(selectionPropertyName));
+        ErrorMessage = "Invalid National Insurance number format";
+        _regex = new Regex("^[A-Z0-9]{2}\\d{6}[A-D]?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    }
 
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
-        var model = (ParentGuardian)validationContext.ObjectInstance;
+        PropertyInfo selectionProp = validationContext.ObjectType.GetProperty(_selectionPropertyName);
+        if (selectionProp == null)
+        {
+            return new ValidationResult(
+                $"Unknown property '{_selectionPropertyName}' referenced by {nameof(NinValidatorAttribute)}.");
+        }
 
-        //If ASR is selected stop validating NIN option
-        if (model.NinAsrSelection == NinAsrSelect.AsrnSelected) return ValidationResult.Success;
+        object selectionValue = selectionProp.GetValue(validationContext.ObjectInstance);
+        
+        string selectionAsString = selectionValue?.ToString();
 
-        //Neither option selected
-        if (model.NinAsrSelection == NinAsrSelect.None) return new ValidationResult("Please select one option");
+        // If ASR is selected stop validating NIN option
+        if (string.Equals(selectionAsString, nameof(NinAsrSelect.AsrnSelected), StringComparison.Ordinal))
+            return ValidationResult.Success;
 
-        //Nin Selected but not provided
-        if (model.NinAsrSelection == NinAsrSelect.NinSelected && value == null)
+        // Neither option selected
+        if (string.Equals(selectionAsString, nameof(NinAsrSelect.None), StringComparison.Ordinal))
+            return new ValidationResult("Please select one option");
+
+        // NIN selected but not provided
+        if (string.Equals(selectionAsString, nameof(NinAsrSelect.NinSelected), StringComparison.Ordinal) && value == null)
             return new ValidationResult("National Insurance number is required");
 
-        //Nin selected and completed - validate against regex
-        if (model.NinAsrSelection == NinAsrSelect.NinSelected && value != null)
+        // NIN selected and provided - validate
+        if (string.Equals(selectionAsString, nameof(NinAsrSelect.NinSelected), StringComparison.Ordinal) && value != null)
         {
-            var nino = value.ToString().ToUpper();
-            nino = string.Concat(nino
-                .Where(ch => char.IsLetterOrDigit(ch)));
+            var nino = new string(value.ToString()
+                                   .ToUpperInvariant()
+                                   .Where(char.IsLetterOrDigit)
+                                   .ToArray());
 
             if (nino.Length > 9)
+            {
                 return new ValidationResult(
                     "National Insurance number should contain no more than 9 alphanumeric characters");
+            }
 
-            if (!regex.IsMatch(nino)) return new ValidationResult("Invalid National Insurance number format");
-
-            model.NationalInsuranceNumber = nino;
-
-            if (!regex.IsMatch(nino)) return new ValidationResult("Invalid National Insurance number format");
+            if (!_regex.IsMatch(nino))
+            {
+                return new ValidationResult("Invalid National Insurance number format");
+            }
         }
 
         return ValidationResult.Success;
     }
 }
+

@@ -315,6 +315,89 @@ public class CheckControllerTests : TestBase
     }
 
     [Test]
+    [TestCase("AB123456C")]
+    public async Task Enter_Details_Basic_Post_When_ValidationFails_Should_RedirectBack(
+      string? nino)
+    {
+        // Arrange
+        var request = _fixture.Create<ParentGuardianBasic>();
+        request.NationalInsuranceNumber = nino;
+        request.Day = "1";
+        request.Month = "1";
+        request.Year = "1990";
+
+        var validationResult = new ValidationResult
+        {
+            IsValid = false,
+            Errors = new Dictionary<string, List<string>>
+            {
+                { "Error Key", new List<string> { "Error Message" } }
+            }
+        };
+
+        _validateParentDetailsUseCaseMock
+            .Setup(x => x.ExecuteBasic(request, It.IsAny<ModelStateDictionary>()))
+            .Returns(validationResult);
+
+        // Act
+        var result = await _sut.Enter_Details_Basic(request);
+
+        // Assert
+        result.Should().BeOfType<RedirectToActionResult>();
+        var redirectResult = result as RedirectToActionResult;
+        redirectResult.ActionName.Should().Be("Enter_Details_Basic");
+
+        // Verify TempData contains expected values
+        _sut.TempData.Should().ContainKey("ParentDetails");
+        _sut.TempData.Should().ContainKey("Errors");
+
+        // Verify the mock was called with correct parameters
+        _validateParentDetailsUseCaseMock.Verify(
+            x => x.ExecuteBasic(request, It.IsAny<ModelStateDictionary>()),
+            Times.Once);
+    }
+
+    [Test]
+    [TestCase( "AB123456C")]
+    public async Task Enter_Details_Basic_Post_When_Valid_Should_ProcessAndRedirectToLoader_Basic(string? nino)
+    {
+        // Arrange
+        var request = _fixture.Create<ParentGuardianBasic>();
+        request.NationalInsuranceNumber = nino;
+        request.Day = "01";
+        request.Month = "01";
+        request.Year = "1990";
+
+        var validationResult = new ValidationResult { IsValid = true };
+        var checkEligibilityResponse = _fixture.Create<CheckEligibilityResponse>();
+
+        _validateParentDetailsUseCaseMock
+            .Setup(x => x.ExecuteBasic(request, It.IsAny<ModelStateDictionary>()))
+            .Returns(validationResult);
+
+        _performEligibilityCheckUseCaseMock
+            .Setup(x => x.ExecuteBasic(request, _sut.HttpContext.Session))
+            .ReturnsAsync(checkEligibilityResponse);
+
+        // Act
+        var result = await _sut.Enter_Details_Basic(request);
+
+        // Assert
+        result.Should().BeOfType<RedirectToActionResult>();
+        var redirectResult = result as RedirectToActionResult;
+        redirectResult.ActionName.Should().Be("Loader_Basic");
+        _sut.TempData["Response"].Should().NotBeNull();
+
+        _validateParentDetailsUseCaseMock.Verify(
+            x => x.ExecuteBasic(request, It.IsAny<ModelStateDictionary>()),
+            Times.Once);
+
+        _performEligibilityCheckUseCaseMock.Verify(
+            x => x.ExecuteBasic(request, _sut.HttpContext.Session),
+            Times.Once);
+    }
+
+    [Test]
     public void Enter_Child_Details_Get_Should_Handle_Initial_Load()
     {
         // Arrange

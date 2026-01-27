@@ -10,7 +10,7 @@
     @if (!ViewData.ModelState.IsValid)
     {
         ViewData["Title"] = "Error: Check Details";
-        <partial name="_ValidationSummary" model="ViewData.ModelState"/>
+        <partial name="_ValidationSummary" model="ViewData.ModelState" />
     }
 
     <div class="govuk-grid-row">
@@ -37,8 +37,10 @@
                                         <span id="individual-heading" class="sr-only">Run a check for one parent or guardian</span>
                                         Run a check for one parent or guardian
                                     </a>
-                                    <p id="individual-description">Run an eligibility check for one parent or
-                                        guardian.</p>
+                                    <p id="individual-description">
+                                        Run an eligibility check for one parent or
+                                        guardian.
+                                    </p>
                                 </div>
                             </div>
 
@@ -50,8 +52,10 @@
                                         <span id="bulk-heading" class="sr-only">Run a batch check</span>
                                         Run a batch check
                                     </a>
-                                    <p id="bulk-description">Run an eligibility check for multiple parents or
-                                        guardians.</p>
+                                    <p id="bulk-description">
+                                        Run an eligibility check for multiple parents or
+                                        guardians.
+                                    </p>
                                 </div>
                             </div>
                             <div class="dfe-card-container">
@@ -120,6 +124,90 @@
                     </div>
                 </div>
             }
+            else if (Model.Roles.Any(r => r.Code.Equals("fsmBasicVersion")))
+            {
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-full">
+
+                        <h2 class="govuk-heading-m">
+                            Free school meals
+                        </h2>
+
+                        <div class="dfe-grid-container">
+
+                            <div class="dfe-card-container">
+                                <div class="def-card">
+                                    <a class="govuk-heading-m govuk-link govuk-link--no-visited-state dfe-card-link--header"
+                                       id="individual" aria-labelledby="individual-heading individual-description"
+                                       href="@Url.Action("Enter_Details_Basic", "Check")">
+                                        <span id="individual-heading" class="sr-only">Run a check for one parent or guardian</span>
+                                        Run a check for one parent or guardian
+                                    </a>
+                                    <p id="individual-description">
+                                        Run an eligibility check for one parent or
+                                        guardian.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="dfe-card-container">
+                                <div class="def-card">
+                                    <a class="govuk-heading-m govuk-link govuk-link--no-visited-state dfe-card-link--header"
+                                       id="bulk" aria-labelledby="bulk-heading bulk-description"
+                                       href="@Url.Action("Bulk_Check", "BulkCheck")">
+                                        <span id="bulk-heading" class="sr-only">Run a batch check</span>
+                                        Run a batch check
+                                    </a>
+                                    <p id="bulk-description">
+                                        Run an eligibility check for multiple parents or
+                                        guardians.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="dfe-card-container">
+                                <div class="def-card">
+                                    <a class="govuk-heading-m govuk-link govuk-link--no-visited-state dfe-card-link--header"
+                                       id="reports" aria-labelledby="reports-heading reports-description"
+                                       href="@Url.Action("Reports", "Application", new { PageNumber = 0 })">
+                                        <span id="reports-heading" class="sr-only">Reports</span>
+                                        Reports
+                                    </a>
+                                    <p id="reports-description">
+                                        Generate reports and view recent checks carried out using this service.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="dfe-card-container">
+                                <div class="def-card">
+                                    <a class="govuk-heading-m govuk-link govuk-link--no-visited-state dfe-card-link--header"
+                                       id="guidance" aria-labelledby="guidance-heading guidance-description"
+                                       href="/Home/Guidance">
+                                        <span id="guidance-heading" class="sr-only">Guidance</span>
+                                        Guidance
+                                    </a>
+                                    <p id="guidance-description">
+                                        Read guidance on using this service, reviewing evidence and completing checks for parents claiming asylum.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="dfe-card-container">
+                                <div class="def-card">
+                                    <a class="govuk-heading-m govuk-link govuk-link--no-visited-state dfe-card-link--header"
+                                       id="downloadPDF" aria-labelledby="downloadPDF-heading downloadPDF-description"
+                                       href="/Home/FSMFormDownload">
+                                        <span id="downloadPDF-heading" class="sr-only">Download PDF Form</span>
+                                        Download PDF Form
+                                    </a>
+                                    <p id="downloadPDF-description">Download an eligibility form for parents to complete.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
             else if (Model.Organisation.Category.Name == "Local Authority")
             {
                 <div class="govuk-grid-row">
@@ -139,8 +227,10 @@
                                         <span id="individual-heading" class="sr-only">Run a check for one parent or guardian</span>
                                         Run a check for one parent or guardian
                                     </a>
-                                    <p id="individual-description">Run an eligibility check for one parent or
-                                        guardian.</p>
+                                    <p id="individual-description">
+                                        Run an eligibility check for one parent or
+                                        guardian.
+                                    </p>
                                 </div>
                             </div>
 
@@ -152,8 +242,10 @@
                                         <span id="bulk-heading" class="sr-only">Run a batch check</span>
                                         Run a batch check
                                     </a>
-                                    <p id="bulk-description">Run an eligibility check for multiple parents or
-                                        guardians.</p>
+                                    <p id="bulk-description">
+                                        Run an eligibility check for multiple parents or
+                                        guardians.
+                                    </p>
                                 </div>
                             </div>
 
@@ -165,8 +257,10 @@
                                         <span id="pending-heading" class="sr-only">Pending applications</span>
                                         Pending applications
                                     </a>
-                                    <p id="pending-description">Check eligibility for children not found in the
-                                        system.</p>
+                                    <p id="pending-description">
+                                        Check eligibility for children not found in the
+                                        system.
+                                    </p>
                                 </div>
                             </div>
 
@@ -216,8 +310,10 @@
                                         <span id="individual-heading" class="sr-only">Run a check for one parent or guardian</span>
                                         Run a check for one parent or guardian
                                     </a>
-                                    <p id="individual-description">Run an eligibility check for one parent or
-                                        guardian.</p>
+                                    <p id="individual-description">
+                                        Run an eligibility check for one parent or
+                                        guardian.
+                                    </p>
                                 </div>
                             </div>
 
@@ -229,8 +325,10 @@
                                         <span id="bulk-heading" class="sr-only">Run a batch check</span>
                                         Run a batch check
                                     </a>
-                                    <p id="bulk-description">Run an eligibility check for multiple parents or
-                                        guardians.</p>
+                                    <p id="bulk-description">
+                                        Run an eligibility check for multiple parents or
+                                        guardians.
+                                    </p>
                                 </div>
                             </div>
 
@@ -242,8 +340,10 @@
                                         <span id="pending-heading" class="sr-only">Pending applications</span>
                                         Pending applications
                                     </a>
-                                    <p id="pending-description">Check eligibility for children not found in the
-                                        system.</p>
+                                    <p id="pending-description">
+                                        Check eligibility for children not found in the
+                                        system.
+                                    </p>
                                 </div>
                             </div>
 
