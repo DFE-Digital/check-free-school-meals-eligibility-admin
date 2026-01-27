@@ -47,6 +47,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
               cy.login('school');
             } else if (userType === 'MAT') {
               cy.login('MAT');
+            } else if (userType === 'basic'){
+              cy.login('basic');
             } else {
               cy.login('LA');
             }
@@ -58,6 +60,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
           cy.login('school');
         } else if (userType === 'MAT') {
           cy.login('MAT');
+        } else if (userType === 'basic'){
+          cy.login('basic');
         } else {
           cy.login('LA');
         }
@@ -68,6 +72,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
         cy.login('school');
       } else if (userType === 'MAT') {
         cy.login('MAT');
+      } else if (userType === 'basic'){
+        cy.login('basic');
       } else {
         cy.login('LA');
       }
@@ -159,7 +165,8 @@ Cypress.Commands.add('storeCookies', (userType: string) => {
       timestamp: Date.now(),
       cookies: cookies
     };
-    cy.writeFile(filePath, data);
+    if(userType === 'basic'){}
+    else {cy.writeFile(filePath, data);}
   });
 });
 
@@ -185,7 +192,9 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
           cy.login('school');
         } else if (userType === 'MAT') {
           cy.login('MAT');
-        } else {
+        }else if(userType ==='Basic'){
+          cy.login('basic');
+         } else {
           cy.login('LA');
         }
       }
@@ -195,6 +204,8 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
         cy.login('school');
       } else if (userType === 'MAT') {
         cy.login('MAT');
+      } else if (userType === 'basic'){
+        cy.login('basic');
       } else {
         cy.login('LA');
       }
