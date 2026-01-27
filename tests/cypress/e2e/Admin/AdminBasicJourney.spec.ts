@@ -1,19 +1,17 @@
 skipSetup = false
 
-describe('Full journey of creating an application through school portal through to approving in LA portal', () => {
+describe('BasicLAHappyPath', () => {
     const parentFirstName = 'Tim';
     let referenceNumber: string;
     const parentLastName = Cypress.env('lastName');
     const parentEmailAddress = 'TimJones@Example.com';
     const NIN = 'NN668767B'
-    const childFirstName = 'Timmy';
-    const childLastName = 'Smith';
     beforeEach(() => {
         if (!skipSetup) {
-            cy.checkSession('school');
+            cy.checkSession('basic');
             cy.visit(Cypress.config().baseUrl ?? "");
             cy.wait(1);
-            cy.get('h1').should('include.text', 'The Telford Park School');
+            cy.get('h1').should('include.text', 'MANCHESTER CITY COUNCIL');
         }
     });
      it('Will allow a basic user to check for eligibility that is eligible', () => {
@@ -36,6 +34,6 @@ describe('Full journey of creating an application through school portal through 
 
         //Not eligible outcome
         cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
-        cy.contains('a.govuk-button', 'Do another check').click();
+        cy.contains('a.govuk-button', 'Do another check');
     });
 });

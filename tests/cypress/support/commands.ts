@@ -30,6 +30,9 @@ Cypress.Commands.add('checkSession', (userType: string) => {
             case 'MAT':
               expectedText = 'THOMAS TELFORD MULTI ACADEMY TRUST';
               break;
+            case 'basic':
+              expectedText = 'MANCHESTER CITY COUNCIL';
+              break;
             default:
               expectedText = 'Telford and Wrekin Council';
               break;
