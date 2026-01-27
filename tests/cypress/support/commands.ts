@@ -82,6 +82,8 @@ Cypress.Commands.add('login', (userType) => {
       cy.loginSchoolUser();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
+    } else if (userType === "basic"){
+      cy.loginBasicUser();
     } else {
       cy.loginLocalAuthorityUser();
     }
@@ -114,6 +116,21 @@ Cypress.Commands.add('loginLocalAuthorityUser', () => {
   cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
   cy.get('button[type="submit"]').click();
   cy.contains('Telford and Wrekin Council')
+    .parent()
+    .find('input[type="radio"]')
+    .check();
+  cy.contains('Continue').click();
+});
+
+Cypress.Commands.add('loginBasicUser', () => {
+  // Log in as a local authority user - For persisting session use checkSession('LA')
+  cy.reload(true);
+  cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
+  cy.get('button[type="submit"]').click();
+  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
+  cy.get('button[type="submit"]').click();
+  cy.contains('MANCHESTER CITY COUNCIL')
     .parent()
     .find('input[type="radio"]')
     .check();
