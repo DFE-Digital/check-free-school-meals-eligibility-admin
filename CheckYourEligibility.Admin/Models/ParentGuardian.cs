@@ -35,9 +35,9 @@ public class ParentGuardian
 
     public string? Year { get; set; }
 
-    [Nino] [MaxLength(13)] public string? NationalInsuranceNumber { get; set; }
+    [NinValidator(nameof(NinAsrSelection))][MaxLength(13)] public string? NationalInsuranceNumber { get; set; }
 
-    [Nass] [MaxLength(10)] public string? NationalAsylumSeekerServiceNumber { get; set; }
+    [Nass(nameof(NinAsrSelection))][MaxLength(10)] public string? NationalAsylumSeekerServiceNumber { get; set; }
 
     [NotMapped] public bool? NINAS { get; set; }
 

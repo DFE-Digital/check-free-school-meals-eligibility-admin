@@ -1,34 +1,53 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
-using CheckYourEligibility.Admin.Models;
-using static CheckYourEligibility.Admin.Models.ParentGuardian;
 
-namespace CheckYourEligibility.Admin.Attributes;
-
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public class NassAttribute : ValidationAttribute
 {
     private static readonly string NassPattern = @"^[0-9]{2}(0[1-9]|1[0-2])[0-9]{5,6}$";
-    private static readonly Regex regex = new(NassPattern);
+    private static readonly Regex _regex = new(NassPattern, RegexOptions.Compiled);
 
-    protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+    private readonly string _selectionPropertyName;
+    private readonly string _noneName;
+    private readonly string _ninName;
+    private readonly string _asrName;
+
+    public NassAttribute(
+        string selectionPropertyName,
+        string noneName = "None",
+        string ninName = "NinSelected",
+        string asrName = "AsrnSelected")
     {
-        var model = (ParentGuardian)validationContext.ObjectInstance;
+        _selectionPropertyName = selectionPropertyName ?? throw new ArgumentNullException(nameof(selectionPropertyName));
+        _noneName = noneName;
+        _ninName = ninName;
+        _asrName = asrName;
+    }
 
-        //If NIN is selected stop validating ASR option
-        if (model.NinAsrSelection == NinAsrSelect.NinSelected) return ValidationResult.Success;
+    protected override ValidationResult IsValid(object value, ValidationContext context)
+    {
+        var prop = context.ObjectType.GetProperty(_selectionPropertyName);
+        if (prop == null)
+            return new ValidationResult($"Unknown property '{_selectionPropertyName}' referenced by {nameof(NassAttribute)}.");
 
-        //Neither option selected
-        //Handled in NINO. Allow success result here to avoid double validation message
-        if (model.NinAsrSelection == NinAsrSelect.None) return new ValidationResult("Please select one option");
+        var selectionName = prop.GetValue(context.ObjectInstance)?.ToString();
 
-        //ASR Selected but not provided
-        if (model.NinAsrSelection == NinAsrSelect.AsrnSelected && value == null)
-            return new ValidationResult("Asylum support reference number is required");
+        if (string.Equals(selectionName, _ninName, StringComparison.Ordinal))
+            return ValidationResult.Success;
 
-        //Asr selected and completed - validate against regex
-        if (model.NinAsrSelection == NinAsrSelect.AsrnSelected)
-            if (!regex.IsMatch(value.ToString()))
+        if (string.Equals(selectionName, _noneName, StringComparison.Ordinal))
+            return new ValidationResult("Please select one option");
+
+        if (string.Equals(selectionName, _asrName, StringComparison.Ordinal))
+        {
+            if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
+                return new ValidationResult("Asylum support reference number is required");
+
+            var asr = value.ToString().Trim();
+            if (!_regex.IsMatch(asr))
                 return new ValidationResult("Nass field contains an invalid character");
+        }
 
         return ValidationResult.Success;
     }

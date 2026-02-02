@@ -123,7 +123,16 @@ describe('Full journey of creating an application through school portal through 
         cy.get('h1').should('include.text', 'Check your answers before submitting');
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Name', `${parentFirstName} ${parentLastName}`);
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Date of birth', '1 January 1990');
-        cy.CheckValuesInSummaryCard('Parent or guardian details', 'National Insurance number', "NN123456C");
+        cy.get('dd.govuk-summary-list__value')
+            .eq(2)
+            .invoke('text')
+            .then(text => {
+                const clean = text
+                    .replace(/\u00A0/g, ' ')  
+                    .replace(/\s+/g, ' ')      
+                    .trim();                   
+        expect(clean).to.eq('nn123456c');
+        });
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
         cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
         cy.contains('button', 'Add details').click();

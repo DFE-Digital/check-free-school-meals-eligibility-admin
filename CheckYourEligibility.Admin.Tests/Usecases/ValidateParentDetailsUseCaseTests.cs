@@ -171,4 +171,36 @@ public class ValidateParentDetailsUseCaseTests
         result.Errors.Should().ContainKey("NationalAsylumSeekerServiceNumber");
         result.Errors.Should().NotContainKey("NINAS");
     }
+
+    [Test]
+    public void ExecuteBasic_ModelStateValid_ShouldReturnValidResult()
+    {
+        // Arrange
+        var request = _fixture.Create<ParentGuardianBasic>();
+        
+        var modelState = new ModelStateDictionary();
+
+        // Act
+        var result = _sut.ExecuteBasic(request, modelState);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
+        result.Errors.Should().BeEmpty();
+    }
+    [Test]
+    public void ExecuteBasic_WhenModelStateInvalid_ShouldReturnInvalidResult()
+    {
+        // Arrange
+        var request = _fixture.Create<ParentGuardianBasic>();
+        var modelState = new ModelStateDictionary();
+        modelState.AddModelError("TestKey", "Test Error");
+
+        // Act
+        var result = _sut.ExecuteBasic(request, modelState);
+
+        // Assert
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().NotBeNull();
+        result.Errors.Should().ContainKey("TestKey");
+    }
 }
