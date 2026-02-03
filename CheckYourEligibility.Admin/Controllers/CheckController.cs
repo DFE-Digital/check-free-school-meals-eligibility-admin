@@ -144,7 +144,7 @@ public class CheckController : BaseController
         {
             TempData["ParentDetails"] = JsonConvert.SerializeObject(request);
             TempData["Errors"] = JsonConvert.SerializeObject(validationResult.Errors);
-            return RedirectToAction("Enter_Details");
+            return RedirectToAction("Enter_Details_Basic");
         }
 
         // Clear data when starting a new application
