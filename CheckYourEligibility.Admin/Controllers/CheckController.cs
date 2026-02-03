@@ -103,6 +103,9 @@ public class CheckController : BaseController
     public async Task<IActionResult> Enter_Details()
     {
         _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
+        if (_Claims.Roles.Any().Equals("Basic")) {
+            return RedirectToAction("Enter_Details_Basic");
+        }
 
         var (parent, validationErrors) = await _loadParentDetailsUseCase.Execute(
             TempData["ParentDetails"]?.ToString(),
@@ -290,7 +293,7 @@ public class CheckController : BaseController
                     return View("Outcome/Not_Found");
                 case "queuedForProcessing":
                     TempData["ParentGuardianRequest"] = JsonConvert.SerializeObject(request);
-                    return View("Loader");
+                    return View("Loader_Basic");
                 default:
                     return View("Outcome/Technical_Error");
             }
