@@ -12,7 +12,7 @@ describe('Cookie consent banner functionality', () => {
         cy.get('.govuk-cookie-banner')
             .should('be.visible')
             .within(() => {
-                cy.contains('h2', 'Cookies on check a family\'s eligibility');
+                cy.contains('h2', 'Cookies on Manage eligibility for free school meals');
                 cy.contains('button', 'Accept analytics cookies');
                 cy.contains('button', 'Reject analytics cookies');
             });
