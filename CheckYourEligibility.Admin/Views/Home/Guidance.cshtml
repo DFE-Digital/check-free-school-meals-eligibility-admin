@@ -1,6 +1,9 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Guidance for reviewing evidence";
+    var expandKey = "";
+    if (ViewData["Expand"] != null) { expandKey = (string)ViewData["Expand"]; 
+    }  
 }
 
 <div class="govuk-grid-column-two-thirds">
@@ -55,8 +58,8 @@
             </div>
         </div>
 
-        <div class="govuk-accordion__section">
-            <div class="govuk-accordion__section-header">
+        <div class="govuk-accordion__section @(expandKey == "asylum-support" ? "govuk-accordion__section--expanded" : "")">
+        <div class="govuk-accordion__section-header">
                 <h2 class="govuk-accordion__section-heading">
                     <span class="govuk-accordion__section-button" id="accordion-default-heading-2">
                         Support under Section 95 or Section 98 within part VI of the Immigration and Asylum Act 1999
