@@ -293,7 +293,7 @@ public class CheckController : BaseController
                     return View("Outcome/Not_Found");
                 case "queuedForProcessing":
                     TempData["ParentGuardianRequest"] = JsonConvert.SerializeObject(request);
-                    return RedirectToAction("Loader_Basic");
+                    return View("Loader_Basic");
                 default:
                     return View("Outcome/Technical_Error");
             }
