@@ -92,10 +92,14 @@ public class HomeController : BaseController
     }
     public IActionResult AsylumCheck()
     {
-        return View("Guidance_steps/Aslyum_Check");
+        return View("Guidance_steps/Asylum_Check");
     }
     public IActionResult BatchCheck()
     {
         return View("Guidance_steps/Batch_Check");
+    }
+    public IActionResult EvidenceGuidance()
+    {
+        return View("Guidance_steps/Evidence_Guidance");
     }
 }
