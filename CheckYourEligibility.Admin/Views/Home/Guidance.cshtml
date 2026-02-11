@@ -6,13 +6,13 @@
     {
         expandKey = (string)ViewData["Expand"];
     }
-    var directoryKey = "";
+    string directoryKey = "";
     if (ViewData["directory"] != null)
     {
         directoryKey = (string)ViewData["directory"];
     }
 }
-@if (directoryKey != null)
+@if (directoryKey == "yes")
 {
     <div class="govuk-width-container">
         <div class="govuk-grid-row">

@@ -1,12 +1,7 @@
 ﻿<div class="govuk-width-container">
 
-
-    <a href="javascript:window.history.back()" class="govuk-back-link">Back</a>
-
-
-
+    <a class="govuk-back-link backLinkJS" href="@Url.Action("Guidance_Basic", "Home")">Back</a>
     <main class="govuk-main-wrapper" id="main-content">
-
 
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
@@ -20,22 +15,16 @@
                 </p>
                 <p>Choose the relevant section from the evidence list for tailored guidance on how to review.</p>
 
-                <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default" data-govuk-accordion-init="">
-                    <div class="govuk-accordion__controls"><button type="button" class="govuk-accordion__show-all" aria-expanded="false"><span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span><span class="govuk-accordion__show-all-text">Show all sections</span></button></div>
+                <div class="govuk-accordion" data-module="govuk-accordion" id="accordion-default">
                     <div class="govuk-accordion__section">
                         <div class="govuk-accordion__section-header">
                             <h2 class="govuk-accordion__section-heading">
-
-                                <button type="button" aria-controls="accordion-default-content-1" class="govuk-accordion__section-button" aria-expanded="false" aria-label="Universal credit statement(s) , Show this section">
-                                    <span class="govuk-accordion__section-heading-text" id="accordion-default-heading-1">
-                                        <span class="govuk-accordion__section-heading-text-focus">
-                                            Universal credit statement(s)
-                                        </span>
-                                    </span><span class="govuk-visually-hidden govuk-accordion__section-heading-divider">, </span><span class="govuk-accordion__section-toggle" data-nosnippet=""><span class="govuk-accordion__section-toggle-focus"><span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span><span class="govuk-accordion__section-toggle-text">Show</span></span></span>
-                                </button>
+                                <span class="govuk-accordion__section-button" id="accordion-default-heading-1">
+                                    Universal credit statement(s)
+                                </span>
                             </h2>
                         </div>
-                        <div id="accordion-default-content-1" class="govuk-accordion__section-content" hidden="until-found">
+                        <div id="accordion-default-content-1" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-1">
                             <p class="govuk-body">
                                 To see if a parent or guardian can claim free school meals for their children, you must
                                 find their <strong>take-home pay</strong> in the Universal Credit statement(s) they’ve provided.
@@ -57,7 +46,6 @@
                                     the take-home pay from their most recent statement + the one covering the month directly before + the
                                     one covering the month directly before that = <strong>less than £1,850.00</strong>
                                 </li>
-
                             </ul>
                             <p>
                                 In line with these checks, the annual net earned income of the parent or guardian must be no higher than
@@ -74,23 +62,17 @@
                                     more in-depth free school meals guidance on GOV.UK.
                                 </a>
                             </p>
-
                         </div>
                     </div>
                     <div class="govuk-accordion__section">
                         <div class="govuk-accordion__section-header">
                             <h2 class="govuk-accordion__section-heading">
-
-                                <button type="button" aria-controls="accordion-default-content-2" class="govuk-accordion__section-button" aria-expanded="false" aria-label="Support under part VI of the Immigration and Asylum Act 1999 , Show this section">
-                                    <span class="govuk-accordion__section-heading-text" id="accordion-default-heading-2">
-                                        <span class="govuk-accordion__section-heading-text-focus">
-                                            Support under part VI of the Immigration and Asylum Act 1999
-                                        </span>
-                                    </span><span class="govuk-visually-hidden govuk-accordion__section-heading-divider">, </span><span class="govuk-accordion__section-toggle" data-nosnippet=""><span class="govuk-accordion__section-toggle-focus"><span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span><span class="govuk-accordion__section-toggle-text">Show</span></span></span>
-                                </button>
+                                <span class="govuk-accordion__section-button" id="accordion-default-heading-2">
+                                    Support under Section 95 or Section 98 within part VI of the Immigration and Asylum Act 1999
+                                </span>
                             </h2>
                         </div>
-                        <div id="accordion-default-content-2" class="govuk-accordion__section-content" hidden="until-found">
+                        <div id="accordion-default-content-2" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-2">
 
                             <p>
                                 When checking an applicant with an asylum support reference number (formerly NASS number), a document
@@ -98,15 +80,9 @@
                                 This may include:
                             </p>
                             <ul>
-                                <li>
-                                    a letter from the Home Office
-                                </li>
-                                <li>
-                                    a visa or student visa
-                                </li>
-                                <li>
-                                    other kinds of documentation, to be reviewed at your discretion
-                                </li>
+                                <li>a letter from the Home Office</li>
+                                <li>a visa or student visa</li>
+                                <li>other kinds of documentation, to be reviewed at your discretion</li>
                             </ul>
                             <p>
                                 If the document provided demonstrates that they receive such support, this is sufficient evidence for them
@@ -122,24 +98,17 @@
                                     more in-depth free school meals guidance on GOV.UK.
                                 </a>
                             </p>
-
                         </div>
                     </div>
                     <div class="govuk-accordion__section">
                         <div class="govuk-accordion__section-header">
                             <h2 class="govuk-accordion__section-heading">
-
-                                <button type="button" aria-controls="accordion-default-content-3" class="govuk-accordion__section-button" aria-expanded="false" aria-label="Income Support , Show this section">
-                                    <span class="govuk-accordion__section-heading-text" id="accordion-default-heading-3">
-                                        <span class="govuk-accordion__section-heading-text-focus">
-                                            Income Support
-                                        </span>
-                                    </span><span class="govuk-visually-hidden govuk-accordion__section-heading-divider">, </span><span class="govuk-accordion__section-toggle" data-nosnippet=""><span class="govuk-accordion__section-toggle-focus"><span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span><span class="govuk-accordion__section-toggle-text">Show</span></span></span>
-                                </button>
+                                <span class="govuk-accordion__section-button" id="accordion-default-heading-3">
+                                    Income Support
+                                </span>
                             </h2>
                         </div>
-                        <div id="accordion-default-content-3" class="govuk-accordion__section-content" hidden="until-found">
-
+                        <div id="accordion-default-content-3" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-3">
                             <p>
                                 To see if a parent or guardian can claim free school meals for their children, check their Letter of
                                 Entitlement from the Department for Work and Pensions.
@@ -154,24 +123,18 @@
                                     more in-depth free school meals guidance on GOV.UK.
                                 </a>
                             </p>
-
                         </div>
                     </div>
+
                     <div class="govuk-accordion__section">
                         <div class="govuk-accordion__section-header">
                             <h2 class="govuk-accordion__section-heading">
-
-                                <button type="button" aria-controls="accordion-default-content-4" class="govuk-accordion__section-button" aria-expanded="false" aria-label="Income based Jobseeker's Allowance (JSA) , Show this section">
-                                    <span class="govuk-accordion__section-heading-text" id="accordion-default-heading-4">
-                                        <span class="govuk-accordion__section-heading-text-focus">
-                                            Income based Jobseeker's Allowance (JSA)
-
-                                        </span>
-                                    </span><span class="govuk-visually-hidden govuk-accordion__section-heading-divider">, </span><span class="govuk-accordion__section-toggle" data-nosnippet=""><span class="govuk-accordion__section-toggle-focus"><span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span><span class="govuk-accordion__section-toggle-text">Show</span></span></span>
-                                </button>
+                                <span class="govuk-accordion__section-button" id="accordion-default-heading-4">
+                                    Income based Jobseeker's Allowance (JSA)
+                                </span>
                             </h2>
                         </div>
-                        <div id="accordion-default-content-4" class="govuk-accordion__section-content" hidden="until-found">
+                        <div id="accordion-default-content-4" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-4">
                             <p>
                                 To see if a parent or guardian can claim free school meals for their children, check their Letter of
                                 Entitlement from the Department for Work and Pensions.
@@ -191,18 +154,12 @@
                     <div class="govuk-accordion__section">
                         <div class="govuk-accordion__section-header">
                             <h2 class="govuk-accordion__section-heading">
-
-                                <button type="button" aria-controls="accordion-default-content-5" class="govuk-accordion__section-button" aria-expanded="false" aria-label="Pension Credit , Show this section">
-                                    <span class="govuk-accordion__section-heading-text" id="accordion-default-heading-4">
-                                        <span class="govuk-accordion__section-heading-text-focus">
-                                            Pension Credit
-                                        </span>
-                                    </span><span class="govuk-visually-hidden govuk-accordion__section-heading-divider">, </span><span class="govuk-accordion__section-toggle" data-nosnippet=""><span class="govuk-accordion__section-toggle-focus"><span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span><span class="govuk-accordion__section-toggle-text">Show</span></span></span>
-                                </button>
+                                <span class="govuk-accordion__section-button" id="accordion-default-heading-5">
+                                    Pension Credit
+                                </span>
                             </h2>
                         </div>
-                        <div id="accordion-default-content-4" class="govuk-accordion__section-content" hidden="until-found">
-
+                        <div id="accordion-default-content-5" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-5">
                             <p>
                                 To see if a parent or guardian can claim free school meals for their children, check their Letter of
                                 Entitlement from the Department for Work and Pensions. This will typically be a Pension Credit M1000 Award
@@ -218,26 +175,17 @@
                                     more in-depth free school meals guidance on GOV.UK.
                                 </a>
                             </p>
-
-
-
                         </div>
                     </div>
                     <div class="govuk-accordion__section">
                         <div class="govuk-accordion__section-header">
                             <h2 class="govuk-accordion__section-heading">
-
-                                <button type="button" aria-controls="accordion-default-content-6" class="govuk-accordion__section-button" aria-expanded="false" aria-label="Child Tax Credit , Show this section">
-                                    <span class="govuk-accordion__section-heading-text" id="accordion-default-heading-4">
-                                        <span class="govuk-accordion__section-heading-text-focus">
-                                            Child Tax Credit
-                                        </span>
-                                    </span><span class="govuk-visually-hidden govuk-accordion__section-heading-divider">, </span><span class="govuk-accordion__section-toggle" data-nosnippet=""><span class="govuk-accordion__section-toggle-focus"><span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span><span class="govuk-accordion__section-toggle-text">Show</span></span></span>
-                                </button>
+                                <span class="govuk-accordion__section-button" id="accordion-default-heading-6">
+                                    Child Tax Credit
+                                </span>
                             </h2>
                         </div>
-                        <div id="accordion-default-content-4" class="govuk-accordion__section-content" hidden="until-found">
-
+                        <div id="accordion-default-content-6" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-6">
                             <p>
                                 The parent or guardian needs to provide their latest tax credit statement form TC602A (Award Notices) or
                                 TC603R (Auto Renewal). The statement must be for the most recent tax year.
@@ -263,24 +211,17 @@
                                     more in-depth free school meals guidance on GOV.UK.
                                 </a>
                             </p>
-
-
                         </div>
                     </div>
                     <div class="govuk-accordion__section">
                         <div class="govuk-accordion__section-header">
                             <h2 class="govuk-accordion__section-heading">
-
-                                <button type="button" aria-controls="accordion-default-content-7" class="govuk-accordion__section-button" aria-expanded="false" aria-label="Working Tax Credit run on , Show this section">
-                                    <span class="govuk-accordion__section-heading-text" id="accordion-default-heading-4">
-                                        <span class="govuk-accordion__section-heading-text-focus">
-                                            Working Tax Credit run on
-                                        </span>
-                                    </span><span class="govuk-visually-hidden govuk-accordion__section-heading-divider">, </span><span class="govuk-accordion__section-toggle" data-nosnippet=""><span class="govuk-accordion__section-toggle-focus"><span class="govuk-accordion-nav__chevron govuk-accordion-nav__chevron--down"></span><span class="govuk-accordion__section-toggle-text">Show</span></span></span>
-                                </button>
+                                <span class="govuk-accordion__section-button" id="accordion-default-heading-7">
+                                    Working Tax Credit run on
+                                </span>
                             </h2>
                         </div>
-                        <div id="accordion-default-content-4" class="govuk-accordion__section-content" hidden="until-found">
+                        <div id="accordion-default-content-7" class="govuk-accordion__section-content" aria-labelledby="accordion-default-heading-7">
                             <p>
                                 The parent or guardian needs to provide their latest tax credit statement form TC602A (Award Notices) or
                                 TC603R (Auto Renewal). The statement must be for the most recent tax year.
@@ -300,13 +241,11 @@
                                     more in-depth free school meals guidance on GOV.UK.
                                 </a>
                             </p>
-
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
-
-
     </main>
 </div>
