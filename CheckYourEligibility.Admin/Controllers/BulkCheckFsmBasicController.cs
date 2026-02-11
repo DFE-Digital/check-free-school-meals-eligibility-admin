@@ -11,6 +11,8 @@ using CsvHelper;
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Text;
+using AspNetCoreGeneratedDocument;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CheckYourEligibility.Admin.Controllers;
 
@@ -41,45 +43,46 @@ public class BulkCheckFsmBasicController : BaseController
     }
 
     // GET: Upload page
-    public IActionResult Bulk_Check()
+    public IActionResult Bulk_Check_FSMB()
     {
-        var viewModel = new BulkCheckFsmBasicViewModel
-        {
-            DocumentTemplatePath = "/downloads/bulk-check-template-fsm-basic.csv",
-            FieldDescriptions = new List<string>
-            {
-                "last name",
-                "date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
-                "National Insurance number"
-            }
-        };
+        //var viewModel = new BulkCheckFsmBasicViewModel
+        //{
+        //    DocumentTemplatePath = "/downloads/bulk-check-template-fsm-basic.csv",
+        //    FieldDescriptions = new List<string>
+        //    {
+        //        "last name",
+        //        "date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
+        //        "National Insurance number"
+        //    }
+        //};
 
-        return View(viewModel);
+        //return View(viewModel);
+        return View();
     }
 
     // POST: Handle file upload
     [HttpPost]
-    public async Task<IActionResult> Bulk_Check(IFormFile fileUpload)
+    public async Task<IActionResult> Bulk_Check_FSMB(IFormFile fileUpload)
     {
         _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
 
         // Validate file
         if (fileUpload == null)
         {
-            TempData["ErrorMessage"] = "Please select a file to upload";
-            return RedirectToAction("Bulk_Check");
+            TempData["ErrorMessage"] = "Select a CSV file";
+            return RedirectToAction("Bulk_Check_FSMB");
         }
 
         if (fileUpload.Length >= 10 * 1024 * 1024) // 10MB limit
         {
             TempData["ErrorMessage"] = "File size must be less than 10MB";
-            return RedirectToAction("Bulk_Check");
+            return RedirectToAction("Bulk_Check_FSMB");
         }
 
         if (fileUpload.ContentType.ToLower() != "text/csv")
         {
             TempData["ErrorMessage"] = "Please upload a CSV file";
-            return RedirectToAction("Bulk_Check");
+            return RedirectToAction("Bulk_Check_FSMB");
         }
 
         // Rate limiting check
@@ -113,7 +116,7 @@ public class BulkCheckFsmBasicController : BaseController
         if (sessionCount > int.Parse(_config["BulkUploadAttemptLimit"] ?? "5"))
         {
             TempData["ErrorMessage"] = "You have exceeded the maximum number of bulk upload attempts. Please try again later.";
-            return RedirectToAction("Bulk_Check");
+            return RedirectToAction("Bulk_Check_FSMB");
         }
 
         // Parse CSV file
@@ -127,14 +130,14 @@ public class BulkCheckFsmBasicController : BaseController
         {
             _logger.LogError(ex, "Error parsing CSV file");
             TempData["ErrorMessage"] = "Error reading the CSV file. Please check the file format.";
-            return RedirectToAction("Bulk_Check");
+            return RedirectToAction("Bulk_Check_FSMB");
         }
 
         // Handle parsing errors
         if (!string.IsNullOrEmpty(parseResult.ErrorMessage))
         {
             TempData["ErrorMessage"] = parseResult.ErrorMessage;
-            return RedirectToAction("Bulk_Check");
+            return RedirectToAction("Bulk_Check_FSMB");
         }
 
         if (parseResult.Errors.Any())
@@ -151,13 +154,13 @@ public class BulkCheckFsmBasicController : BaseController
                 TotalErrorCount = parseResult.Errors.Count
             };
 
-            return View("Bulk_Check_Errors", errorsViewModel);
+            return View("Bulk_Check_Errors_FSMB", errorsViewModel);
         }
 
         if (!parseResult.ValidRequests.Any())
         {
             TempData["ErrorMessage"] = "The file contains no valid records.";
-            return RedirectToAction("Bulk_Check");
+            return RedirectToAction("Bulk_Check_FSMB");
         }
 
         // Submit bulk check
@@ -186,35 +189,34 @@ public class BulkCheckFsmBasicController : BaseController
             if (response?.Links?.Get_BulkCheck_Status != null)
             {
                 HttpContext.Session.SetString("BulkCheckUrl", response.Links.Get_BulkCheck_Status);
-                
+
                 var fileSubmittedViewModel = new BulkCheckFsmBasicFileSubmittedViewModel
                 {
                     Filename = fileUpload.FileName,
                     NumberOfRecords = parseResult.ValidRequests.Count
                 };
-
-                return View("Bulk_Check_Submitted", fileSubmittedViewModel);
+                return RedirectToAction("Bulk_Check_History_FSMB");
             }
             else
             {
                 TempData["ErrorMessage"] = "Failed to submit bulk check. Please try again.";
-                return RedirectToAction("Bulk_Check");
+                return RedirectToAction("Bulk_Check_FSMB");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error submitting bulk check");
             TempData["ErrorMessage"] = "An error occurred while submitting the bulk check. Please try again.";
-            return RedirectToAction("Bulk_Check");
+            return RedirectToAction("Bulk_Check_FSMB");
         }
     }
 
     // GET: Check bulk check progress
-    public async Task<IActionResult> Bulk_Check_Status(string? bulkCheckId = null)
+    public async Task<IActionResult> Bulk_Check_Status_FSMB(string? bulkCheckId = null)
     {
         try
         {
-            string? bulkCheckUrl = bulkCheckId != null 
+            string? bulkCheckUrl = bulkCheckId != null
                 ? $"bulk-check/{bulkCheckId}/status"
                 : HttpContext.Session.GetString("BulkCheckUrl");
 
@@ -262,19 +264,19 @@ public class BulkCheckFsmBasicController : BaseController
     }
 
     // GET: Show completion message and link to history
-    public IActionResult Bulk_Check_Complete(string bulkCheckId)
+    public IActionResult Bulk_Check_Complete_FSMB(string bulkCheckId)
     {
         ViewBag.BulkCheckId = bulkCheckId;
         return View();
     }
 
     // GET: Batch checks history with table
-    public async Task<IActionResult> Bulk_Check_History(int page = 1, int pageSize = 10)
+    public async Task<IActionResult> Bulk_Check_History_FSMB(int pageNumber = 1, int pageSize = 10)
     {
         try
         {
             _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
-            var organisationId = _Claims?.Organisation?.Urn ?? string.Empty;
+            var organisationId = _Claims?.Organisation?.EstablishmentNumber ?? string.Empty;
 
             if (string.IsNullOrEmpty(organisationId))
             {
@@ -292,7 +294,7 @@ public class BulkCheckFsmBasicController : BaseController
             var totalRecords = checksList.Count;
             var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
             var pagedChecks = checksList
-                .Skip((page - 1) * pageSize)
+                .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
@@ -308,22 +310,22 @@ public class BulkCheckFsmBasicController : BaseController
                     SubmittedBy = c.SubmittedBy,
                     Status = c.Status
                 }).ToList(),
-                CurrentPage = page,
+                CurrentPage = pageNumber,
                 TotalPages = totalPages,
                 TotalRecords = totalRecords
             };
 
-            return View(viewModel);
+            return View("BulkOutcomeFsmBasic/Bulk_Check_History_FSMB", viewModel);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading bulk check history");
-            return View("Bulk_Check_History", new BulkCheckFsmBasicStatusesViewModel());
+            return View("BulkOutcomeFsmBasic/Bulk_Check_History_FSMB", new BulkCheckFsmBasicStatusesViewModel());
         }
     }
 
     // GET: View results for a specific bulk check
-    public async Task<IActionResult> Bulk_Check_View_Results(string bulkCheckId)
+    public async Task<IActionResult> Bulk_Check_View_Results_FSMB(string bulkCheckId)
     {
         try
         {
@@ -356,7 +358,7 @@ public class BulkCheckFsmBasicController : BaseController
     }
 
     // GET: Download results as CSV
-    public async Task<IActionResult> Bulk_Check_Download(string bulkCheckId)
+    public async Task<IActionResult> Bulk_Check_Download_FSMB(string bulkCheckId)
     {
         try
         {
@@ -394,7 +396,7 @@ public class BulkCheckFsmBasicController : BaseController
 
     // POST: Delete a bulk check
     [HttpPost]
-    public async Task<IActionResult> Bulk_Check_Delete(string bulkCheckId)
+    public async Task<IActionResult> Bulk_Check_Delete_FSMB(string bulkCheckId)
     {
         try
         {

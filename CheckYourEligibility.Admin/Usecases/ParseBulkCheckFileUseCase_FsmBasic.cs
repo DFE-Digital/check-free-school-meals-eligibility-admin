@@ -5,7 +5,9 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using FluentValidation;
 using FluentValidation.Results;
+using System.Collections.Generic;
 using System.Globalization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CheckYourEligibility.Admin.Usecases
 {
@@ -42,7 +44,7 @@ namespace CheckYourEligibility.Admin.Usecases
 
         public async Task<BulkCheckCsvResultFsmBasic> Execute(Stream csvStream)
         {
-            string[] expectedHeaders = { "last name", "date of birth", "national insurance number" };
+            string[] expectedHeaders = { "parent first name", "parent last name", "parent date of birth", "parent national insurance number", "parent asylum seeker reference number" };
 
             var result = new BulkCheckCsvResultFsmBasic();
 
@@ -69,7 +71,7 @@ namespace CheckYourEligibility.Admin.Usecases
 
                 if (headers == null || headers.Length < expectedHeaders.Length)
                 {
-                    result.ErrorMessage = "Invalid CSV format. Missing required headers.";
+                    result.ErrorMessage = "The column headers in the selected file must exactly match the template";
                     return result;
                 }
 
@@ -81,7 +83,7 @@ namespace CheckYourEligibility.Admin.Usecases
                 {
                     if (!normalizedHeaders.Contains(expectedHeader))
                     {
-                        result.ErrorMessage = $"Invalid CSV format. Missing required header: '{expectedHeader}'.";
+                        result.ErrorMessage = $"Invalid CSV format. Missing required header: '{expectedHeader}'";
                         return result;
                     }
                 }
@@ -91,15 +93,15 @@ namespace CheckYourEligibility.Admin.Usecases
                 {
                     if (sequence > _rowCountLimit)
                     {
-                        result.ErrorMessage = $"The file contains too many records. Maximum allowed is {_rowCountLimit}.";
+                        result.ErrorMessage = $"CSV file cannot contain more than {_rowCountLimit} records";
                         break;
                     }
 
                     try
                     {
-                        var lastName = csv.GetField("last name")?.Trim() ?? string.Empty;
-                        var dob = csv.GetField("date of birth")?.Trim() ?? string.Empty;
-                        var ni = csv.GetField("national insurance number")?.Trim() ?? string.Empty;
+                        var lastName = csv.GetField("Parent Last Name")?.Trim() ?? string.Empty;
+                        var dob = csv.GetField("Parent Date of Birth")?.Trim() ?? string.Empty;
+                        var ni = csv.GetField("Parent National Insurance Number")?.Trim() ?? string.Empty;
 
                         // Parse date if needed
                         var dobFormatted = dob;
