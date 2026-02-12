@@ -285,7 +285,10 @@ public class BulkCheckFsmBasicController : BaseController
             }
 
             var allChecks = await _getBulkCheckStatusesUseCase.Execute(organisationId);
-            var checksList = allChecks.ToList();
+
+            var checksList = allChecks
+                .Where(c => c.Status != "Deleted")
+                .ToList();
 
             // Sort by date descending
             checksList = checksList.OrderByDescending(x => x.SubmittedDate).ToList();
@@ -380,7 +383,7 @@ public class BulkCheckFsmBasicController : BaseController
             using (var writer = new StreamWriter(memoryStream, Encoding.UTF8))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
-                csv.WriteRecords(results);
+                csv.WriteRecords(results.Cast<BulkExport>());
             }
 
             var fileName = $"fsm-basic-outcomes-{DateTime.UtcNow:yyyyMMddHHmmss}.csv";
@@ -394,8 +397,6 @@ public class BulkCheckFsmBasicController : BaseController
         }
     }
 
-    // POST: Delete a bulk check
-    [HttpPost]
     public async Task<IActionResult> Bulk_Check_Delete_FSMB(string bulkCheckId)
     {
         try
@@ -417,13 +418,13 @@ public class BulkCheckFsmBasicController : BaseController
                 TempData["ErrorMessage"] = response.Message ?? "Failed to delete bulk check.";
             }
 
-            return RedirectToAction("Bulk_Check_History");
+            return RedirectToAction("Bulk_Check_History_FSMB");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting bulk check: {BulkCheckId}", bulkCheckId);
             TempData["ErrorMessage"] = "Error deleting bulk check.";
-            return RedirectToAction("Bulk_Check_History");
+            return RedirectToAction("Bulk_Check_History_FSMB");
         }
     }
 }
