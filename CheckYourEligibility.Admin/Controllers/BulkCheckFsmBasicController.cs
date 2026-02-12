@@ -179,7 +179,7 @@ public class BulkCheckFsmBasicController : BaseController
                 Meta = new CheckEligibilityRequestBulkMeta
                 {
                     Filename = fileUpload.FileName,
-                    SubmittedBy = _Claims?.User?.Email ?? "Unknown",
+                    SubmittedBy = _Claims?.User.FirstName + " " + _Claims?.User.Surname ?? "",
                     LocalAuthorityId = localAuthorityId
                 }
             };
