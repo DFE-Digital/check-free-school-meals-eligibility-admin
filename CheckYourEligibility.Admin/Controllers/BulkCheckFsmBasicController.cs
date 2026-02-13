@@ -45,18 +45,6 @@ public class BulkCheckFsmBasicController : BaseController
     // GET: Upload page
     public IActionResult Bulk_Check_FSMB()
     {
-        //var viewModel = new BulkCheckFsmBasicViewModel
-        //{
-        //    DocumentTemplatePath = "/downloads/bulk-check-template-fsm-basic.csv",
-        //    FieldDescriptions = new List<string>
-        //    {
-        //        "last name",
-        //        "date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
-        //        "National Insurance number"
-        //    }
-        //};
-
-        //return View(viewModel);
         return View();
     }
 
@@ -154,7 +142,7 @@ public class BulkCheckFsmBasicController : BaseController
                 TotalErrorCount = parseResult.Errors.Count
             };
 
-            return View("Bulk_Check_Errors_FSMB", errorsViewModel);
+            return View("BulkOutcomeFsmBasic/Error_Data_Issue_FSMB", errorsViewModel);
         }
 
         if (!parseResult.ValidRequests.Any())

@@ -1,39 +1,48 @@
-﻿@{
-    ViewData["Title"] = "Error – Parent data issue";
+﻿@model CheckYourEligibility.Admin.ViewModels.BulkCheckFsmBasicErrorsViewModel
+@{
+    ViewData["Title"] = "Fix data errors";
 }
 
-<div class="govuk-grid-column-full">
-    <div id="content" data-type="ErrorData">
-        <a class="govuk-back-link-nolink"></a>
+<div class="govuk-grid-column-two-thirds">
+    <a class="govuk-back-link" href="@Url.Action("Bulk_Check_FSMB", "BulkCheckFsmBasic")">Back</a>
 
-        <div class="govuk-error-summary govuk-grid-column-full" data-module="govuk-error-summary">
-            <div role="alert">
-                <h2 class="govuk-error-summary__title">
-                    Error – Parent data issue
-                </h2>
-                <div class="govuk-error-summary__body">
-                    <ul class="govuk-list govuk-error-summary__list">
-                        <li>
-                            <strong>There are issues with the parent data on the following lines:</strong>
-                        </li>
-                        @Html.Raw(TempData["BulkParentCheckItemsErrors"])
-
-                        @if (Convert.ToInt32(TempData["BulkParentCheckItemsLineMoreErrors"]) > 0)
-                        {
-                            <li>
-                                <strong>There are also issues on @TempData["BulkParentCheckItemsLineMoreErrors"] more
-                                    lines</strong>
-                            </li>
-                        }
-
-
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <p class="govuk-body">Please make sure you’ve corrected the issues on these lines and upload the file again.</p>
-        <p>@Html.ActionLink("Try again", "Bulk_Check", "BulkCheck")</p>
-        <p><a href="@Url.Action("Index", "Home")">Return to dashboard</a></p>
-        <p>@Html.ActionLink("Sign Out", "SignOut", "Account")</p>
+    <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+    <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">Warning</span>
+            We cannot run checks as the file you uploaded contains data errors.
+        </strong>
     </div>
+
+    <p class="govuk-body">You must:</p>
+    <ol class="govuk-list govuk-list--number">
+        <li>Fix the errors listed below for each row.</li>
+        <li>@Html.ActionLink("Upload your file again and run another check.", "Bulk_Check_FSMB", "BulkCheckFsmBasic")</li>
+    </ol>
+
+    <table class="govuk-table govuk-!-margin-top-6" id="errors">
+        <caption class="govuk-table__caption govuk-table__caption--s">
+            @{
+                int errorCount = Model.Errors.Count();
+                string displayCount = (errorCount < 25) ? errorCount.ToString() : "25";
+            }
+            Showing @displayCount of @errorCount errors
+        </caption>
+        <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Line</th>
+                <th scope="col" class="govuk-table__header">Error</th>
+            </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+            @foreach (var error in Model.Errors.Take(25))
+            {
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">@error.LineNumber</td>
+                    <td class="govuk-table__cell">@error.Message</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
