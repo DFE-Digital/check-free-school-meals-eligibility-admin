@@ -246,6 +246,14 @@ body.js-enabled .noJsShow, body:not(.js-enabled) input.noJsRemove {
 /*END - Class with associated JS function in cookieFunctions.js to show content when JS is enabled */
 
 
+/*BEGIN - Images in FSM Basic guidance page */
+.guidanceImages {
+    max-width: 90%; 
+    height: auto;
+}
+/*END - Images in FSM Basic guidance page */
+
+
 /* MOJ BULK CHECK RULES START*/
 hr.hideSectionBreak {
     height: 0;
