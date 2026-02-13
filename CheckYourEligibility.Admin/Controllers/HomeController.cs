@@ -81,8 +81,25 @@ public class HomeController : BaseController
         ViewData["Expand"] = "asylum-support";
         return View("Guidance");
     }
+    public IActionResult Guidance_Basic()
+    {
+        ViewData["Directory"] = "yes";
+        return View("Guidance");
+    }
     public IActionResult FSMFormDownload()
     {
         return View("FSMFormDownload");
+    }
+    public IActionResult AsylumCheck()
+    {
+        return View("Guidance_steps/Asylum_Check");
+    }
+    public IActionResult BatchCheck()
+    {
+        return View("Guidance_steps/Batch_Check");
+    }
+    public IActionResult EvidenceGuidance()
+    {
+        return View("Guidance_steps/Evidence_Guidance");
     }
 }
