@@ -411,7 +411,7 @@ public class BulkCheckFsmBasicController : BaseController
 
             if (response.Success)
             {
-                TempData["SuccessMessage"] = "Bulk check deleted successfully.";
+                TempData["SuccessMessage"] = "Batch check deleted successfully.";
             }
             else
             {
