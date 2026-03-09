@@ -18,6 +18,17 @@ describe('Full journey of creating an application through school portal through 
         }
     });
 
+    it('does not show review tiles for schools whose LA has the flag disabled', () => {
+        cy.checkSession('schoolFlagOff');
+        cy.visit(Cypress.config().baseUrl ?? "");
+        cy.wait(1);
+        cy.get('h1').should('include.text', 'REPLACE_WITH_FLAG_OFF_SCHOOL_NAME');
+
+        cy.contains('a', 'Pending applications').should('not.exist');
+        cy.contains('a', 'Finalise applications').should('not.exist');
+        cy.contains('a', 'Guidance for reviewing evidence').should('not.exist');
+    });
+
     it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {
         //Add parent details
         cy.contains('Run a check for one parent or guardian').click();
