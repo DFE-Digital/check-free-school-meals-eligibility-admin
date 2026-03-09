@@ -115,6 +115,26 @@ Cypress.Commands.add('loginSchoolUser', () => {
   cy.contains('Continue').click();
 });
 
+Cypress.Commands.add('loginSchoolUserFlagOff', () => {
+  // Log in as a school user whose LA has the review flag disabled
+  // For persisting session use checkSession('schoolFlagOff')
+
+  cy.reload();
+  cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS_FLAG_OFF'));
+  cy.get('button[type="submit"]').click();
+  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD_FLAG_OFF'));
+  cy.get('button[type="submit"]').click();
+  cy.reload();
+
+  cy.contains('REPLACE_WITH_FLAG_OFF_SCHOOL_NAME')
+    .parent()
+    .find('input[type="radio"]')
+    .check();
+
+  cy.contains('Continue').click();
+});
+
 Cypress.Commands.add('loginLocalAuthorityUser', () => {
   // Log in as a local authority user - For persisting session use checkSession('LA')
   cy.reload(true);
