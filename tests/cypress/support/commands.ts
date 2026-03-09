@@ -84,8 +84,10 @@ Cypress.Commands.add('checkSession', (userType: string) => {
 Cypress.Commands.add('login', (userType) => {
   // Funnel login request to correct function and then store the cookies - Call 'checkSession' rather than use this directly
   cy.session([userType], () => {
-    if (userType === 'school') {
+   if (userType === 'school') {
       cy.loginSchoolUser();
+    } else if (userType === 'schoolFlagOff') {
+      cy.loginSchoolUserFlagOff();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
     } else if (userType === "basic"){
