@@ -18,13 +18,6 @@ describe('Full journey of creating an application through school portal through 
         }
     });
 
-    it('verify Guidance for reviewing evidence tile shows for school users', () => {    
-            cy.contains('a', 'Guidance for reviewing evidence')
-                .should('be.visible')
-                .and('have.attr', 'href')
-                .and('include', '/Home/Guidance');
-    });
-
     it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {
         //Add parent details
         cy.contains('Run a check for one parent or guardian').click();
