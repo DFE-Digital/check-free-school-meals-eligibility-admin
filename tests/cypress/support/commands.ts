@@ -86,8 +86,8 @@ Cypress.Commands.add('login', (userType) => {
   cy.session([userType], () => {
    if (userType === 'school') {
       cy.loginSchoolUser();
-    } else if (userType === 'schoolFlagOff') {
-      cy.loginSchoolUserFlagOff();
+    } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+      cy.loginSchoolUserCanReviewEvidenceDisabled();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
     } else if (userType === "basic"){
@@ -115,7 +115,7 @@ Cypress.Commands.add('loginSchoolUser', () => {
   cy.contains('Continue').click();
 });
 
-Cypress.Commands.add('loginSchoolUserFlagOff', () => {
+Cypress.Commands.add('loginSchoolUserCanReviewEvidenceDisabled', () => {
   // Log in as a school user whose LA has the review flag disabled
   // For persisting session use checkSession('schoolFlagOff')
 
