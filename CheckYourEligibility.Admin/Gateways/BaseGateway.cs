@@ -80,10 +80,13 @@ public class BaseGateway
                         scope += $" multi_academy_trust:{establishment.Uid}";
                         break;
                     case OrganisationCategory.Establishment:
-                        scope = FindScopeAndAssignOrganisationId("establishment", establishment.Urn);
+                        // establishment scope
+                        scope = FindScopeAndAssignOrganisationId("establishment", establishment.Urn);                        
+
                         break;
 
                 }
+
                 var formData = new SystemUser
                 {
                     client_id = _configuration["Api:AuthorisationUsername"] + ":" + email,
@@ -106,7 +109,7 @@ public class BaseGateway
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Post Check failed. uri:-{_httpClient.BaseAddress}{url}");
+            _logger.LogError(ex, $"Post Check failed. uri:-{url}");
         }
     }
 
@@ -214,7 +217,7 @@ public class BaseGateway
     {
         var uri = address;
 
-        var task = await _httpClient.GetAsync(uri);
+        var task = await _httpClient.GetAsync(uri);        
 
         if (task.IsSuccessStatusCode)
         {

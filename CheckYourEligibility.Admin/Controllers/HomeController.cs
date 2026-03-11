@@ -1,5 +1,8 @@
 using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Models;
+using CheckYourEligibility.Admin.ViewModels;
+using CheckYourEligibility.Admin.Gateways.Interfaces;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace CheckYourEligibility.Admin.Controllers;
@@ -7,16 +10,20 @@ namespace CheckYourEligibility.Admin.Controllers;
 public class HomeController : BaseController
 {
     private readonly IDfeSignInApiService _dfeSignInApiService;
+    private readonly ILocalAuthoritySettingsGateway _localAuthoritySettingsGateway;
 
-    public HomeController(IDfeSignInApiService dfeSignInApiService)
+    public HomeController(
+    IDfeSignInApiService dfeSignInApiService,
+    ILocalAuthoritySettingsGateway localAuthoritySettingsGateway)
     {
         _dfeSignInApiService = dfeSignInApiService;
+        _localAuthoritySettingsGateway = localAuthoritySettingsGateway;
     }
 
     public async Task<IActionResult> Index()
     {
         _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
-        
+
         // Check if user belongs to an allowed organization type
         var categoryName = _Claims?.Organisation?.Category?.Name;
         if (categoryName == null)
@@ -45,7 +52,7 @@ public class HomeController : BaseController
         }
 
         // Check if user has any of the required roles for their organization type
-        var hasRequiredRole = _Claims.Roles.Any(r => 
+        var hasRequiredRole = _Claims.Roles.Any(r =>
             requiredRoleCodes.Any(code => code.Equals(r.Code, StringComparison.OrdinalIgnoreCase)));
 
         if (!hasRequiredRole)
@@ -53,9 +60,27 @@ public class HomeController : BaseController
             return View("UnauthorizedRole");
         }
 
-        return View(_Claims);
-    }
+        var schoolCanReviewEvidence = false;
 
+        if (categoryName == Constants.CategoryTypeSchool)
+        {
+            var laCodeStr = _Claims.Organisation.LocalAuthority?.Code;
+
+            if (int.TryParse(laCodeStr, out var laCode))
+            {
+                schoolCanReviewEvidence =
+                    await _localAuthoritySettingsGateway.GetSchoolCanReviewEvidenceAsync(laCode);
+            }
+        }
+
+        var vm = new HomeIndexViewModel
+        {
+            Claims = _Claims,
+            SchoolCanReviewEvidence = schoolCanReviewEvidence
+        };
+
+        return View(vm);
+    }
 
     public IActionResult Privacy()
     {

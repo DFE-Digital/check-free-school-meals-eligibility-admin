@@ -1,8 +1,8 @@
+using CheckYourEligibility.Admin.Boundary.Requests;
+using CheckYourEligibility.Admin.Domain.Validation;
 using CheckYourEligibility.Admin.Gateways;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Usecases;
-using CheckYourEligibility.Admin.Boundary.Requests;
-using CheckYourEligibility.Admin.Domain.Validation;
 using FluentValidation;
 
 namespace CheckYourEligibility.Admin;
@@ -12,7 +12,7 @@ public static class ProgramExtensions
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllersWithViews();
-        services.AddHttpContextAccessor();
+        services.AddHttpContextAccessor();       
 
         services.AddHttpClient<IParentGateway, ParentGateway>(client =>
         {
@@ -30,6 +30,11 @@ public static class ProgramExtensions
         });
 
         services.AddHttpClient<INotificationGateway, NotificationGateway>(client =>
+        {
+            client.BaseAddress = new Uri(configuration["Api:Host"]);
+        });
+
+        services.AddHttpClient<ILocalAuthoritySettingsGateway, LocalAuthoritySettingsGateway>(client =>
         {
             client.BaseAddress = new Uri(configuration["Api:Host"]);
         });
