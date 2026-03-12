@@ -117,7 +117,7 @@ Cypress.Commands.add('loginSchoolUser', () => {
 
 Cypress.Commands.add('loginSchoolUserCanReviewEvidenceDisabled', () => {
   // Log in as a school user whose LA has the review flag disabled
-  // For persisting session use checkSession('schoolFlagOff')
+  // For persisting session use checkSession('schoolCanReviewEvidenceDisabled')
 
   cy.reload();
   cy.visit(Cypress.config().baseUrl ?? "");
@@ -127,7 +127,7 @@ Cypress.Commands.add('loginSchoolUserCanReviewEvidenceDisabled', () => {
   cy.get('button[type="submit"]').click();
   cy.reload();
 
-  cy.contains('REPLACE_WITH_FLAG_OFF_SCHOOL_NAME')
+  cy.contains('The Astley Cooper School')
     .parent()
     .find('input[type="radio"]')
     .check();
