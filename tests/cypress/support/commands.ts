@@ -4,6 +4,8 @@ function getCookiesPath(userType: string): string {
   switch (userType) {
     case 'school':
       return 'cypress/fixtures/SchoolUserCookies.json';
+    case 'schoolCanReviewEvidenceDisabled':
+      return 'cypress/fixtures/SchoolUserFlagOffCookies.json';
     case 'MAT':
       return 'cypress/fixtures/MATUserCookies.json';
     case 'LA':
@@ -12,6 +14,26 @@ function getCookiesPath(userType: string): string {
       return '';
   }
 }
+
+Cypress.Commands.add('loginSchoolUserCanReviewEvidenceDisabled', () => {
+  // Log in as a school user whose LA has the review flag disabled
+  // For persisting session use checkSession('schoolCanReviewEvidenceDisabled')
+
+  cy.reload();
+  cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS_FLAG_OFF'));
+  cy.get('button[type="submit"]').click();
+  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD_FLAG_OFF'));
+  cy.get('button[type="submit"]').click();
+  cy.reload();
+
+  cy.contains('The Astley Cooper School')
+    .parent()
+    .find('input[type="radio"]')
+    .check();
+
+  cy.contains('Continue').click();
+});
 
 Cypress.Commands.add('checkSession', (userType: string) => {
   const filePath = getCookiesPath(userType);
@@ -26,6 +48,9 @@ Cypress.Commands.add('checkSession', (userType: string) => {
           switch (userType) {
             case 'school':
               expectedText = 'The Telford Park School';
+              break;
+            case 'schoolCanReviewEvidenceDisabled':
+              expectedText = 'The Astley Cooper School';
               break;
             case 'MAT':
               expectedText = 'THOMAS TELFORD MULTI ACADEMY TRUST';
@@ -45,9 +70,11 @@ Cypress.Commands.add('checkSession', (userType: string) => {
             cy.clearCookies();
             if (userType === 'school') {
               cy.login('school');
+            } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+              cy.login('schoolCanReviewEvidenceDisabled');
             } else if (userType === 'MAT') {
               cy.login('MAT');
-            } else if (userType === 'basic'){
+            } else if (userType === 'basic') {
               cy.login('basic');
             } else {
               cy.login('LA');
@@ -58,9 +85,11 @@ Cypress.Commands.add('checkSession', (userType: string) => {
         cy.log('No cookies found, forcing new login');
         if (userType === 'school') {
           cy.login('school');
+        } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+          cy.login('schoolCanReviewEvidenceDisabled');
         } else if (userType === 'MAT') {
           cy.login('MAT');
-        } else if (userType === 'basic'){
+        } else if (userType === 'basic') {
           cy.login('basic');
         } else {
           cy.login('LA');
@@ -70,9 +99,11 @@ Cypress.Commands.add('checkSession', (userType: string) => {
       cy.log(`File not found or invalid data: ${filePath}`);
       if (userType === 'school') {
         cy.login('school');
+      } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+        cy.login('schoolCanReviewEvidenceDisabled');
       } else if (userType === 'MAT') {
         cy.login('MAT');
-      } else if (userType === 'basic'){
+      } else if (userType === 'basic') {
         cy.login('basic');
       } else {
         cy.login('LA');
@@ -86,9 +117,11 @@ Cypress.Commands.add('login', (userType) => {
   cy.session([userType], () => {
     if (userType === 'school') {
       cy.loginSchoolUser();
+    } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+      cy.loginSchoolUserCanReviewEvidenceDisabled();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
-    } else if (userType === "basic"){
+    } else if (userType === "basic") {
       cy.loginBasicUser();
     } else {
       cy.loginLocalAuthorityUser();
@@ -190,11 +223,13 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
         cy.log('Cookies are older than 1 hour, forcing new login');
         if (userType === 'school') {
           cy.login('school');
+        } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+          cy.login('schoolCanReviewEvidenceDisabled');
         } else if (userType === 'MAT') {
           cy.login('MAT');
-        }else if(userType ==='Basic'){
+        } else if (userType === 'basic') {
           cy.login('basic');
-         } else {
+        } else {
           cy.login('LA');
         }
       }
@@ -202,9 +237,11 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
       cy.log('Invalid cookie data, forcing new login');
       if (userType === 'school') {
         cy.login('school');
+      } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+        cy.login('schoolCanReviewEvidenceDisabled');
       } else if (userType === 'MAT') {
         cy.login('MAT');
-      } else if (userType === 'basic'){
+      } else if (userType === 'basic') {
         cy.login('basic');
       } else {
         cy.login('LA');
