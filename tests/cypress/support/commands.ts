@@ -114,6 +114,7 @@ Cypress.Commands.add('loginSchoolUser', () => {
   // Log in as a school user - For persisting session use checkSession('school')
   cy.reload();
   cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('a[href="/account/sign-in"]').click();
   cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
   cy.get('button[type="submit"]').click();
   cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
@@ -131,6 +132,7 @@ Cypress.Commands.add('loginSchoolUserCanReviewEvidenceDisabled', () => {
   // For persisting session use checkSession('schoolCanReviewEvidenceDisabled')
   cy.reload();
   cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('a[href="/account/sign-in"]').click();
   cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
   cy.get('button[type="submit"]').click();
   cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
@@ -149,6 +151,7 @@ Cypress.Commands.add('loginLocalAuthorityUser', () => {
   // Log in as a local authority user - For persisting session use checkSession('LA')
   cy.reload(true);
   cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('a[href="/account/sign-in"]').click();
   cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
   cy.get('button[type="submit"]').click();
   cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
@@ -164,6 +167,7 @@ Cypress.Commands.add('loginBasicUser', () => {
   // Log in as a local authority user - For persisting session use checkSession('LA')
   cy.reload(true);
   cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('a[href="/account/sign-in"]').click();
   cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
   cy.get('button[type="submit"]').click();
   cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
@@ -179,6 +183,7 @@ Cypress.Commands.add('loginMultiAcademyTrustUser', () => {
   // Log in as a Multi Academy Trust user - For persisting session use checkSession('MAT')
   cy.reload(true);
   cy.visit(Cypress.config().baseUrl ?? "");
+  cy.get('a[href="/account/sign-in"]').click();
   cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
   cy.get('button[type="submit"]').click();
   cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
@@ -252,6 +257,7 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
 Cypress.Commands.add('SignInLA', () => {
   cy.session('Session SessionLA', () => {
     cy.visit('/');
+    cy.get('a[href="/account/sign-in"]').click();
     cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
     cy.get('button[type="submit"]').click()
 
@@ -271,6 +277,7 @@ Cypress.Commands.add('SignInSchool', () => {
   cy.session('Session SessionSchool', () => {
 
     cy.visit('/');
+    cy.get('a[href="/account/sign-in"]').click();
     cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
     cy.get('button[type="submit"]').click()
 
@@ -290,6 +297,7 @@ Cypress.Commands.add('SignInMAT', () => {
   cy.session('Session SessionMAT', () => {
 
     cy.visit('/');
+    cy.get('a[href="/account/sign-in"]').click();
     cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
     cy.get('button[type="submit"]').click()
 
