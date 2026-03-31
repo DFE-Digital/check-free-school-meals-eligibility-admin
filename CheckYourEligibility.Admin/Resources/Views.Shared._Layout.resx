@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root"
+                xmlns="">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+
+    <data name="Title:Tagline" xml:space="preserve">
+        <value>Manage eligibility for free school meals - Department for Education</value>
+    </data>
+
+    <data name="Cookie:AriaLabel" xml:space="preserve">
+        <value>Cookies on Manage eligibility for free school meals</value>
+    </data>
+
+    <data name="Cookie:Header" xml:space="preserve">
+        <value>Cookies on Manage eligibility for free school meals</value>
+    </data>
+
+    <data name="Cookie:Body1" xml:space="preserve">
+        <value>We use some essential cookies to make this service work.</value>
+    </data>
+
+    <data name="Cookie:Body2" xml:space="preserve">
+        <value>We’d also like to use analytics cookies so we can understand how you use the service and make improvements.</value>
+    </data>
+
+    <data name="Footer:Copyright" xml:space="preserve">
+        <value>© Crown copyright</value>
+    </data>
+
+    <data name="Footer:License" xml:space="preserve">
+        <value>All content is available under the &lt;a class="govuk-footer__link" href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="license"&gt;Open Government Licence v3.0&lt;/a&gt;, except where otherwise stated</value>
+    </data>
+
+    <data name="Footer:ContactUs" xml:space="preserve">
+        <value>Contact us</value>
+    </data>
+
+    <data name="Footer:Cookies" xml:space="preserve">
+        <value>Cookies</value>
+    </data>
+
+    <data name="Footer:PrivacyPolicy" xml:space="preserve">
+        <value>Privacy policy</value>
+    </data>
+
+    <data name="Footer:Links" xml:space="preserve">
+        <value>Footer links</value>
+    </data>
+
+    <data name="Notice:Title" xml:space="preserve">
+        <value>Notice</value>
+    </data>
+
+    <data name="Beta:Tagline" xml:space="preserve">
+        <value>This is a new service - your &lt;a class="govuk-link" href="{0}" target="_blank">feedback&lt;/a> will help us to improve it.</value>
+    </data>
+
+    <data name="Beta" xml:space="preserve">
+        <value>beta</value>
+    </data>
+
+    <data name="Title:Tagline" xml:space="preserve">
+        <value>Sign out</value>
+    </data>
+
+    <data name="Department" xml:space="preserve">
+        <value>Department for Education</value>
+    </data>
+
+    <data name="Skip" xml:space="preserve">
+        <value>Skip to main content</value>
+    </data>
+
+    <data name="Cookie:Hide" xml:space="preserve">
+        <value>Hide cookie message</value>
+    </data>
+
+    <data name="Cookie:Confirmation" xml:space="preserve">
+        <value>You've &lt;span id="userChoice">&lt;/span> analytics cookies. You can &lt;a class="govuk-link" href="/Home/Cookies">change your cookie settings&lt;/a> at any time.</value></data>
+
+    <data name="Cookie:View" xml:space="preserve">
+        <value>View cookies</value>
+    </data>
+
+    <data name="Cookie:RejectCTA" xml:space="preserve">
+        <value>Reject analytics cookies</value>
+    </data>
+
+    <data name="Cookie:AcceptCTA" xml:space="preserve">
+        <value>Accept analytics cookies</value></data>
+</root>
