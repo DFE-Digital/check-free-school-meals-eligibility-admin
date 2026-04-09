@@ -23,43 +23,43 @@ Cypress.Commands.add('checkSession', (userType: string) => {
         cy.loadCookies(userType);
         cy.visit((Cypress.config().baseUrl ?? "") + "/home", { failOnStatusCode: false })
 
-        cy.get('body').then(($body) => {
-          let expectedText: string;
-          switch (userType) {
-            case 'school':
-              expectedText = 'The Telford Park School';
-              break;
-            case 'schoolCanReviewEvidenceDisabled':
-              expectedText = 'The Astley Cooper School';
-              break;
-            case 'MAT':
-              expectedText = 'Thomas Telford Multi Academy Trust';
-              break;
-            case 'basic':
-              expectedText = 'Manchester City Council';
-              break;
-            default:
-              expectedText = 'Telford And Wrekin Council';
-              break;
-          }
+       cy.get('body').then(($body) => {
+        let expectedText: string;
+        switch (userType) {
+          case 'school':
+            expectedText = 'The Telford Park School';
+            break;
+          case 'schoolCanReviewEvidenceDisabled':
+            expectedText = 'The Astley Cooper School';
+            break;
+          case 'matSchoolWithLaFlagDisabled':
+            expectedText = 'The Meadows Primary School';
+            break;
+          case 'MAT':
+            expectedText = 'Thomas Telford Multi Academy Trust';
+            break;
+          case 'basic':
+            expectedText = 'Manchester City Council';
+            break;
+          default:
+            expectedText = 'Telford And Wrekin Council';
+            break;
+        }
 
-          if ($body.text().includes(expectedText)) {
-            cy.get('.govuk-caption-l').should('include.text', expectedText);
+          if (userType === 'school') {
+            cy.login('school');
+          } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+            cy.login('schoolCanReviewEvidenceDisabled');
+          } else if (userType === 'matSchoolWithLaFlagDisabled') {
+            cy.login('matSchoolWithLaFlagDisabled');
+          } else if (userType === 'MAT') {
+            cy.login('MAT');
+          } else if (userType === 'basic') {
+            cy.login('basic');
           } else {
-            cy.log('Cookies were rejected by server (403 or redirect), forcing new login');
-            cy.clearCookies();
-            if (userType === 'school') {
-              cy.login('school');
-            } else if (userType === 'schoolCanReviewEvidenceDisabled') {
-              cy.login('schoolCanReviewEvidenceDisabled');
-            } else if (userType === 'MAT') {
-              cy.login('MAT');
-            } else if (userType === 'basic') {
-              cy.login('basic');
-            } else {
-              cy.login('LA');
-            }
+            cy.login('LA');
           }
+          
         });
       } else {
         cy.log('No cookies found, forcing new login');
@@ -67,6 +67,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
           cy.login('school');
         } else if (userType === 'schoolCanReviewEvidenceDisabled') {
           cy.login('schoolCanReviewEvidenceDisabled');
+        } else if (userType === 'matSchoolWithLaFlagDisabled') {
+          cy.login('matSchoolWithLaFlagDisabled');
         } else if (userType === 'MAT') {
           cy.login('MAT');
         } else if (userType === 'basic') {
@@ -81,6 +83,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
         cy.login('school');
       } else if (userType === 'schoolCanReviewEvidenceDisabled') {
         cy.login('schoolCanReviewEvidenceDisabled');
+      } else if (userType === 'matSchoolWithLaFlagDisabled') {
+        cy.login('matSchoolWithLaFlagDisabled');
       } else if (userType === 'MAT') {
         cy.login('MAT');
       } else if (userType === 'basic') {
@@ -99,6 +103,8 @@ Cypress.Commands.add('login', (userType) => {
       cy.loginSchoolUser();
     } else if (userType === 'schoolCanReviewEvidenceDisabled') {
       cy.loginSchoolUserCanReviewEvidenceDisabled();
+    } else if (userType === 'matSchoolWithLaFlagDisabled') {
+      cy.loginMatSchoolWithLaFlagDisabled();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
     } else if (userType === "basic") {
@@ -138,6 +144,25 @@ Cypress.Commands.add('loginSchoolUserCanReviewEvidenceDisabled', () => {
   cy.reload();
 
   cy.contains('The Astley Cooper School')
+    .parent()
+    .find('input[type="radio"]')
+    .check();
+
+  cy.contains('Continue').click();
+});
+
+Cypress.Commands.add('loginMatSchoolWithLaFlagDisabled', () => {
+  // Log in as a MAT-member school whose LA has the review flag disabled
+  // For persisting session use checkSession('matSchoolWithLaFlagDisabled')
+  cy.reload();
+  cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+  cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
+  cy.get('button[type="submit"]').click();
+  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
+  cy.get('button[type="submit"]').click();
+  cy.reload();
+
+  cy.contains('The Meadows Primary School')
     .parent()
     .find('input[type="radio"]')
     .check();
