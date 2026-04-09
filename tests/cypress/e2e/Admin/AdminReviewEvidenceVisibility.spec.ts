@@ -1,8 +1,9 @@
-describe('Log in as schools whose LA has set that they can or cannot review evidence', () => {
+describe('Review evidence tile visibility for school users', () => {
 
-    it('shows review tiles for schools whose LA has the flag enabled', () => {
+    it('shows review tiles for non-MAT schools whose LA flag is enabled', () => {
         cy.checkSession('school');
         cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+
         cy.get('.govuk-caption-l').should('include.text', 'The Telford Park School');
         cy.get('h1').should('include.text', 'Manage eligibility for free school meals');
         cy.contains('a', 'Pending applications').should('be.visible');
@@ -15,7 +16,7 @@ describe('Log in as schools whose LA has set that they can or cannot review evid
     it('does not show review tiles for non-MAT schools whose LA flag is disabled', () => {
         cy.checkSession('schoolCanReviewEvidenceDisabled');
         cy.visit((Cypress.config().baseUrl ?? "") + "/home");
-        cy.wait(1);
+
         cy.get('.govuk-caption-l').should('include.text', 'The Astley Cooper School');
         cy.get('h1').should('include.text', 'Manage eligibility for free school meals');
         cy.contains('a', 'Pending applications').should('not.exist');
