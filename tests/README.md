@@ -48,6 +48,10 @@ Inside the tests directory create a file named "Cypress.env.json" and input the 
 4. Open Cypress
 Launch Cypress using the following command:
 - CYPRESS_BASE_URL={Test environment url} npx cypress open
+(for example in Bash:
+    export CYPRESS_BASE_URL=https://localhost:7228
+    export CYPRESS_API_HOST=https://localhost:7117
+    )
 - Cypress UI will be launched. Run the tests via electron. 
 - Click on "E2E Testing" to see all the tests available.
 
