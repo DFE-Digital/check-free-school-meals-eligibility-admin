@@ -2,9 +2,8 @@
     ViewData["Title"] = "Generating your report";
 }
 
-
 @section Head {
-    <meta http-equiv="refresh" content="0;url=/Check/Report_Loader" />
+    <meta http-equiv="refresh" content="0; url='@Url.Action("Report_Loader", "Check")'" />
 }
 
 <div class="govuk-grid-column-full">
