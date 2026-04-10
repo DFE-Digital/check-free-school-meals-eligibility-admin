@@ -1,9 +1,11 @@
 ﻿@using CheckYourEligibility.Admin.Infrastructure
 @using Microsoft.AspNetCore.Mvc.TagHelpers
 @using CheckYourEligibility.Admin.Gateways.Interfaces
+@using Microsoft.AspNetCore.Mvc.Localization
 @inject IConfiguration Configuration
 @inject IHttpContextAccessor _httpContext
 @inject IMenuProvider MenuProvider
+@inject IViewLocalizer Localizer
 
 @{
     var claims = ViewBag.Claims;
@@ -20,7 +22,7 @@
 <html lang="en" class="govuk-template">
 <head>
     <meta charset="utf-8">
-    <title>@ViewData["Title"] - Manage eligibility for free school meals - Department for Education</title>
+    <title>@ViewData["Title"] - @Localizer["Title:Tagline"]</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0b0c0c">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -32,27 +34,27 @@
 </head>
 
 <body class="govuk-template__body js-enabled" data-clarity="@clarityId">
-    <div id="cookie-banner" class="govuk-cookie-banner js-enabled cookie-hidden" data-clarity="@clarityId" data-nosnippet role="region" aria-label="Cookies on Manage eligibility for free school meals">
+    <div id="cookie-banner" class="govuk-cookie-banner js-enabled cookie-hidden" data-clarity="@clarityId" data-nosnippet role="region" aria-label="@Localizer["Cookie:AriaLabel"]">
         <div class="govuk-cookie-banner__message govuk-width-container">
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-two-thirds">
                     <h2 class="govuk-cookie-banner__heading govuk-heading-m">
-                        Cookies on Manage eligibility for free school meals
+                        @Localizer["Cookie:Header"]
                     </h2>
                     <div class="govuk-cookie-banner__content">
-                        <p class="govuk-body">We use some essential cookies to make this service work.</p>
-                        <p class="govuk-body">We’d also like to use analytics cookies so we can understand how you use the service and make improvements.</p>
+                        <p class="govuk-body">@Localizer["Cookie:Body1"]</p>
+                        <p class="govuk-body">@Localizer["Cookie:Body2"]</p>
                     </div>
                 </div>
             </div>
             <div class="govuk-button-group">
                 <button type="button" id="accept-cookies" class="govuk-button" data-module="govuk-button">
-                    Accept analytics cookies
+                    @Localizer["Cookie:AcceptCTA"]
                 </button>
                 <button type="button" id="reject-cookies" class="govuk-button" data-module="govuk-button">
-                    Reject analytics cookies
+                    @Localizer["Cookie:RejectCTA"]
                 </button>
-                <a class="govuk-link" href="/@controllerRouting/Cookies">View cookies</a>
+                <a class="govuk-link" href="/@controllerRouting/Cookies">@Localizer["Cookie:View"]</a>
             </div>
         </div>
     </div>
@@ -64,25 +66,25 @@
                 <div class="govuk-grid-column-two-thirds">
                     <div class="govuk-cookie-banner__content">
                         <p class="govuk-body">
-                            You've <span id="userChoice"></span> analytics cookies. You can <a class="govuk-link" href="/Home/Cookies">change your cookie settings</a> at any time.
+                            @Localizer["Cookie:Confirmation"]
                         </p>
                     </div>
                 </div>
             </div>
             <div class="govuk-button-group">
                 <button type="button" class="govuk-button" id="hide-cookie-message" data-module="govuk-button">
-                    Hide cookie message
+                    @Localizer["Cookie:Hide"]
                 </button>
             </div>
         </div>
     </div>
-    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
+    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">@Localizer["Skip"]</a>
 
     <header class="govuk-header" data-module="govuk-header">
         <div class="govuk-header__container govuk-width-container">
             <div class="govuk-header__logo">
                 <a href=@homeLink class="govuk-header__link govuk-header__link--homepage">
-                    <img src="~/assets/images/department-for-education_white.png" class="govuk-header__logotype" alt="Department for Education">
+                    <img src="~/assets/images/department-for-education_white.png" class="govuk-header__logotype" alt="@Localizer["Department"]">
                 </a>
             </div>
             <div class="dfe-header__content" id="content-header">
@@ -90,7 +92,7 @@
                     @if (authenticatedUser)
                     {
                         <li>
-                            @Html.ActionLink("Sign out", "SignOut", "Account", null, new { @class = "govuk-link govuk-link--inverse, signOut" })
+                            @Html.ActionLink(Localizer["Title:Tagline"].Value, "SignOut", "Account", null, new { @class = "govuk-link govuk-link--inverse, signOut" })
                         </li>
                     }
                 </ul>
@@ -103,7 +105,7 @@
     <div class="govuk-phase-banner govuk-width-container" role="complementary">
         <p class="govuk-phase-banner__content">
             <strong class="govuk-tag govuk-phase-banner__content__tag">
-                beta
+                @Localizer["Beta"]
             </strong>
             @{
                 string feedbackUrl;
@@ -124,7 +126,7 @@
                 }
             }
             <span class="govuk-phase-banner__text">
-                This is a new service - your <a class="govuk-link" href="@feedbackUrl" target="_blank">feedback</a> will help us to improve it.
+                @Localizer["Beta:Tagline", feedbackUrl]
             </span>
         </p>
     </div>
@@ -137,7 +139,7 @@
                      data-module="govuk-notification-banner">
                     <div class="govuk-notification-banner__header">
                         <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                            Notice
+                            @Localizer["Notice:Title"]
                         </h2>
                     </div>
                     <div class="govuk-notification-banner__content">
@@ -159,16 +161,16 @@
             <div class="govuk-footer__meta">
                 <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
 
-                    <h2 class="govuk-visually-hidden">Footer links</h2>
+                    <h2 class="govuk-visually-hidden">@Localizer["Footer:Links"]</h2>
 
                     <ul class="govuk-footer__inline-list">
 
                         <li class="govuk-footer__inline-list-item">
-                            <a class="govuk-footer__link" href="https://www.gov.uk/government/organisations/department-for-education/about/personal-information-charter">Privacy policy</a>
+                            <a class="govuk-footer__link" href="https://www.gov.uk/government/organisations/department-for-education/about/personal-information-charter">@Localizer["Footer:PrivacyPolicy"]</a>
                         </li>
 
                         <li class="govuk-footer__inline-list-item">
-                            <a class="govuk-footer__link" href="@Url.Action("Cookies", controllerRouting)">Cookies</a>
+                            <a class="govuk-footer__link" href="@Url.Action("Cookies", controllerRouting)">@Localizer["Footer:Cookies"]</a>
                         </li>
 
                         <li class="govuk-footer__inline-list-item">
@@ -177,7 +179,7 @@
 
                         <li class="govuk-footer__inline-list-item">
                             <a class="govuk-footer__link" href="@Configuration["ContactUsUrl"]" target="_blank">
-                                Contact us
+                                @Localizer["Footer:ContactUs"]
                             </a>
                         </li>
 
@@ -190,16 +192,13 @@
                     </svg>
                     <span class="govuk-footer__licence-description">
 
-                        All content is available under the
-                        <a class="govuk-footer__link"
-                           href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-                           rel="license">Open Government Licence v3.0</a>, except where otherwise stated
+                        @Localizer["Footer:License"]
                     </span>
                 </div>
                 <div class="govuk-footer__meta-item">
                     <a class="govuk-footer__link govuk-footer__copyright-logo"
                        href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/">
-                        © Crown copyright
+                        @Localizer["Footer:Copyright"]
                     </a>
                 </div>
             </div>

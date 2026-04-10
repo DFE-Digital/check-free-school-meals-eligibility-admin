@@ -6,6 +6,7 @@ using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Usecases;
 using CheckYourEligibility.Admin.UseCases;
 using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,7 +68,32 @@ builder.Services.AddHealthChecks();
 
 builder.Services.AddSingleton<IMenuProvider, MenuProvider>();
 
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
+
 var app = builder.Build();
+
+// Supported cultures
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("cy")
+};
+
+// Configure the request localization middleware
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+
+// Optional: allow culture to be set via query string, cookie, or Accept-Language header
+localizationOptions.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
+
+app.UseRequestLocalization(localizationOptions);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment()) app.UseExceptionHandler("/Error");
