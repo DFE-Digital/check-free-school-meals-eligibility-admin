@@ -20,7 +20,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
-        cy.get('#NinAsrSelection').click();
+        cy.get('#nin-asrn-radios-1').click();
         cy.get('#NationalInsuranceNumber').type("nn123456c");
         cy.contains('button', 'Perform check').click();
 

@@ -20,7 +20,7 @@ describe('Eligible and Not Eligible responses in LA and School portal will route
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
-        cy.get('#NinAsrSelection').click();
+        cy.get('#nin-asrn-radios-1').click();
         cy.get('#NationalInsuranceNumber').type(NINE);
         cy.contains('button', 'Perform check').click();
         cy.url().should('include', 'Check/Loader');
@@ -39,7 +39,7 @@ describe('Eligible and Not Eligible responses in LA and School portal will route
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
-        cy.get('#NinAsrSelection').click();
+        cy.get('#nin-asrn-radios-1').click();
         cy.get('#NationalInsuranceNumber').type(NINNE);
         cy.contains('button', 'Perform check').click();
         cy.url().should('include', 'Check/Loader');
@@ -61,7 +61,7 @@ describe('Eligible and Not Eligible responses in LA and School portal will route
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
-        cy.get('#NinAsrSelection').click();
+        cy.get('#nin-asrn-radios-1').click();
         cy.get('#NationalInsuranceNumber').type(NINE);
         cy.contains('button', 'Perform check').click();
 
@@ -79,7 +79,7 @@ describe('Eligible and Not Eligible responses in LA and School portal will route
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
-        cy.get('#NinAsrSelection').click();
+        cy.get('#nin-asrn-radios-1').click();
         cy.get('#NationalInsuranceNumber').type(NINNE);
         cy.contains('button', 'Perform check').click();
 
