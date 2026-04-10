@@ -30,7 +30,7 @@ describe('Keyword search validation', () => {
     cy.get('[id="DateOfBirth.Month"]').type('01');
     cy.get('[id="DateOfBirth.Year"]').type('1990');
 
-    cy.get('#NinAsrSelection').click();
+    cy.get('#nin-asrn-radios-1').click();
     cy.get('#NationalInsuranceNumber').type(NIN);
 
     cy.contains('button', 'Perform check').click();
