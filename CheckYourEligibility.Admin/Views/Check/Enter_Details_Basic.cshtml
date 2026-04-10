@@ -10,7 +10,7 @@
     @if (!ViewData.ModelState.IsValid)
     {
         ViewData["Title"] = "Error: Check Details";
-    <partial name="_ValidationSummaryParent" model="ViewData.ModelState" />
+        <partial name="_ValidationSummaryParent" model="ViewData.ModelState" />
     }
 
     <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
@@ -25,7 +25,7 @@
                     <span asp-validation-for="FirstName"></span>
                 </p>
                 <input class="govuk-input govuk-input--width-20 @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-for="FirstName" type="text" aria-label="First name">
+                       asp-for="FirstName" type="text">
             </div>
 
             <div class="govuk-form-group">
@@ -36,7 +36,7 @@
                     <span asp-validation-for="LastName"></span>
                 </p>
                 <input class="govuk-input govuk-input--width-20 @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-for="LastName" type="text" aria-label="Last name">
+                       asp-for="LastName" type="text">
             </div>
             <div class="govuk-form-group">
                 <fieldset class="govuk-fieldset" role="group" aria-describedby="dob-hint">
@@ -55,43 +55,40 @@
                     <div class="govuk-date-input" id="DateOfBirth">
                         <div class="govuk-date-input__item">
                             <div class="govuk-form-group">
-                                <label class="govuk-label govuk-date-input__label" for="Day">
+                                <label class="govuk-label govuk-date-input__label" for="DateOfBirth.Day">
                                     Day
                                 </label>
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(ViewData.ModelState["DateOfBirth.Day"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                       asp-for="Day" id="DateOfBirth.Day" type="text" inputmode="numeric" maxlength="2"
-                                       aria-label="Day" />
+                                       asp-for="Day" id="DateOfBirth.Day" type="text" inputmode="numeric" maxlength="2" />
                             </div>
                         </div>
 
                         <div class="govuk-date-input__item">
                             <div class="govuk-form-group">
-                                <label class="govuk-label govuk-date-input__label" for="Month">
+                                <label class="govuk-label govuk-date-input__label" for="DateOfBirth.Month">
                                     Month
                                 </label>
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(ViewData.ModelState["DateOfBirth.Month"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                       asp-for="Month" id="DateOfBirth.Month" type="text" inputmode="numeric" maxlength="2"
-                                       aria-label="Month" />
+                                       asp-for="Month" id="DateOfBirth.Month" type="text" inputmode="numeric" maxlength="2" />
                             </div>
                         </div>
 
                         <div class="govuk-date-input__item">
                             <div class="govuk-form-group">
-                                <label class="govuk-label govuk-date-input__label" for="Year">
+                                <label class="govuk-label govuk-date-input__label" for="DateOfBirth.Year">
                                     Year
                                 </label>
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(ViewData.ModelState["DateOfBirth.Year"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                       asp-for="Year" id="DateOfBirth.Year" type="text" inputmode="numeric" maxlength="4"
-                                       aria-label="Year" />
+                                       asp-for="Year" id="DateOfBirth.Year" type="text" inputmode="numeric" maxlength="4" />
                             </div>
                         </div>
                     </div>
                 </fieldset>
             </div>
-            <div class="govuk-form-group" data-type="NINAS-form-group">
 
+            <div class="govuk-form-group" data-type="NINAS-form-group">
                 <label class="govuk-label govuk-label--m" for="NationalInsuranceNumber">
-                   National Insurance number
+                    National Insurance number
                 </label>
 
                 <div id="NINAS" class="govuk-hint">
@@ -107,8 +104,7 @@
                        asp-for="NationalInsuranceNumber"
                        type="text"
                        spellcheck="false"
-                       autocomplete="text"
-                       aria-label="Parent or guardian National Insurance number">
+                       autocomplete="text">
             </div>
             <p class="govuk-body">
                 @Html.ActionLink("Parent or guardian is an asylum seeker", "Guidance_Redirect", "Home", null)
@@ -117,7 +113,8 @@
             <button class="govuk-button govuk-!-margin-top-5" data-module="govuk-button">
                 Perform check
             </button>
-</form>
+        </fieldset>
+    </form>
 </div>
 
 <script src="/js/validationSummary.js"></script>

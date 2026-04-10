@@ -29,7 +29,7 @@ const visitPrefilledForm = (onlyfill?: boolean) => {
         if (emailEl) emailEl.value = parentEmailAddress;
 
         // Check the NIN radio button
-        const ninRadioEl = win.document.getElementById('NinAsrSelection') as HTMLInputElement;
+        const ninRadioEl = win.document.getElementById('nin-asrn-radios-1') as HTMLInputElement;
         if (ninRadioEl) ninRadioEl.checked = true;
     });
 };
