@@ -1,22 +1,15 @@
-﻿<div class="govuk-width-container">
+﻿@{
+    ViewData["Title"] = "How to complete checks when the parent or guardian is an asylum seeker";
+}
 
-
+<div class="govuk-width-container">
     <a class="govuk-back-link backLinkJS" href="@Url.Action("Guidance_Basic", "Home")">Back</a>
 
-
-    <main class="govuk-main-wrapper" id="main-content">
-
-
-
-
+    <div class="govuk-main-wrapper">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
 
-                <h1 class="govuk-heading-l">
-                    How to complete checks when the parent or guardian is an asylum seeker
-                </h1>
-
-
+                <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
                 <p>
                     Some parents who are claiming asylum are eligible for free school meals under separate eligibility criteria.
                     These families may not have a National insurance number and cannot be processed through our standard online free school meals
@@ -24,9 +17,7 @@
                 </p>
                 <p>To ensure fair access, local authorities must use the offline form to check eligibility for these families.</p>
 
-
                 <h2 class="govuk-heading-m" id="accessing-the-offline-form">Accessing the offline form</h2>
-
                 <p class="govuk-body">Local authorities must use the approved offline free school meals application form for asylum seekers.</p>
                 <p class="govuk-body">
                     This document is classified as <b>OFFICIAL-SENSITIVE</b>. Only authorised local authority
@@ -71,13 +62,10 @@
                     <li>storing all documents securely to protect the family's privacy</li>
                 </ul>
 
-
                 <h3 class="govuk-heading-m" id="further-assistance">Help and support</h3>
 
                 <p>For further help and support, contact our support team using the <a href="https://customerhelpportal.education.gov.uk/" class="govuk-link">Customer help portal</a>.</p>
-
             </div>
-
         </div>
-    </main>
+    </div>
 </div>
