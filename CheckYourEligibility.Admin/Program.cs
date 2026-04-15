@@ -78,14 +78,14 @@ var app = builder.Build();
 // Supported cultures
 var supportedCultures = new[]
 {
-    new CultureInfo("en"),
+    new CultureInfo("en-GB"),
     new CultureInfo("cy")
 };
 
 // Configure the request localization middleware
 var localizationOptions = new RequestLocalizationOptions
 {
-    DefaultRequestCulture = new RequestCulture("en"),
+    DefaultRequestCulture = new RequestCulture("en-GB"),
     SupportedCultures = supportedCultures,
     SupportedUICultures = supportedCultures
 };
