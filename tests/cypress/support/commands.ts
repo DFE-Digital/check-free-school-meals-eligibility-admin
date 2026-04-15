@@ -35,7 +35,7 @@ Cypress.Commands.add('checkSession', (userType: string) => {
                expectedText = 'The Aldgate School';
               break;
             case 'matSchoolWithLaFlagDisabled':
-              expectedText = 'Thomas Telford Multi Academy Trust';
+              expectedText = 'Altrincham Grammar School For Girls';
               break;
             case 'MAT':
               expectedText = 'Thomas Telford Multi Academy Trust';
@@ -111,7 +111,7 @@ Cypress.Commands.add('login', (userType) => {
     } else if (userType === 'schoolCanReviewEvidenceDisabled') {
       cy.loginSchoolUserCanReviewEvidenceDisabled();
     } else if (userType === 'matSchoolWithLaFlagDisabled') {
-      cy.loginMultiAcademyTrustUser();
+      cy.loginMatSchoolWithLaFlagDisabled();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
     } else if (userType === "basic") {
@@ -151,6 +151,23 @@ Cypress.Commands.add('loginSchoolUserCanReviewEvidenceDisabled', () => {
   cy.reload();
 
   cy.contains('The Aldgate School')
+    .parent()
+    .find('input[type="radio"]')
+    .check();
+
+  cy.contains('Continue').click();
+});
+
+Cypress.Commands.add('loginMatSchoolWithLaFlagDisabled', () => {
+  cy.reload(true);
+  cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+  cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
+  cy.get('button[type="submit"]').click();
+  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
+  cy.get('button[type="submit"]').click();
+  cy.reload();
+
+  cy.contains('Altrincham Grammar School for Girls (Open)')
     .parent()
     .find('input[type="radio"]')
     .check();
