@@ -414,3 +414,4 @@ FodyWeavers.xsd
 /CheckYourEligibility.Admin.Tests/package-lock.json
 /package-lock.json
 /tests/audit.txt
+/tests/cypress/screenshots/AdminReviewEvidenceVisibility.spec.ts
