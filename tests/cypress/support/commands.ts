@@ -6,6 +6,8 @@ function getCookiesPath(userType: string): string {
       return 'cypress/fixtures/SchoolUserCookies.json';
     case 'schoolCanReviewEvidenceDisabled':
       return 'cypress/fixtures/SchoolUserFlagOffCookies.json';
+    case 'matSchoolWithLaFlagDisabled':
+      return 'cypress/fixtures/MatSchoolFlagOffCookies.json';
     case 'MAT':
       return 'cypress/fixtures/MATUserCookies.json';
     case 'LA':
@@ -30,7 +32,10 @@ Cypress.Commands.add('checkSession', (userType: string) => {
               expectedText = 'The Telford Park School';
               break;
             case 'schoolCanReviewEvidenceDisabled':
-              expectedText = 'The Astley Cooper School';
+               expectedText = 'The Aldgate School';
+              break;
+            case 'matSchoolWithLaFlagDisabled':
+              expectedText = 'Thomas Telford Multi Academy Trust';
               break;
             case 'MAT':
               expectedText = 'Thomas Telford Multi Academy Trust';
@@ -52,6 +57,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
               cy.login('school');
             } else if (userType === 'schoolCanReviewEvidenceDisabled') {
               cy.login('schoolCanReviewEvidenceDisabled');
+            } else if (userType === 'matSchoolWithLaFlagDisabled') {
+              cy.login('matSchoolWithLaFlagDisabled');
             } else if (userType === 'MAT') {
               cy.login('MAT');
             } else if (userType === 'basic') {
@@ -67,6 +74,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
           cy.login('school');
         } else if (userType === 'schoolCanReviewEvidenceDisabled') {
           cy.login('schoolCanReviewEvidenceDisabled');
+        } else if (userType === 'matSchoolWithLaFlagDisabled') {
+          cy.login('matSchoolWithLaFlagDisabled');
         } else if (userType === 'MAT') {
           cy.login('MAT');
         } else if (userType === 'basic') {
@@ -81,6 +90,8 @@ Cypress.Commands.add('checkSession', (userType: string) => {
         cy.login('school');
       } else if (userType === 'schoolCanReviewEvidenceDisabled') {
         cy.login('schoolCanReviewEvidenceDisabled');
+      } else if (userType === 'matSchoolWithLaFlagDisabled') {
+        cy.login('matSchoolWithLaFlagDisabled');
       } else if (userType === 'MAT') {
         cy.login('MAT');
       } else if (userType === 'basic') {
@@ -99,6 +110,8 @@ Cypress.Commands.add('login', (userType) => {
       cy.loginSchoolUser();
     } else if (userType === 'schoolCanReviewEvidenceDisabled') {
       cy.loginSchoolUserCanReviewEvidenceDisabled();
+    } else if (userType === 'matSchoolWithLaFlagDisabled') {
+      cy.loginMultiAcademyTrustUser();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
     } else if (userType === "basic") {
@@ -137,7 +150,7 @@ Cypress.Commands.add('loginSchoolUserCanReviewEvidenceDisabled', () => {
   cy.get('button[type="submit"]').click();
   cy.reload();
 
-  cy.contains('The Astley Cooper School')
+  cy.contains('The Aldgate School')
     .parent()
     .find('input[type="radio"]')
     .check();
@@ -224,6 +237,8 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
           cy.login('school');
         } else if (userType === 'schoolCanReviewEvidenceDisabled') {
           cy.login('schoolCanReviewEvidenceDisabled');
+        } else if (userType === 'matSchoolWithLaFlagDisabled') {
+          cy.login('matSchoolWithLaFlagDisabled');
         } else if (userType === 'MAT') {
           cy.login('MAT');
         } else if (userType === 'basic') {
@@ -238,6 +253,8 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
         cy.login('school');
       } else if (userType === 'schoolCanReviewEvidenceDisabled') {
         cy.login('schoolCanReviewEvidenceDisabled');
+      } else if (userType === 'matSchoolWithLaFlagDisabled') {
+        cy.login('matSchoolWithLaFlagDisabled');
       } else if (userType === 'MAT') {
         cy.login('MAT');
       } else if (userType === 'basic') {

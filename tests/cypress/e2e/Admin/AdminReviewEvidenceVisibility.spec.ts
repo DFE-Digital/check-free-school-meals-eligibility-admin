@@ -1,4 +1,4 @@
-describe('Log in as schools whose LA has set that they can or cannot review evidence', () => {
+describe('SchoolCanReviewEvidence dashboard tile visibility', () => {
 
     it('shows review tiles for schools whose LA has the flag enabled', () => {
         cy.checkSession('school');
@@ -16,9 +16,23 @@ describe('Log in as schools whose LA has set that they can or cannot review evid
         cy.checkSession('schoolCanReviewEvidenceDisabled');
         cy.visit((Cypress.config().baseUrl ?? "") + "/home");
         cy.wait(1);
-        cy.get('.govuk-caption-l').should('include.text', 'The Astley Cooper School');
+        cy.get('.govuk-caption-l').should('include.text', 'The Aldgate School');
         cy.get('h1').should('include.text', 'Manage eligibility for free school meals');
         cy.contains('a', 'Pending applications').should('not.exist');
         cy.contains('a', 'Guidance for reviewing evidence').should('not.exist');
+    });
+
+    it('shows review tiles for schools in a MAT even when the LA flag is disabled', () => {
+        cy.checkSession('matSchoolWithLaFlagDisabled');
+        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+
+        cy.get('.govuk-caption-l').should('include.text', 'Thomas Telford Multi Academy Trust');
+        cy.get('h1').should('include.text', 'Manage eligibility for free school meals');
+
+        cy.contains('a', 'Pending applications').should('be.visible');
+        cy.contains('a', 'Guidance for reviewing evidence')
+            .should('be.visible')
+            .and('have.attr', 'href')
+            .and('include', '/Home/Guidance');
     });
 });
