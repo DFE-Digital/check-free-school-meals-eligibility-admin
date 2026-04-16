@@ -44,7 +44,7 @@ namespace CheckYourEligibility.Admin.Usecases
 
         public async Task<BulkCheckCsvResultFsmBasic> Execute(Stream csvStream)
         {
-            string[] expectedHeaders = { "Parent First Name", "Parent Last Name", "Parent Date of Birth", "Parent National Insurance Number", "Parent asylum seeker reference number" };
+            string[] expectedHeaders = { "Parent First Name", "Parent Last Name", "Parent Date of Birth", "Parent National Insurance number", "Parent asylum support reference number" };
 
             var result = new BulkCheckCsvResultFsmBasic();
 
@@ -101,7 +101,7 @@ namespace CheckYourEligibility.Admin.Usecases
                     {
                         var lastName = csv.GetField("Parent Last Name")?.Trim() ?? string.Empty;
                         var dob = csv.GetField("Parent Date of Birth")?.Trim() ?? string.Empty;
-                        var ni = csv.GetField("Parent National Insurance Number")?.Trim() ?? string.Empty;
+                        var ni = csv.GetField("Parent National Insurance number")?.Trim() ?? string.Empty;
 
                         // Parse date if needed
                         var dobFormatted = dob;
