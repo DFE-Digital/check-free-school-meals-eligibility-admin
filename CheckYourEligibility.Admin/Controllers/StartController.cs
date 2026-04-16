@@ -23,9 +23,6 @@ public class StartController : Controller
 
         return View();
     }
-    //public IActionResult Accessibility() => View("Accessibility");
-
-    public IActionResult Privacy() => View("Privacy");
 
     public IActionResult Cookies() => View("Cookies");
 
