@@ -14,14 +14,12 @@
 }
 @if (directoryKey == "yes")
 {
+    ViewData["Title"] = "Guidance";
     <div class="govuk-width-container">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
 
-                <h1 class="govuk-heading-l">
-                    Guidance
-                </h1>
-
+                <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
                 <h2 class="govuk-heading-m">Run a check</h2>
                 <!-- <p><a href="guidance-steps/individual-check.html">Running a check on an individual parent or guardian</a></p> -->
@@ -57,6 +55,7 @@
 }
 else
 {
+    ViewData["Title"] = "Guidance for reviewing evidence";
     <div class="govuk-grid-column-two-thirds">
         <a class="govuk-back-link backLinkJS" href="@Url.Action("Index", "Home")">Back</a>
 

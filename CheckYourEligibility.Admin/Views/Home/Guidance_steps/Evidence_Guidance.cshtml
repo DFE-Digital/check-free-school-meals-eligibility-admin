@@ -1,4 +1,6 @@
-﻿<div class="govuk-width-container">
+﻿@{
+    ViewData["Title"] = "Reviewing supporting evidence";
+}
 
     <a class="govuk-back-link backLinkJS" href="@Url.Action("Guidance_Basic", "Home")">Back</a>
     <main class="govuk-main-wrapper" id="main-content">
@@ -6,9 +8,7 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
 
-                <h1 class="govuk-heading-l">
-                    Reviewing supporting evidence
-                </h1>
+                <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
                 <p>
                     To find out if the children of a parent or guardian are entitled to free school meals, you’ll need to review the
                     supporting evidence they've provided.

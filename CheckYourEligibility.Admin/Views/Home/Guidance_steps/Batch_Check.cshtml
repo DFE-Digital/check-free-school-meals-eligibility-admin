@@ -1,4 +1,6 @@
-﻿<div class="govuk-width-container">
+﻿@{
+    ViewData["Title"] = "Guidance for running a batch check";
+}
 
 
     <a class="govuk-back-link backLinkJS" href="@Url.Action("Guidance_Basic", "Home")">Back</a>
@@ -12,10 +14,7 @@
             <div>
                 <div class="govuk-grid-column-two-thirds">
 
-                    <h1 class="govuk-heading-l">
-                        Guidance for running a batch check
-                    </h1>
-
+                <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
                     <p>You can run a batch check to verify the eligibility of multiple children for free school meals.</p>
 
 
