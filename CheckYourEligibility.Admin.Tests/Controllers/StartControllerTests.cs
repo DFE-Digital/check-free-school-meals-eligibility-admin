@@ -81,6 +81,23 @@ internal class StartControllerTests
     }
 
     [Test]
+    public void Given_Privacy_LoadsWithEmptyModel()
+    {
+        // Arrange
+        var sut = CreateController(isAuthenticated: false, redirectSetting: true);
+
+
+        // Act
+        var result = sut.Privacy();
+
+        // Assert
+        var viewResult = result as ViewResult;
+        viewResult.Should().NotBeNull();
+        viewResult!.ViewName.Should().Be("Privacy");
+        viewResult.Model.Should().BeNull();
+    }
+
+    [Test]
     public void Given_Cookies_LoadsWithEmptyModel()
     {
         // Arrange
