@@ -20,7 +20,7 @@
 <html lang="en" class="govuk-template">
 <head>
     <meta charset="utf-8">
-    <title>@ViewData["Title"] - Manage eligibility for free school meals - Department for Education</title>
+    <title>@ViewData["Title"] - Manage eligibility for free school meals</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0b0c0c">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -29,6 +29,7 @@
     <link href="~/css/application.css" rel="stylesheet" />
     <link href="~/css/govuk-frontend-6.0.0.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @RenderSection("Head", required: false)
 </head>
 
 <body class="govuk-template__body js-enabled" data-clarity="@clarityId">
@@ -100,7 +101,7 @@
 
     @await Html.PartialAsync("_HeaderMenu")
 
-    <div class="govuk-phase-banner govuk-width-container">
+    <div class="govuk-phase-banner govuk-width-container" role="complementary">
         <p class="govuk-phase-banner__content">
             <strong class="govuk-tag govuk-phase-banner__content__tag">
                 beta
@@ -169,6 +170,10 @@
 
                         <li class="govuk-footer__inline-list-item">
                             <a class="govuk-footer__link" href="@Url.Action("Cookies", controllerRouting)">Cookies</a>
+                        </li>
+
+                        <li class="govuk-footer__inline-list-item">
+                            <a class="govuk-footer__link" href="@Configuration["AccessibilityStatementUrl"]" target="_blank">Accessibility statement</a>
                         </li>
 
                         <li class="govuk-footer__inline-list-item">

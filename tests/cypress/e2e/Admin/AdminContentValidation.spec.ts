@@ -29,7 +29,7 @@ const visitPrefilledForm = (onlyfill?: boolean) => {
         if (emailEl) emailEl.value = parentEmailAddress;
 
         // Check the NIN radio button
-        const ninRadioEl = win.document.getElementById('NinAsrSelection') as HTMLInputElement;
+        const ninRadioEl = win.document.getElementById('nin-asrn-radios-1') as HTMLInputElement;
         if (ninRadioEl) ninRadioEl.checked = true;
     });
 };
@@ -53,7 +53,7 @@ describe("Links on not eligible page route to the intended locations", () => {
         cy.contains('a.govuk-link', 'contact the Department for Education support desk', { timeout: 8000 }).then(($link) => {
             const url = $link.prop('href');
             cy.visit(url);
-            cy.get('span.text-format-content').should('contain.text', "Check a Family's FSM Eligibility Query Form");
+            cy.get('a.govuk-service-navigation__link').should('contain.text', "Customer Help Portal");
         });
     });
 });
