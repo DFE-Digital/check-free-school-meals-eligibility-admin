@@ -153,7 +153,7 @@ internal class HomeControllerTests : TestBase
         var userId = "test-user-id";
         var orgId = Guid.NewGuid();
         var organisationJson =
-            $"{{\"id\":\"{orgId}\",\"name\":\"Test School\",\"category\":{{\"id\":1,\"name\":\"{Constants.CategoryTypeSchool}\"}},\"localAuthority\":{{\"code\":\"893\"}}}}";
+    $"{{\"id\":\"{orgId}\",\"name\":\"Test School\",\"urn\":\"136730\",\"category\":{{\"id\":1,\"name\":\"{Constants.CategoryTypeSchool}\"}},\"localAuthority\":{{\"code\":\"893\"}}}}";
 
         var claims = new List<Claim>
         {
@@ -180,6 +180,10 @@ internal class HomeControllerTests : TestBase
                 NumericId = "123"
             }
         };
+
+        _mockAdminGateway
+            .Setup(g => g.GetMultiAcademyTrustIdForEstablishment(136730))
+            .ReturnsAsync(0);
 
         _mockDfeSignInApiService
             .Setup(s => s.GetUserRolesAsync(userId, orgId))
@@ -217,7 +221,7 @@ internal class HomeControllerTests : TestBase
         var userId = "test-user-id";
         var orgId = Guid.NewGuid();
         var organisationJson =
-            $"{{\"id\":\"{orgId}\",\"name\":\"Test School\",\"category\":{{\"id\":1,\"name\":\"{Constants.CategoryTypeSchool}\"}},\"localAuthority\":{{\"code\":\"893\"}}}}";
+    $"{{\"id\":\"{orgId}\",\"name\":\"Test School\",\"urn\":\"136730\",\"category\":{{\"id\":1,\"name\":\"{Constants.CategoryTypeSchool}\"}},\"localAuthority\":{{\"code\":\"893\"}}}}";
 
         var claims = new List<Claim>
         {
@@ -244,6 +248,10 @@ internal class HomeControllerTests : TestBase
                 NumericId = "123"
             }
         };
+
+        _mockAdminGateway
+            .Setup(g => g.GetMultiAcademyTrustIdForEstablishment(136730))
+            .ReturnsAsync(0);
 
         _mockDfeSignInApiService
             .Setup(s => s.GetUserRolesAsync(userId, orgId))
