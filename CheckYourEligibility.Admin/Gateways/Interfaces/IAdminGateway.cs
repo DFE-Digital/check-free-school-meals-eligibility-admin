@@ -11,4 +11,5 @@ public interface IAdminGateway
     Task<ApplicationStatusUpdateResponse> PatchApplicationStatus(string id, ApplicationStatus status);
     Task<ApplicationStatusRestoreResponse> RestoreApplicationStatus(string id);
     Task<int> GetMultiAcademyTrustIdForEstablishment(int establishmentId);
+    Task<MultiAcademyTrustSettingsResponse?> GetMultiAcademyTrustSettingsAsync(int matId);
 }
