@@ -106,6 +106,37 @@ public class HomeController : BaseController
             return false;
         }
 
+        var establishmentIdString = _Claims?.Organisation?.Urn;
+
+        if (!int.TryParse(establishmentIdString, out var establishmentId))
+        {
+            return false;
+        }
+
+        var matId = await _adminGateway.GetMultiAcademyTrustIdForEstablishment(establishmentId);
+
+        _cache.Set($"SchoolMatId_{establishmentId}", matId, TimeSpan.FromMinutes(5));
+        _cache.Set($"SchoolMatMembership_{establishmentId}", matId > 0, TimeSpan.FromMinutes(5));
+
+        if (matId > 0)
+        {
+            var matCacheKey = $"MatSettings_{matId}";
+
+            if (_cache.TryGetValue(matCacheKey, out MultiAcademyTrustSettingsResponse? cachedMatSettings))
+            {
+                return cachedMatSettings?.AcademyCanReviewEvidence ?? false;
+            }
+
+            var matSettings = await _adminGateway.GetMultiAcademyTrustSettingsAsync(matId);
+
+            if (matSettings != null)
+            {
+                _cache.Set(matCacheKey, matSettings, TimeSpan.FromMinutes(5));
+            }
+
+            return matSettings?.AcademyCanReviewEvidence ?? false;
+        }
+
         var laCodeString = _Claims?.Organisation?.LocalAuthority?.Code;
 
         if (!int.TryParse(laCodeString, out var laCode))
@@ -113,20 +144,19 @@ public class HomeController : BaseController
             return false;
         }
 
-        var cacheKey = $"LocalAuthoritySettings_{laCode}";
+        var laCacheKey = $"LocalAuthoritySettings_{laCode}";
 
-        if (_cache.TryGetValue(cacheKey, out LocalAuthoritySettingsResponse? cachedSettings))
+        if (_cache.TryGetValue(laCacheKey, out LocalAuthoritySettingsResponse? cachedSettings))
         {
             return cachedSettings?.SchoolCanReviewEvidence ?? false;
         }
 
-        // ELIG-2661B: cache LA settings before MenuProvider builds school dashboard
         var localAuthoritySettings =
             await _localAuthoritySettingsGateway.GetLocalAuthoritySettingsAsync(laCode);
 
         if (localAuthoritySettings != null)
         {
-            _cache.Set(cacheKey, localAuthoritySettings, TimeSpan.FromMinutes(5));
+            _cache.Set(laCacheKey, localAuthoritySettings, TimeSpan.FromMinutes(5));
         }
 
         return localAuthoritySettings?.SchoolCanReviewEvidence ?? false;
@@ -149,18 +179,26 @@ public class HomeController : BaseController
             return false;
         }
 
-        var cacheKey = $"SchoolMatMembership_{establishmentId}";
+        var matIdCacheKey = $"SchoolMatId_{establishmentId}";
+        var membershipCacheKey = $"SchoolMatMembership_{establishmentId}";
 
-        if (_cache.TryGetValue(cacheKey, out bool cachedIsPartOfMat))
+        if (_cache.TryGetValue(matIdCacheKey, out int cachedMatId))
         {
+            var cachedIsPartOfMat = cachedMatId > 0;
+            _cache.Set(membershipCacheKey, cachedIsPartOfMat, TimeSpan.FromMinutes(5));
             return cachedIsPartOfMat;
         }
 
-        var matId = await _adminGateway.GetMultiAcademyTrustIdForEstablishment(establishmentId);
+        if (_cache.TryGetValue(membershipCacheKey, out bool cachedMembership))
+        {
+            return cachedMembership;
+        }
 
+        var matId = await _adminGateway.GetMultiAcademyTrustIdForEstablishment(establishmentId);
         var schoolIsPartOfMat = matId > 0;
 
-        _cache.Set(cacheKey, schoolIsPartOfMat, TimeSpan.FromMinutes(5));
+        _cache.Set(matIdCacheKey, matId, TimeSpan.FromMinutes(5));
+        _cache.Set(membershipCacheKey, schoolIsPartOfMat, TimeSpan.FromMinutes(5));
 
         return schoolIsPartOfMat;
     }

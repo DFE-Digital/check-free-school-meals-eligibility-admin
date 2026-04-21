@@ -32,7 +32,7 @@ public class MenuProvider : IMenuProvider
             : $"Menu_{role}";
 
         return _cache.GetOrCreate(cacheKey, entry =>
-        {            
+        {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
 
             return BuildMenuForRole(role, laCode, establishmentId);
@@ -99,16 +99,23 @@ public class MenuProvider : IMenuProvider
 
             case "fsmSchoolRole":
 
-                var schoolIsPartOfMat = false;
+                var showReviewEvidenceTiles = false;
 
                 if (!string.IsNullOrWhiteSpace(establishmentId) &&
                     int.TryParse(establishmentId, out var parsedEstablishmentId))
                 {
-                    var foundInCache = _cache.TryGetValue($"SchoolMatMembership_{parsedEstablishmentId}", out schoolIsPartOfMat);
+                    if (_cache.TryGetValue($"SchoolMatId_{parsedEstablishmentId}", out int matId) && matId > 0)
+                    {
+                        if (_cache.TryGetValue($"MatSettings_{matId}", out MultiAcademyTrustSettingsResponse? matSettings))
+                        {
+                            showReviewEvidenceTiles = matSettings?.AcademyCanReviewEvidence ?? false;
+                        }
+                    }
+                    else
+                    {
+                        showReviewEvidenceTiles = localAuthoritySettingsResponse?.SchoolCanReviewEvidence ?? false;
+                    }
                 }
-
-                var schoolCanReviewEvidence = localAuthoritySettingsResponse?.SchoolCanReviewEvidence ?? false;
-                var showReviewEvidenceTiles = schoolIsPartOfMat || schoolCanReviewEvidence;
 
                 var schoolMenuItems = new List<MenuItem>
     {
