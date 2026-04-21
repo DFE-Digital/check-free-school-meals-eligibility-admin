@@ -21,7 +21,7 @@ public class NinValidatorAttribute : ValidationAttribute
     public NinValidatorAttribute(string selectionPropertyName)
     {
         _selectionPropertyName = selectionPropertyName ?? throw new ArgumentNullException(nameof(selectionPropertyName));
-        ErrorMessage = "Invalid National Insurance number format";
+        ErrorMessage = "Enter a National Insurance number in the correct format";
         _regex = new Regex("^[A-Z0-9]{2}\\d{6}[A-D]?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     }
 
@@ -66,7 +66,7 @@ public class NinValidatorAttribute : ValidationAttribute
 
             if (!_regex.IsMatch(nino))
             {
-                return new ValidationResult("Invalid National Insurance number format");
+                return new ValidationResult("Enter a National Insurance number in the correct format");
             }
         }
 

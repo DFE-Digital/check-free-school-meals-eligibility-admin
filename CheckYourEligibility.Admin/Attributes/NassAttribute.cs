@@ -46,7 +46,7 @@ public class NassAttribute : ValidationAttribute
 
             var asr = value.ToString().Trim();
             if (!_regex.IsMatch(asr))
-                return new ValidationResult("Nass field contains an invalid character");
+                return new ValidationResult("Asylum support reference number field contains an invalid character");
         }
 
         return ValidationResult.Success;

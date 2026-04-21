@@ -31,7 +31,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithValidCsv_ReturnsValidRequests()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         "John,Smith,1985-03-15,AB123456C,\n" +
                         "Jane,Doe,1990-06-20,CD987654D,";
 
@@ -64,7 +64,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithDifferentDateFormats_ParsesCorrectly()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         "John,Smith,15/03/1985,AB123456C,\n" +
                         "Jane,Doe,20/10/1990,CD987654D,";
 
@@ -87,7 +87,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithLowercaseNI_ConvertsToUppercase()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         "John,Smith,1985-03-15,ab123456c,";
 
         var stream = CreateStreamFromString(csvContent);
@@ -107,7 +107,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithWhitespaceInFields_TrimsValues()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         "  John  ,  Smith  ,  1985-03-15  ,  AB123456C  ,";
 
         var stream = CreateStreamFromString(csvContent);
@@ -186,7 +186,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithInvalidData_ReturnsErrors()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         "John,Smith,invalid-date,BADNI,";
 
         var stream = CreateStreamFromString(csvContent);
@@ -217,7 +217,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithMixedValidAndInvalidRows_ReturnsBoth()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         "John,Smith,1985-03-15,AB123456C,\n" +
                         "Jane,Doe,bad-date,BADNI,\n" +
                         "Bob,Jones,1988-01-10,EF654321F,";
@@ -249,7 +249,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithDuplicateErrorsForSameRow_DoesNotDuplicate()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         "John,Smith,1985-03-15,AB123456C,";
 
         var stream = CreateStreamFromString(csvContent);
@@ -282,7 +282,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
         _configurationMock.Setup(c => c["BulkEligibilityCheckLimit"]).Returns("2");
         _useCase = new ParseBulkCheckFileUseCase_FsmBasic(_validatorMock.Object, _configurationMock.Object);
 
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         "John,Smith,1985-03-15,AB123456C,\n" +
                         "Jane,Doe,1990-06-20,CD987654D,\n" +
                         "Bob,Jones,1988-01-10,EF654321F,"; // This exceeds limit of 2
@@ -308,7 +308,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithEmptyFile_ReturnsNoRecords()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n";
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n";
 
         var stream = CreateStreamFromString(csvContent);
 
@@ -325,7 +325,7 @@ public class ParseBulkCheckFileUseCase_FsmBasicTests
     public async Task Execute_WithEmptyFields_PassesToValidator()
     {
         // Arrange
-        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance Number,Parent Asylum Seeker Reference Number\n" +
+        var csvContent = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number\n" +
                         ",,,,";
 
         var stream = CreateStreamFromString(csvContent);

@@ -101,7 +101,7 @@ namespace CheckYourEligibility.Admin.Usecases
                     {
                         var lastName = csv.GetField("Parent Last Name")?.Trim() ?? string.Empty;
                         var dob = csv.GetField("Parent Date of Birth")?.Trim() ?? string.Empty;
-                        var ni = csv.GetField("Parent National Insurance Number")?.Trim() ?? string.Empty;
+                        var ni = csv.GetField("Parent National Insurance number")?.Trim() ?? string.Empty;
 
                         // Parse date if needed
                         var dobFormatted = dob;

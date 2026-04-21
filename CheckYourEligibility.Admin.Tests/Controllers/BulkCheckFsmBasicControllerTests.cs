@@ -373,7 +373,7 @@ public class BulkCheckFsmBasicControllerTests
     public async Task Bulk_Check_Post_WithValidFile_ReturnsSubmittedView()
     {
         // Arrange
-        var csvContent = "Last Name,Date of Birth,National Insurance Number\nSmith,1985-03-15,AB123456C";
+        var csvContent = "Last Name,Date of Birth,National Insurance number\nSmith,1985-03-15,AB123456C";
         var mockFile = CreateMockFormFile("test.csv", csvContent);
 
         var parseResult = new BulkCheckCsvResultFsmBasic
@@ -422,7 +422,7 @@ public class BulkCheckFsmBasicControllerTests
     public async Task Bulk_Check_Post_WithInvalidFile_ReturnsErrorsView()
     {
         // Arrange
-        var csvContent = "Last Name,Date of Birth,National Insurance Number\nSmith,invalid-date,BADNI";
+        var csvContent = "Last Name,Date of Birth,National Insurance number\nSmith,invalid-date,BADNI";
         var mockFile = CreateMockFormFile("test.csv", csvContent);
 
         var parseResult = new BulkCheckCsvResultFsmBasic
@@ -481,7 +481,7 @@ public class BulkCheckFsmBasicControllerTests
         await laController.GetDfeClaimsAsync();
         laController.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
-        var csvContent = "Last Name,Date of Birth,National Insurance Number\nSmith,1985-03-15,AB123456C";
+        var csvContent = "Last Name,Date of Birth,National Insurance number\nSmith,1985-03-15,AB123456C";
         var mockFile = CreateMockFormFile("test.csv", csvContent);
 
         var parseResult = new BulkCheckCsvResultFsmBasic
@@ -530,7 +530,7 @@ public class BulkCheckFsmBasicControllerTests
     public async Task Bulk_Check_Post_WhenSchoolUser_LocalAuthorityIdIsNull()
     {
         // Arrange - Uses the default School user from Setup
-        var csvContent = "Last Name,Date of Birth,National Insurance Number\nSmith,1985-03-15,AB123456C";
+        var csvContent = "Last Name,Date of Birth,National Insurance number\nSmith,1985-03-15,AB123456C";
         var mockFile = CreateMockFormFile("test.csv", csvContent);
 
         var parseResult = new BulkCheckCsvResultFsmBasic
