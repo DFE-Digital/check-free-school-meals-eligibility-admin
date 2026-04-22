@@ -31,12 +31,13 @@ public class MenuProvider : IMenuProvider
             ? $"Menu_{role}_{laCode}_{establishmentId}"
             : $"Menu_{role}";
 
-        return _cache.GetOrCreate(cacheKey, entry =>
+        var menu = _cache.GetOrCreate(cacheKey, entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-
             return BuildMenuForRole(role, laCode, establishmentId);
         }) ?? Array.Empty<MenuItem>();
+
+        return menu;
     }
 
     private IEnumerable<MenuItem> BuildMenuForRole(string role, string? laCode, string? establishmentId)
