@@ -13,7 +13,15 @@ public interface IMenuProvider
 public class MenuProvider : IMenuProvider
 {
     private readonly IMemoryCache _cache;
-    public MenuProvider(IMemoryCache cache) => _cache = cache;
+    private readonly ILogger<MenuProvider> _logger;
+
+    public MenuProvider(
+        IMemoryCache cache,
+        ILogger<MenuProvider> logger)
+    {
+        _cache = cache;
+        _logger = logger;
+    }
 
     public IEnumerable<MenuItem> GetMenuItemsFor(DfeClaims claims)
     {
