@@ -39,11 +39,30 @@ public class MenuProvider : IMenuProvider
             ? $"Menu_{role}_{laCode}_{establishmentId}"
             : $"Menu_{role}";
 
-        var menu = _cache.GetOrCreate(cacheKey, entry =>
+        var cacheHit = _cache.TryGetValue(cacheKey, out IEnumerable<MenuItem>? cachedMenu);
+
+        _logger.LogInformation(
+            "MenuProvider request Role={Role} LA={LaCode} Est={EstablishmentId} CacheKey={CacheKey} CacheHit={CacheHit}",
+            role,
+            laCode,
+            establishmentId,
+            cacheKey,
+            cacheHit);
+
+        if (cacheHit && cachedMenu is not null)
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
-            return BuildMenuForRole(role, laCode, establishmentId);
-        }) ?? Array.Empty<MenuItem>();
+            return cachedMenu;
+        }
+
+        var menu = BuildMenuForRole(role, laCode, establishmentId).ToArray();
+
+        _cache.Set(cacheKey, menu, TimeSpan.FromMinutes(5));
+
+        _logger.LogInformation(
+            "MenuProvider cached Role={Role} CacheKey={CacheKey} Tiles={Tiles}",
+            role,
+            cacheKey,
+            string.Join(", ", menu.Select(x => x.MenuText)));
 
         return menu;
     }
