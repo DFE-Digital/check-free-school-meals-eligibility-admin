@@ -61,7 +61,7 @@ public class HomeController : BaseController
             return View("UnauthorizedRole");
         }
 
-        var schoolMenuContext = await _schoolMenuContextResolver.ResolveAsync(_Claims);
+        var schoolMenuContext = ViewBag.SchoolMenuContext as SchoolMenuContext ?? new SchoolMenuContext();
         var schoolCanReviewEvidence = schoolMenuContext.ShowReviewEvidenceTiles;
         var schoolIsPartOfMat = schoolMenuContext.IsPartOfMat;
 
