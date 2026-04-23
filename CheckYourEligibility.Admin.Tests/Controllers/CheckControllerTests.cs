@@ -56,6 +56,10 @@ public class CheckControllerTests : TestBase
         _searchSchoolsUseCaseMock = new Mock<ISearchSchoolsUseCase>();
         _generateEligibilityCheckReportMock = new Mock<IGenerateEligibilityCheckReportUseCase>();
         _dfeSignInApiServiceCaseMock = new Mock<IDfeSignInApiService>();
+        _schoolMenuContextResolverMock = new Mock<ISchoolMenuContextResolver>();
+        _schoolMenuContextResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<DfeClaims>()))
+            .ReturnsAsync(new SchoolMenuContext());
 
         // Initialize controller with all dependencies
         _sut = new CheckController(
@@ -80,7 +84,8 @@ public class CheckControllerTests : TestBase
             _sendNotificationUseCaseMock.Object,
             _deleteEvidenceFileUseCaseMock.Object,
             _generateEligibilityCheckReportMock.Object,
-            _dfeSignInApiServiceCaseMock.Object
+            _dfeSignInApiServiceCaseMock.Object,
+            _schoolMenuContextResolverMock.Object
             
         );
         SetUpSessionData();
@@ -119,6 +124,7 @@ public class CheckControllerTests : TestBase
     private Mock<ISearchSchoolsUseCase> _searchSchoolsUseCaseMock;
     private Mock<IDfeSignInApiService> _dfeSignInApiServiceCaseMock;
     private Mock<IGenerateEligibilityCheckReportUseCase> _generateEligibilityCheckReportMock;
+    private Mock<ISchoolMenuContextResolver> _schoolMenuContextResolverMock;
 
     // Legacy service mocks - keep temporarily during transition
     private Mock<IParentGateway> _parentGatewayMock;

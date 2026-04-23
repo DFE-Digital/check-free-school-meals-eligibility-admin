@@ -22,6 +22,7 @@ internal class HomeControllerTests : TestBase
     private Mock<IAdminGateway> _mockAdminGateway;
     private IMemoryCache _memoryCache;
     private HomeController _sut;
+    private Mock<ISchoolMenuContextResolver> _schoolMenuContextResolverMock;
 
     [SetUp]
     public void SetUp()
@@ -30,10 +31,15 @@ internal class HomeControllerTests : TestBase
         _mockLocalAuthoritySettingsGateway = new Mock<ILocalAuthoritySettingsGateway>();
         _mockAdminGateway = new Mock<IAdminGateway>();
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        _schoolMenuContextResolverMock = new Mock<ISchoolMenuContextResolver>();
+        _schoolMenuContextResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<DfeClaims>()))
+            .ReturnsAsync(new SchoolMenuContext());
 
         _sut = new HomeController(
             _mockDfeSignInApiService.Object,
             _mockLocalAuthoritySettingsGateway.Object,
+            _schoolMenuContextResolverMock.Object,
             _mockAdminGateway.Object,
             _memoryCache);
 
@@ -56,6 +62,7 @@ internal class HomeControllerTests : TestBase
         var controller = new HomeController(
             _mockDfeSignInApiService.Object,
             _mockLocalAuthoritySettingsGateway.Object,
+            _schoolMenuContextResolverMock.Object,
             _mockAdminGateway.Object,
             new MemoryCache(new MemoryCacheOptions()));
 
@@ -76,6 +83,7 @@ internal class HomeControllerTests : TestBase
         var controller = new HomeController(
             _mockDfeSignInApiService.Object,
             _mockLocalAuthoritySettingsGateway.Object,
+            _schoolMenuContextResolverMock.Object,
             _mockAdminGateway.Object,
             new MemoryCache(new MemoryCacheOptions()));
 
