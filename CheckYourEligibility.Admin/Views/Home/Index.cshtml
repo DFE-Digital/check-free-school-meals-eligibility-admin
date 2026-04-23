@@ -8,7 +8,7 @@
 
 @{
     ViewData["Title"] = "Dashboard";
-    var menu = MenuProvider.GetMenuItemsFor(Model.Claims);
+    var menu = await MenuProvider.GetMenuItemsForAsync(Model.Claims);
 }
 
 <div class="govuk-grid-column-full">

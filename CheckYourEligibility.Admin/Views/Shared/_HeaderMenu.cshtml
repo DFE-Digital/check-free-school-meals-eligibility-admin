@@ -5,7 +5,7 @@
 @inject IDfeSignInApiService _dfeSignInApiService
 
 @{
-    var menu = MenuProvider.GetMenuItemsFor(ViewBag.Claims);
+    var menu = await MenuProvider.GetMenuItemsForAsync(ViewBag.Claims);
     bool authenticatedUser = User.Identity?.IsAuthenticated ?? false;
     var homeLink = "/"; //unauthenticated -> landing page
     if (authenticatedUser) homeLink = "/home"; //authenticated -> dashboard
