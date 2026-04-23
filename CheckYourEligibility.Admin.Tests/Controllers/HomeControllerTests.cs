@@ -206,6 +206,14 @@ internal class HomeControllerTests : TestBase
 
         await _sut.GetDfeClaimsAsync();
 
+        _sut.ViewBag.SchoolMenuContext = new SchoolMenuContext
+        {
+            IsSchool = true,
+            IsPartOfMat = false,
+            LaCode = 893,
+            ShowReviewEvidenceTiles = true
+        };
+
         // Act
         var result = await _sut.Index();
 
@@ -273,6 +281,14 @@ internal class HomeControllerTests : TestBase
             });
 
         await _sut.GetDfeClaimsAsync();
+
+        _sut.ViewBag.SchoolMenuContext = new SchoolMenuContext
+        {
+            IsSchool = true,
+            IsPartOfMat = false,
+            LaCode = 893,
+            ShowReviewEvidenceTiles = false
+        };
 
         // Act
         var result = await _sut.Index();
@@ -600,6 +616,15 @@ internal class HomeControllerTests : TestBase
             .ReturnsAsync(17101);
 
         await _sut.GetDfeClaimsAsync();
+
+        _sut.ViewBag.SchoolMenuContext = new SchoolMenuContext
+        {
+            IsSchool = true,
+            IsPartOfMat = true,
+            MatId = 17101,
+            LaCode = 893,
+            ShowReviewEvidenceTiles = false
+        };
 
         // Act
         var result = await _sut.Index();

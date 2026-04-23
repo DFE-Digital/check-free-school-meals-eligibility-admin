@@ -21,6 +21,11 @@ public class BulkUploadTests : TestBase
     [SetUp]
     public void SetUp()
     {
+        _schoolMenuContextResolverMock = new Mock<ISchoolMenuContextResolver>();
+        _schoolMenuContextResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<DfeClaims>()))
+            .ReturnsAsync(new SchoolMenuContext());
+
         _checkGatewayMock = new Mock<ICheckGateway>();
         _loggerMock = Mock.Of<ILogger<BulkCheckController>>();
         _dfeSignInApiServiceCaseMock = new Mock<IDfeSignInApiService>();
@@ -28,11 +33,7 @@ public class BulkUploadTests : TestBase
 		base.SetUp();
 		_sut.ControllerContext.HttpContext = _httpContext.Object;
 		_sut.GetDfeClaimsAsync().Wait();
-        _sut.TempData = _tempData;
-        _schoolMenuContextResolverMock = new Mock<ISchoolMenuContextResolver>();
-        _schoolMenuContextResolverMock
-            .Setup(x => x.ResolveAsync(It.IsAny<DfeClaims>()))
-            .ReturnsAsync(new SchoolMenuContext());
+        _sut.TempData = _tempData;        
     }
 
     [TearDown]
