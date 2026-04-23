@@ -8,7 +8,7 @@
 @{
     var claims = ViewBag.Claims;
     var clarityId = claims?.Organisation?.Category?.Name == Constants.CategoryTypeLA ? Configuration["Clarity:LA"] : Configuration["Clarity:School"];
-    var menu = MenuProvider.GetMenuItemsFor(claims);
+    var menu = await MenuProvider.GetMenuItemsForAsync(claims);
     bool authenticatedUser = User.Identity?.IsAuthenticated ?? false;
     var homeLink = "/";//unauthenticated -> landing page
     if (authenticatedUser) homeLink = "/home";//authenticated -> dashboard
