@@ -7,26 +7,23 @@ namespace CheckYourEligibility.Admin.Gateways.Interfaces;
 
 public interface IMenuProvider
 {
-    Task<IEnumerable<MenuItem>> GetMenuItemsForAsync(DfeClaims claims);
+    IEnumerable<MenuItem> GetMenuItemsFor(DfeClaims claims, SchoolMenuContext? schoolMenuContext = null);
 }
 
 public class MenuProvider : IMenuProvider
 {
     private readonly IMemoryCache _cache;
     private readonly ILogger<MenuProvider> _logger;
-    private readonly ISchoolMenuContextResolver _schoolMenuContextResolver;
 
     public MenuProvider(
         IMemoryCache cache,
-        ILogger<MenuProvider> logger,
-        ISchoolMenuContextResolver schoolMenuContextResolver)
+        ILogger<MenuProvider> logger)
     {
         _cache = cache;
-        _logger = logger;
-        _schoolMenuContextResolver = schoolMenuContextResolver;
+        _logger = logger;        
     }
 
-    public async Task<IEnumerable<MenuItem>> GetMenuItemsForAsync(DfeClaims claims)
+    public IEnumerable<MenuItem> GetMenuItemsFor(DfeClaims claims, SchoolMenuContext? schoolMenuContext = null)
     {
         if (claims == null || !claims.Roles.Any())
         {
@@ -57,7 +54,7 @@ public class MenuProvider : IMenuProvider
             return cachedMenu;
         }
 
-        var menu = (await BuildMenuForRoleAsync(role, laCode, establishmentId, claims)).ToArray();
+        var menu = BuildMenuForRole(role, laCode, establishmentId, schoolMenuContext).ToArray();
 
         _cache.Set(cacheKey, menu, TimeSpan.FromMinutes(5));
 
@@ -70,11 +67,11 @@ public class MenuProvider : IMenuProvider
         return menu;
     }
 
-    private async Task<IEnumerable<MenuItem>> BuildMenuForRoleAsync(
+    private IEnumerable<MenuItem> BuildMenuForRole(
         string role,
         string? laCode,
         string? establishmentId,
-        DfeClaims claims)
+        SchoolMenuContext? schoolMenuContext)
     {      
 
         switch (role)
@@ -128,15 +125,14 @@ public class MenuProvider : IMenuProvider
 
             case "fsmSchoolRole":
 
-                var schoolContext = await _schoolMenuContextResolver.ResolveAsync(claims);
-                var showReviewEvidenceTiles = schoolContext.ShowReviewEvidenceTiles;
+                var showReviewEvidenceTiles = schoolMenuContext?.ShowReviewEvidenceTiles ?? false;
 
                 _logger.LogInformation(
                     "School menu built LA={LaCode} Est={EstablishmentId} IsPartOfMat={IsPartOfMat} MatId={MatId} ShowTiles={ShowTiles}",
                     laCode,
                     establishmentId,
-                    schoolContext.IsPartOfMat,
-                    schoolContext.MatId,
+                    schoolMenuContext?.IsPartOfMat,
+                    schoolMenuContext?.MatId,
                     showReviewEvidenceTiles);
 
                 var schoolMenuItems = new List<MenuItem>
