@@ -61,12 +61,14 @@ public class HomeController : BaseController
             return View("UnauthorizedRole");
         }
 
-        var schoolCanReviewEvidence = await CacheAndGetSchoolCanReviewEvidence();
-        var schoolIsPartOfMat = await CacheAndGetSchoolIsPartOfMat();
+        var schoolMenuContext = await _schoolMenuContextResolver.ResolveAsync(_Claims);
+        var schoolCanReviewEvidence = schoolMenuContext.ShowReviewEvidenceTiles;
+        var schoolIsPartOfMat = schoolMenuContext.IsPartOfMat;
 
         var model = new HomeIndexViewModel
         {
             Claims = _Claims,
+            SchoolMenuContext = schoolMenuContext,
             SchoolCanReviewEvidence = schoolCanReviewEvidence,
             SchoolIsPartOfMat = schoolIsPartOfMat
         };
