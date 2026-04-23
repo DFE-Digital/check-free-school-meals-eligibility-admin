@@ -27,10 +27,6 @@ public static class ProgramExtensions
         services.AddHttpClient<ICheckGateway, CheckGateway>(client =>
         {
             client.BaseAddress = new Uri(configuration["Api:Host"]);
-            // Bulk check POSTs can contain up to 5000 records; the extended timeout
-            // prevents a TaskCanceledException when serialising and transmitting a
-            // large payload to the API. The default HttpClient timeout is 100 seconds.
-            client.Timeout = TimeSpan.FromMinutes(10);
         });
 
         services.AddHttpClient<INotificationGateway, NotificationGateway>(client =>
