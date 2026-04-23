@@ -81,94 +81,102 @@ public class MenuProvider : IMenuProvider
             case "fsmMATRole":
                 return new[]
                 {
-                    new MenuItem(
-                        "Home",
-                        "Home",
-                        "Dashboard",
-                        "Home",
-                        ""
-                    ),
-                    new MenuItem(
-                        "Run a check",
-                        "Run a check for one parent or guardian",
-                        "Run an eligibility check for one parent or guardian.",
-                        "Check",
-                        "Enter_Details"
-                    ),
-                    new MenuItem(
-                        "Run batch check",
-                        "Run a batch check",
-                        "Run an eligibility check for multiple parents or guardians.",
-                        "BulkCheck",
-                        "Bulk_Check"
-                    ),
-                    new MenuItem(
-                        "Pending applications",
-                        "Pending applications",
-                        "Check eligibility for children not found in the system.",
-                        "Application",
-                        "PendingApplications"
-                    ),
-                    new MenuItem(
-                        "Search",
-                        "Search all records",
-                        "Search all records and export results.",
-                        "Application",
-                        "SearchResults"
-                    ),
-                    new MenuItem(
-                        "Guidance",
-                        "Guidance for reviewing evidence",
-                        "Read guidance on how to review supporting evidence.",
-                        "Home",
-                        "Guidance"
-                    )
-                };
+                new MenuItem(
+                    "Home",
+                    "Home",
+                    "Dashboard",
+                    "Home",
+                    ""
+                ),
+                new MenuItem(
+                    "Run a check",
+                    "Run a check for one parent or guardian",
+                    "Run an eligibility check for one parent or guardian.",
+                    "Check",
+                    "Enter_Details"
+                ),
+                new MenuItem(
+                    "Run batch check",
+                    "Run a batch check",
+                    "Run an eligibility check for multiple parents or guardians.",
+                    "BulkCheck",
+                    "Bulk_Check"
+                ),
+                new MenuItem(
+                    "Pending applications",
+                    "Pending applications",
+                    "Check eligibility for children not found in the system.",
+                    "Application",
+                    "PendingApplications"
+                ),
+                new MenuItem(
+                    "Search",
+                    "Search all records",
+                    "Search all records and export results.",
+                    "Application",
+                    "SearchResults"
+                ),
+                new MenuItem(
+                    "Guidance",
+                    "Guidance for reviewing evidence",
+                    "Read guidance on how to review supporting evidence.",
+                    "Home",
+                    "Guidance"
+                )
+            };
 
             case "fsmSchoolRole":
 
                 var showReviewEvidenceTiles = false;
+                var decisionPath = "None";
 
                 if (!string.IsNullOrWhiteSpace(establishmentId) &&
                     int.TryParse(establishmentId, out var parsedEstablishmentId))
                 {
                     if (_cache.TryGetValue($"SchoolMatId_{parsedEstablishmentId}", out int matId) && matId > 0)
                     {
+                        decisionPath = $"MAT({matId})";
+
                         if (_cache.TryGetValue($"MatSettings_{matId}", out MultiAcademyTrustSettingsResponse? matSettings))
                         {
                             showReviewEvidenceTiles = matSettings?.AcademyCanReviewEvidence ?? false;
                         }
+                        else
+                        {
+                            decisionPath += "_MatSettingsMissing";
+                        }
                     }
                     else
                     {
+                        decisionPath = "LAFallback";
                         showReviewEvidenceTiles = localAuthoritySettingsResponse?.SchoolCanReviewEvidence ?? false;
                     }
                 }
 
                 var schoolMenuItems = new List<MenuItem>
-    {
-        new MenuItem(
-            "Home",
-            "Home",
-            "Dashboard",
-            "Home",
-            ""
-        ),
-        new MenuItem(
-            "Run a check",
-            "Run a check for one parent or guardian",
-            "Run an eligibility check for one parent or guardian.",
-            "Check",
-            "Consent_Declaration"
-        ),
-        new MenuItem(
-            "Run batch check",
-            "Run a batch check",
-            "Run an eligibility check for multiple parents or guardians.",
-            "BulkCheck",
-            "Bulk_Check"
-        )
-    };
+            {
+                new MenuItem(
+                    "Home",
+                    "Home",
+                    "Dashboard",
+                    "Home",
+                    ""
+                ),
+                new MenuItem(
+                    "Run a check",
+                    "Run a check for one parent or guardian",
+                    "Run an eligibility check for one parent or guardian.",
+                    "Check",
+                    "Consent_Declaration"
+                ),
+                new MenuItem(
+                    "Run batch check",
+                    "Run a batch check",
+                    "Run an eligibility check for multiple parents or guardians.",
+                    "BulkCheck",
+                    "Bulk_Check"
+                )
+            };
 
                 if (showReviewEvidenceTiles)
                 {
@@ -221,101 +229,109 @@ public class MenuProvider : IMenuProvider
                         ));
                 }
 
+                _logger.LogInformation(
+                    "School menu built LA={LaCode} Est={EstablishmentId} Path={DecisionPath} ShowTiles={ShowTiles} Tiles={Tiles}",
+                    laCode,
+                    establishmentId,
+                    decisionPath,
+                    showReviewEvidenceTiles,
+                    string.Join(", ", schoolMenuItems.Select(x => x.MenuText)));
+
                 return schoolMenuItems;
 
             case "fsmBasicVersion":
                 return new[]
                 {
-                    new MenuItem(
-                        "Home",
-                        "Home",
-                        "Dashboard",
-                        "Home",
-                        ""
-                        ),
-                    new MenuItem(
-                        "Run a check",
-                        "Run a check for one parent or guardian",
-                        "Run an eligibility check for one parent or guardian.",
-                        "Check",
-                        "Enter_Details_Basic"
+                new MenuItem(
+                    "Home",
+                    "Home",
+                    "Dashboard",
+                    "Home",
+                    ""
                     ),
-                    new MenuItem(
-                        "Run batch check",
-                        "Run a batch check",
-                        "Run an eligibility check for multiple parents or guardians.",
-                        "BulkCheckFsmBasic",
-                        "Bulk_Check_FSMB"
-                    ),
-                    new MenuItem(
-                        "Reports",
-                        "Reports",
-                        "Generate reports and view recent checks carried out using this service.",
-                        "Check",
-                        "Reports"
-                    ),
-                    new MenuItem(
-                        "Guidance",
-                        "Guidance",
-                        "Read guidance on using this service, reviewing evidence and completing checks for parents claiming asylum.",
-                        "Home",
-                        "Guidance_Basic"
-                    ),
-                    new MenuItem(
-                        "Download PDF form",
-                        "Download PDF form",
-                        "Download an eligibility form for parents to complete.",
-                        "Home",
-                        "FSMFormDownload"
-                    )
-                };
+                new MenuItem(
+                    "Run a check",
+                    "Run a check for one parent or guardian",
+                    "Run an eligibility check for one parent or guardian.",
+                    "Check",
+                    "Enter_Details_Basic"
+                ),
+                new MenuItem(
+                    "Run batch check",
+                    "Run a batch check",
+                    "Run an eligibility check for multiple parents or guardians.",
+                    "BulkCheckFsmBasic",
+                    "Bulk_Check_FSMB"
+                ),
+                new MenuItem(
+                    "Reports",
+                    "Reports",
+                    "Generate reports and view recent checks carried out using this service.",
+                    "Check",
+                    "Reports"
+                ),
+                new MenuItem(
+                    "Guidance",
+                    "Guidance",
+                    "Read guidance on using this service, reviewing evidence and completing checks for parents claiming asylum.",
+                    "Home",
+                    "Guidance_Basic"
+                ),
+                new MenuItem(
+                    "Download PDF form",
+                    "Download PDF form",
+                    "Download an eligibility form for parents to complete.",
+                    "Home",
+                    "FSMFormDownload"
+                )
+            };
 
             case "fsmLocalAuthority":
                 return new[]
                 {
-                    new MenuItem(
-                        "Home",
-                        "Home",
-                        "Dashboard",
-                        "Home",
-                        ""
-                        ),
-                    new MenuItem(
-                        "Run a check",
-                        "Run a check for one parent or guardian",
-                        "Run an eligibility check for one parent or guardian.",
-                        "Check",
-                        "Enter_Details"
+                new MenuItem(
+                    "Home",
+                    "Home",
+                    "Dashboard",
+                    "Home",
+                    ""
                     ),
-                    new MenuItem(
-                        "Run batch check",
-                        "Run a batch check",
-                        "Run an eligibility check for multiple parents or guardians.",
-                        "BulkCheck",
-                        "Bulk_Check"
-                    ),
-                    new MenuItem(
-                        "Pending applications",
-                        "Pending applications",
-                        "Check eligibility for children not found in the system.",
-                        "Application",
-                        "PendingApplications"
-                    ),
-                    new MenuItem(
-                        "Search",
-                        "Search all records",
-                        "Search all records and export results.",
-                        "Application",
-                        "SearchResults"
-                    ),
-                    new MenuItem(
-                        "Guidance",
-                        "Guidance for reviewing evidence",
-                        "Read guidance on how to review supporting evidence.",
-                        "Home",
-                        "Guidance"
-                    )
-                };
+                new MenuItem(
+                    "Run a check",
+                    "Run a check for one parent or guardian",
+                    "Run an eligibility check for one parent or guardian.",
+                    "Check",
+                    "Enter_Details"
+                ),
+                new MenuItem(
+                    "Run batch check",
+                    "Run a batch check",
+                    "Run an eligibility check for multiple parents or guardians.",
+                    "BulkCheck",
+                    "Bulk_Check"
+                ),
+                new MenuItem(
+                    "Pending applications",
+                    "Pending applications",
+                    "Check eligibility for children not found in the system.",
+                    "Application",
+                    "PendingApplications"
+                ),
+                new MenuItem(
+                    "Search",
+                    "Search all records",
+                    "Search all records and export results.",
+                    "Application",
+                    "SearchResults"
+                ),
+                new MenuItem(
+                    "Guidance",
+                    "Guidance for reviewing evidence",
+                    "Read guidance on how to review supporting evidence.",
+                    "Home",
+                    "Guidance"
+                )
+            };
 
             default:
                 return Enumerable.Empty<MenuItem>();
