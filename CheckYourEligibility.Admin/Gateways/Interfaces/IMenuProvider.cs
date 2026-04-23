@@ -129,15 +129,23 @@ public class MenuProvider : IMenuProvider
 
                 var showReviewEvidenceTiles = false;
                 var decisionPath = "None";
+                var schoolMatIdCacheHit = false;
+                var resolvedMatId = 0;
+                var matSettingsCacheHit = false;
 
                 if (!string.IsNullOrWhiteSpace(establishmentId) &&
                     int.TryParse(establishmentId, out var parsedEstablishmentId))
                 {
-                    if (_cache.TryGetValue($"SchoolMatId_{parsedEstablishmentId}", out int matId) && matId > 0)
+                    schoolMatIdCacheHit = _cache.TryGetValue($"SchoolMatId_{parsedEstablishmentId}", out int matId);
+                    resolvedMatId = matId;
+
+                    if (schoolMatIdCacheHit && matId > 0)
                     {
                         decisionPath = $"MAT({matId})";
 
-                        if (_cache.TryGetValue($"MatSettings_{matId}", out MultiAcademyTrustSettingsResponse? matSettings))
+                        matSettingsCacheHit = _cache.TryGetValue($"MatSettings_{matId}", out MultiAcademyTrustSettingsResponse? matSettings);
+
+                        if (matSettingsCacheHit)
                         {
                             showReviewEvidenceTiles = matSettings?.AcademyCanReviewEvidence ?? false;
                         }
@@ -148,7 +156,7 @@ public class MenuProvider : IMenuProvider
                     }
                     else
                     {
-                        decisionPath = "LAFallback";
+                        decisionPath = schoolMatIdCacheHit ? "LAFallback_MatIdZero" : "LAFallback_MatIdMissing";
                         showReviewEvidenceTiles = localAuthoritySettingsResponse?.SchoolCanReviewEvidence ?? false;
                     }
                 }
@@ -230,10 +238,13 @@ public class MenuProvider : IMenuProvider
                 }
 
                 _logger.LogInformation(
-                    "School menu built LA={LaCode} Est={EstablishmentId} Path={DecisionPath} ShowTiles={ShowTiles} Tiles={Tiles}",
+                    "School menu built LA={LaCode} Est={EstablishmentId} Path={DecisionPath} SchoolMatIdCacheHit={SchoolMatIdCacheHit} ResolvedMatId={ResolvedMatId} MatSettingsCacheHit={MatSettingsCacheHit} ShowTiles={ShowTiles} Tiles={Tiles}",
                     laCode,
                     establishmentId,
                     decisionPath,
+                    schoolMatIdCacheHit,
+                    resolvedMatId,
+                    matSettingsCacheHit,
                     showReviewEvidenceTiles,
                     string.Join(", ", schoolMenuItems.Select(x => x.MenuText)));
 
