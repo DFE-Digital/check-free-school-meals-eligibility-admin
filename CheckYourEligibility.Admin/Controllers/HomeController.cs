@@ -20,7 +20,7 @@ public class HomeController : BaseController
     ILocalAuthoritySettingsGateway localAuthoritySettingsGateway,
     ISchoolMenuContextResolver schoolMenuContextResolver,
     IAdminGateway adminGateway,
-    IMemoryCache cache) : base(dfeSignInApiService)
+    IMemoryCache cache) : base(dfeSignInApiService, schoolMenuContextResolver)
     {
         _localAuthoritySettingsGateway = localAuthoritySettingsGateway;
         _adminGateway = adminGateway;
