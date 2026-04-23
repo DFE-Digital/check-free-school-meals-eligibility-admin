@@ -26,7 +26,7 @@ public class ApplicationController : BaseController
     private readonly ILogger<ApplicationController> _logger;
     private readonly IDownloadEvidenceFileUseCase _downloadEvidenceFileUseCase;
     private readonly ISendNotificationUseCase _sendNotificationUseCase;
-    private readonly ISchoolMenuContextResolver schoolMenuContextResolver;
+    
     public ApplicationController(ILogger<ApplicationController> logger, IAdminGateway adminGateway, IConfiguration configuration, 
         IDownloadEvidenceFileUseCase downloadEvidenceFileUseCase, ISendNotificationUseCase sendNotificationUseCase,
         IDfeSignInApiService dfeSignInApiService, ISchoolMenuContextResolver schoolMenuContextResolver) : base(dfeSignInApiService, schoolMenuContextResolver)
