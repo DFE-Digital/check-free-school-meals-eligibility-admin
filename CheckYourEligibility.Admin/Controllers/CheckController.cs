@@ -66,7 +66,8 @@ public class CheckController : BaseController
         ISendNotificationUseCase sendNotificationUseCase,
         IDeleteEvidenceFileUseCase deleteEvidenceFileUseCase,
         IGenerateEligibilityCheckReportUseCase generateEligibilityCheckReportUseCase,
-        IDfeSignInApiService dfeSignInApiService) : base(dfeSignInApiService)
+        IDfeSignInApiService dfeSignInApiService,
+        ISchoolMenuContextResolver schoolMenuContextResolver) : base(dfeSignInApiService, schoolMenuContextResolver)
     {
         _config = configuration;
         _logger = logger;
