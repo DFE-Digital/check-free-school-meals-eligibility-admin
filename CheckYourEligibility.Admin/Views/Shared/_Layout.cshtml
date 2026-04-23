@@ -110,7 +110,7 @@
                 string feedbackUrl;
                 if (authenticatedUser && claims != null)
                 {
-                    if (claims.Roles[0].Code.Equals("fsmBasicVersion"))
+                    if (claims.Roles?.Count > 0 && claims.Roles[0].Code.Equals("fsmBasicVersion"))
                     {
                         feedbackUrl = Configuration["FeedbackUrlBasic"];
                     }
