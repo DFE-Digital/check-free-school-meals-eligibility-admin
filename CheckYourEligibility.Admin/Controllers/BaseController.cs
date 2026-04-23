@@ -1,4 +1,5 @@
 using CheckYourEligibility.Admin.Domain.DfeSignIn;
+using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,13 +13,17 @@ public class BaseController : Controller
 	protected DfeClaims? _Claims;
 
 	private readonly IDfeSignInApiService _dfeSignInApiService;
+    private readonly ISchoolMenuContextResolver _schoolMenuContextResolver;
 
-	public BaseController(IDfeSignInApiService dfeSignInApiService)
-	{
-		_dfeSignInApiService = dfeSignInApiService;
-	}
+    public BaseController(
+    IDfeSignInApiService dfeSignInApiService,
+    ISchoolMenuContextResolver schoolMenuContextResolver)
+    {
+        _dfeSignInApiService = dfeSignInApiService;
+        _schoolMenuContextResolver = schoolMenuContextResolver;
+    }
 
-	public async Task GetDfeClaimsAsync()
+    public async Task GetDfeClaimsAsync()
 	{
 		_Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
 
@@ -29,10 +34,11 @@ public class BaseController : Controller
 		}
 	}
 
-	public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-	{
-		await GetDfeClaimsAsync();
-		ViewBag.Claims = _Claims;
-		await base.OnActionExecutionAsync(context, next);
-	}
+    public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        await GetDfeClaimsAsync();
+        ViewBag.Claims = _Claims;
+        ViewBag.SchoolMenuContext = await _schoolMenuContextResolver.ResolveAsync(_Claims);
+        await base.OnActionExecutionAsync(context, next);
+    }
 }
