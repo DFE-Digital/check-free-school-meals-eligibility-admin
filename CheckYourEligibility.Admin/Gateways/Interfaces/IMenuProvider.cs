@@ -7,23 +7,26 @@ namespace CheckYourEligibility.Admin.Gateways.Interfaces;
 
 public interface IMenuProvider
 {
-    IEnumerable<MenuItem> GetMenuItemsFor(DfeClaims claims);
+    Task<IEnumerable<MenuItem>> GetMenuItemsForAsync(DfeClaims claims);
 }
 
 public class MenuProvider : IMenuProvider
 {
     private readonly IMemoryCache _cache;
     private readonly ILogger<MenuProvider> _logger;
+    private readonly ISchoolMenuContextResolver _schoolMenuContextResolver;
 
     public MenuProvider(
         IMemoryCache cache,
-        ILogger<MenuProvider> logger)
+        ILogger<MenuProvider> logger,
+        ISchoolMenuContextResolver schoolMenuContextResolver)
     {
         _cache = cache;
         _logger = logger;
+        _schoolMenuContextResolver = schoolMenuContextResolver;
     }
 
-    public IEnumerable<MenuItem> GetMenuItemsFor(DfeClaims claims)
+    public async Task<IEnumerable<MenuItem>> GetMenuItemsForAsync(DfeClaims claims)
     {
         if (claims == null || !claims.Roles.Any())
         {
@@ -54,7 +57,7 @@ public class MenuProvider : IMenuProvider
             return cachedMenu;
         }
 
-        var menu = BuildMenuForRole(role, laCode, establishmentId).ToArray();
+        var menu = (await BuildMenuForRoleAsync(role, laCode, establishmentId, claims)).ToArray();
 
         _cache.Set(cacheKey, menu, TimeSpan.FromMinutes(5));
 
@@ -67,14 +70,12 @@ public class MenuProvider : IMenuProvider
         return menu;
     }
 
-    private IEnumerable<MenuItem> BuildMenuForRole(string role, string? laCode, string? establishmentId)
-    {
-        LocalAuthoritySettingsResponse? localAuthoritySettingsResponse = null;
-
-        if (!string.IsNullOrWhiteSpace(laCode))
-        {
-            _cache.TryGetValue($"LocalAuthoritySettings_{laCode}", out localAuthoritySettingsResponse);
-        }
+    private async Task<IEnumerable<MenuItem>> BuildMenuForRoleAsync(
+        string role,
+        string? laCode,
+        string? establishmentId,
+        DfeClaims claims)
+    {      
 
         switch (role)
         {
@@ -127,64 +128,41 @@ public class MenuProvider : IMenuProvider
 
             case "fsmSchoolRole":
 
-                var showReviewEvidenceTiles = false;
-                var decisionPath = "None";
-                var schoolMatIdCacheHit = false;
-                var resolvedMatId = 0;
-                var matSettingsCacheHit = false;
+                var schoolContext = await _schoolMenuContextResolver.ResolveAsync(claims);
+                var showReviewEvidenceTiles = schoolContext.ShowReviewEvidenceTiles;
 
-                if (!string.IsNullOrWhiteSpace(establishmentId) &&
-                    int.TryParse(establishmentId, out var parsedEstablishmentId))
-                {
-                    schoolMatIdCacheHit = _cache.TryGetValue($"SchoolMatId_{parsedEstablishmentId}", out int matId);
-                    resolvedMatId = matId;
-
-                    if (schoolMatIdCacheHit && matId > 0)
-                    {
-                        decisionPath = $"MAT({matId})";
-
-                        matSettingsCacheHit = _cache.TryGetValue($"MatSettings_{matId}", out MultiAcademyTrustSettingsResponse? matSettings);
-
-                        if (matSettingsCacheHit)
-                        {
-                            showReviewEvidenceTiles = matSettings?.AcademyCanReviewEvidence ?? false;
-                        }
-                        else
-                        {
-                            decisionPath += "_MatSettingsMissing";
-                        }
-                    }
-                    else
-                    {
-                        decisionPath = schoolMatIdCacheHit ? "LAFallback_MatIdZero" : "LAFallback_MatIdMissing";
-                        showReviewEvidenceTiles = localAuthoritySettingsResponse?.SchoolCanReviewEvidence ?? false;
-                    }
-                }
+                _logger.LogInformation(
+                    "School menu built LA={LaCode} Est={EstablishmentId} IsPartOfMat={IsPartOfMat} MatId={MatId} ShowTiles={ShowTiles}",
+                    laCode,
+                    establishmentId,
+                    schoolContext.IsPartOfMat,
+                    schoolContext.MatId,
+                    showReviewEvidenceTiles);
 
                 var schoolMenuItems = new List<MenuItem>
-            {
-                new MenuItem(
-                    "Home",
-                    "Home",
-                    "Dashboard",
-                    "Home",
-                    ""
-                ),
-                new MenuItem(
-                    "Run a check",
-                    "Run a check for one parent or guardian",
-                    "Run an eligibility check for one parent or guardian.",
-                    "Check",
-                    "Consent_Declaration"
-                ),
-                new MenuItem(
-                    "Run batch check",
-                    "Run a batch check",
-                    "Run an eligibility check for multiple parents or guardians.",
-                    "BulkCheck",
-                    "Bulk_Check"
-                )
-            };
+                {
+                    new MenuItem(
+                        "Home",
+                        "Home",
+                        "Dashboard",
+                        "Home",
+                        ""
+                    ),
+                    new MenuItem(
+                        "Run a check",
+                        "Run a check for one parent or guardian",
+                        "Run an eligibility check for one parent or guardian.",
+                        "Check",
+                        "Consent_Declaration"
+                    ),
+                    new MenuItem(
+                        "Run batch check",
+                        "Run a batch check",
+                        "Run an eligibility check for multiple parents or guardians.",
+                        "BulkCheck",
+                        "Bulk_Check"
+                    )
+                };
 
                 if (showReviewEvidenceTiles)
                 {
@@ -236,18 +214,7 @@ public class MenuProvider : IMenuProvider
                             "Guidance"
                         ));
                 }
-
-                _logger.LogInformation(
-                    "School menu built LA={LaCode} Est={EstablishmentId} Path={DecisionPath} SchoolMatIdCacheHit={SchoolMatIdCacheHit} ResolvedMatId={ResolvedMatId} MatSettingsCacheHit={MatSettingsCacheHit} ShowTiles={ShowTiles} Tiles={Tiles}",
-                    laCode,
-                    establishmentId,
-                    decisionPath,
-                    schoolMatIdCacheHit,
-                    resolvedMatId,
-                    matSettingsCacheHit,
-                    showReviewEvidenceTiles,
-                    string.Join(", ", schoolMenuItems.Select(x => x.MenuText)));
-
+                
                 return schoolMenuItems;
 
             case "fsmBasicVersion":
