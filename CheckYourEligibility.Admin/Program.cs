@@ -65,7 +65,7 @@ builder.Services.AddDfeSignInAuthentication(dfeSignInConfiguration);
 
 builder.Services.AddHealthChecks();
 
-builder.Services.AddSingleton<IMenuProvider, MenuProvider>();
+builder.Services.AddScoped<IMenuProvider, MenuProvider>();
 
 var app = builder.Build();
 
