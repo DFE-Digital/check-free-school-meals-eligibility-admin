@@ -1,9 +1,11 @@
 ﻿using CheckYourEligibility.Admin.Boundary.Requests;
 using CheckYourEligibility.Admin.Boundary.Responses;
 using CheckYourEligibility.Admin.Controllers;
+using CheckYourEligibility.Admin.Domain.DfeSignIn;
 using CheckYourEligibility.Admin.Domain.Enums;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
+using CheckYourEligibility.Admin.Models;
 using CheckYourEligibility.Admin.Tests.Properties;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
@@ -19,14 +21,19 @@ public class BulkUploadTests : TestBase
     [SetUp]
     public void SetUp()
     {
+        _schoolMenuContextResolverMock = new Mock<ISchoolMenuContextResolver>();
+        _schoolMenuContextResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<DfeClaims>()))
+            .ReturnsAsync(new SchoolMenuContext());
+
         _checkGatewayMock = new Mock<ICheckGateway>();
         _loggerMock = Mock.Of<ILogger<BulkCheckController>>();
         _dfeSignInApiServiceCaseMock = new Mock<IDfeSignInApiService>();
-        _sut = new BulkCheckController(_loggerMock, _checkGatewayMock.Object, _configMock.Object, _dfeSignInApiServiceCaseMock.Object);
+        _sut = new BulkCheckController(_loggerMock, _checkGatewayMock.Object, _configMock.Object, _dfeSignInApiServiceCaseMock.Object, _schoolMenuContextResolverMock.Object);
 		base.SetUp();
 		_sut.ControllerContext.HttpContext = _httpContext.Object;
 		_sut.GetDfeClaimsAsync().Wait();
-        _sut.TempData = _tempData;
+        _sut.TempData = _tempData;        
     }
 
     [TearDown]
@@ -39,6 +46,7 @@ public class BulkUploadTests : TestBase
     private ILogger<BulkCheckController> _loggerMock;
     private Mock<ICheckGateway> _checkGatewayMock;
     private Mock<IDfeSignInApiService> _dfeSignInApiServiceCaseMock;
+    private Mock<ISchoolMenuContextResolver> _schoolMenuContextResolverMock;
 
     // system under test
     private BulkCheckController _sut;

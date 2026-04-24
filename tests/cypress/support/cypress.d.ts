@@ -30,6 +30,8 @@ declare namespace Cypress {
     loginSchoolUser(): Chainable<void>;
     loginSchoolUserCanReviewEvidenceDisabled(): Chainable<void>;
     loginMatSchoolWithLaFlagDisabled(): Chainable<void>;
+    loginMatSchoolWithMatFlagDisabled(): Chainable<void>;
+    loginSchoolNonMatFlagOn(): Chainable<void>;
     loginLocalAuthorityUser(): Chainable<void>;
     loginMultiAcademyTrustUser(): Chainable<void>;
     loginBasicUser(): Chainable<void>;

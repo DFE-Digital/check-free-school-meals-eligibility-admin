@@ -29,7 +29,8 @@ public class BulkCheckFsmBasicController : BaseController
         IParseBulkCheckFileUseCase_FsmBasic parseBulkCheckFileUseCase,
         IGetBulkCheckStatusesUseCase_FsmBasic getBulkCheckStatusesUseCase,
         IDeleteBulkCheckFileUseCase_FsmBasic deleteBulkCheckFileUseCase,
-        IDfeSignInApiService dfeSignInApiService) : base(dfeSignInApiService)
+        IDfeSignInApiService dfeSignInApiService,
+        ISchoolMenuContextResolver schoolMenuContextResolver) : base(dfeSignInApiService, schoolMenuContextResolver)
     {
         _config = configuration;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

@@ -7,8 +7,9 @@
 
 @{
     var claims = ViewBag.Claims;
+    var schoolMenuContext = ViewBag.SchoolMenuContext as CheckYourEligibility.Admin.Models.SchoolMenuContext;
     var clarityId = claims?.Organisation?.Category?.Name == Constants.CategoryTypeLA ? Configuration["Clarity:LA"] : Configuration["Clarity:School"];
-    var menu = MenuProvider.GetMenuItemsFor(claims);
+    var menu = MenuProvider.GetMenuItemsFor(claims, schoolMenuContext);
     bool authenticatedUser = User.Identity?.IsAuthenticated ?? false;
     var homeLink = "/";//unauthenticated -> landing page
     if (authenticatedUser) homeLink = "/home";//authenticated -> dashboard

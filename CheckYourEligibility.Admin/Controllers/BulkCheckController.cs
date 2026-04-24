@@ -23,7 +23,8 @@ public class BulkCheckController : BaseController
     private ILogger<BulkCheckController> _loggerMock;
 
     public BulkCheckController(ILogger<BulkCheckController> logger, ICheckGateway checkGateway,
-        IConfiguration configuration, IDfeSignInApiService dfeSignInApiService) : base(dfeSignInApiService)
+        IConfiguration configuration, IDfeSignInApiService dfeSignInApiService,
+        ISchoolMenuContextResolver schoolMenuContextResolver) : base(dfeSignInApiService, schoolMenuContextResolver)
     {
         _config = configuration;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

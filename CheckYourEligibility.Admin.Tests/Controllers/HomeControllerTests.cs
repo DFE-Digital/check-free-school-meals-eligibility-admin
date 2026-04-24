@@ -22,6 +22,7 @@ internal class HomeControllerTests : TestBase
     private Mock<IAdminGateway> _mockAdminGateway;
     private IMemoryCache _memoryCache;
     private HomeController _sut;
+    private Mock<ISchoolMenuContextResolver> _schoolMenuContextResolverMock;
 
     [SetUp]
     public void SetUp()
@@ -30,10 +31,15 @@ internal class HomeControllerTests : TestBase
         _mockLocalAuthoritySettingsGateway = new Mock<ILocalAuthoritySettingsGateway>();
         _mockAdminGateway = new Mock<IAdminGateway>();
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        _schoolMenuContextResolverMock = new Mock<ISchoolMenuContextResolver>();
+        _schoolMenuContextResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<DfeClaims>()))
+            .ReturnsAsync(new SchoolMenuContext());
 
         _sut = new HomeController(
             _mockDfeSignInApiService.Object,
             _mockLocalAuthoritySettingsGateway.Object,
+            _schoolMenuContextResolverMock.Object,
             _mockAdminGateway.Object,
             _memoryCache);
 
@@ -56,6 +62,7 @@ internal class HomeControllerTests : TestBase
         var controller = new HomeController(
             _mockDfeSignInApiService.Object,
             _mockLocalAuthoritySettingsGateway.Object,
+            _schoolMenuContextResolverMock.Object,
             _mockAdminGateway.Object,
             new MemoryCache(new MemoryCacheOptions()));
 
@@ -76,6 +83,7 @@ internal class HomeControllerTests : TestBase
         var controller = new HomeController(
             _mockDfeSignInApiService.Object,
             _mockLocalAuthoritySettingsGateway.Object,
+            _schoolMenuContextResolverMock.Object,
             _mockAdminGateway.Object,
             new MemoryCache(new MemoryCacheOptions()));
 
@@ -153,7 +161,7 @@ internal class HomeControllerTests : TestBase
         var userId = "test-user-id";
         var orgId = Guid.NewGuid();
         var organisationJson =
-            $"{{\"id\":\"{orgId}\",\"name\":\"Test School\",\"category\":{{\"id\":1,\"name\":\"{Constants.CategoryTypeSchool}\"}},\"localAuthority\":{{\"code\":\"893\"}}}}";
+    $"{{\"id\":\"{orgId}\",\"name\":\"Test School\",\"urn\":\"136730\",\"category\":{{\"id\":1,\"name\":\"{Constants.CategoryTypeSchool}\"}},\"localAuthority\":{{\"code\":\"893\"}}}}";
 
         var claims = new List<Claim>
         {
@@ -181,6 +189,10 @@ internal class HomeControllerTests : TestBase
             }
         };
 
+        _mockAdminGateway
+            .Setup(g => g.GetMultiAcademyTrustIdForEstablishment(136730))
+            .ReturnsAsync(0);
+
         _mockDfeSignInApiService
             .Setup(s => s.GetUserRolesAsync(userId, orgId))
             .ReturnsAsync(roles);
@@ -193,6 +205,14 @@ internal class HomeControllerTests : TestBase
             });
 
         await _sut.GetDfeClaimsAsync();
+
+        _sut.ViewBag.SchoolMenuContext = new SchoolMenuContext
+        {
+            IsSchool = true,
+            IsPartOfMat = false,
+            LaCode = 893,
+            ShowReviewEvidenceTiles = true
+        };
 
         // Act
         var result = await _sut.Index();
@@ -217,7 +237,7 @@ internal class HomeControllerTests : TestBase
         var userId = "test-user-id";
         var orgId = Guid.NewGuid();
         var organisationJson =
-            $"{{\"id\":\"{orgId}\",\"name\":\"Test School\",\"category\":{{\"id\":1,\"name\":\"{Constants.CategoryTypeSchool}\"}},\"localAuthority\":{{\"code\":\"893\"}}}}";
+    $"{{\"id\":\"{orgId}\",\"name\":\"Test School\",\"urn\":\"136730\",\"category\":{{\"id\":1,\"name\":\"{Constants.CategoryTypeSchool}\"}},\"localAuthority\":{{\"code\":\"893\"}}}}";
 
         var claims = new List<Claim>
         {
@@ -245,6 +265,10 @@ internal class HomeControllerTests : TestBase
             }
         };
 
+        _mockAdminGateway
+            .Setup(g => g.GetMultiAcademyTrustIdForEstablishment(136730))
+            .ReturnsAsync(0);
+
         _mockDfeSignInApiService
             .Setup(s => s.GetUserRolesAsync(userId, orgId))
             .ReturnsAsync(roles);
@@ -257,6 +281,14 @@ internal class HomeControllerTests : TestBase
             });
 
         await _sut.GetDfeClaimsAsync();
+
+        _sut.ViewBag.SchoolMenuContext = new SchoolMenuContext
+        {
+            IsSchool = true,
+            IsPartOfMat = false,
+            LaCode = 893,
+            ShowReviewEvidenceTiles = false
+        };
 
         // Act
         var result = await _sut.Index();
@@ -584,6 +616,15 @@ internal class HomeControllerTests : TestBase
             .ReturnsAsync(17101);
 
         await _sut.GetDfeClaimsAsync();
+
+        _sut.ViewBag.SchoolMenuContext = new SchoolMenuContext
+        {
+            IsSchool = true,
+            IsPartOfMat = true,
+            MatId = 17101,
+            LaCode = 893,
+            ShowReviewEvidenceTiles = false
+        };
 
         // Act
         var result = await _sut.Index();

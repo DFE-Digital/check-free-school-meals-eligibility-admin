@@ -26,7 +26,10 @@ public class ApplicationController : BaseController
     private readonly ILogger<ApplicationController> _logger;
     private readonly IDownloadEvidenceFileUseCase _downloadEvidenceFileUseCase;
     private readonly ISendNotificationUseCase _sendNotificationUseCase;
-    public ApplicationController(ILogger<ApplicationController> logger, IAdminGateway adminGateway, IConfiguration configuration, IDownloadEvidenceFileUseCase downloadEvidenceFileUseCase, ISendNotificationUseCase sendNotificationUseCase, IDfeSignInApiService dfeSignInApiService) : base(dfeSignInApiService)
+    
+    public ApplicationController(ILogger<ApplicationController> logger, IAdminGateway adminGateway, IConfiguration configuration, 
+        IDownloadEvidenceFileUseCase downloadEvidenceFileUseCase, ISendNotificationUseCase sendNotificationUseCase,
+        IDfeSignInApiService dfeSignInApiService, ISchoolMenuContextResolver schoolMenuContextResolver) : base(dfeSignInApiService, schoolMenuContextResolver)
     {
         _logger = logger;
         _adminGateway = adminGateway ?? throw new ArgumentNullException(nameof(adminGateway));

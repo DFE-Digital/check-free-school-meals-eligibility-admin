@@ -8,6 +8,10 @@ function getCookiesPath(userType: string): string {
       return 'cypress/fixtures/SchoolUserFlagOffCookies.json';
     case 'matSchoolWithLaFlagDisabled':
       return 'cypress/fixtures/MatSchoolFlagOffCookies.json';
+    case 'schoolNonMatFlagOn':
+      return 'cypress/fixtures/SchoolNonMatFlagOnCookies.json';
+    case 'matSchoolWithMatFlagDisabled':
+      return 'cypress/fixtures/MatSchoolMatFlagOffCookies.json';
     case 'MAT':
       return 'cypress/fixtures/MATUserCookies.json';
     case 'LA':
@@ -32,10 +36,16 @@ Cypress.Commands.add('checkSession', (userType: string) => {
               expectedText = 'The Telford Park School';
               break;
             case 'schoolCanReviewEvidenceDisabled':
-               expectedText = 'The Aldgate School';
+              expectedText = 'The Aldgate School';
               break;
             case 'matSchoolWithLaFlagDisabled':
               expectedText = 'Altrincham Grammar School For Girls';
+              break;
+            case 'matSchoolWithMatFlagDisabled':
+              expectedText = 'The Telford Park School';
+              break;
+            case 'schoolNonMatFlagOn':
+              expectedText = 'The Astley Cooper School';
               break;
             case 'MAT':
               expectedText = 'Thomas Telford Multi Academy Trust';
@@ -59,6 +69,10 @@ Cypress.Commands.add('checkSession', (userType: string) => {
               cy.login('schoolCanReviewEvidenceDisabled');
             } else if (userType === 'matSchoolWithLaFlagDisabled') {
               cy.login('matSchoolWithLaFlagDisabled');
+            } else if (userType === 'matSchoolWithMatFlagDisabled') {
+              cy.login('matSchoolWithMatFlagDisabled');
+            } else if (userType === 'schoolNonMatFlagOn') {
+              cy.login('schoolNonMatFlagOn');
             } else if (userType === 'MAT') {
               cy.login('MAT');
             } else if (userType === 'basic') {
@@ -76,6 +90,10 @@ Cypress.Commands.add('checkSession', (userType: string) => {
           cy.login('schoolCanReviewEvidenceDisabled');
         } else if (userType === 'matSchoolWithLaFlagDisabled') {
           cy.login('matSchoolWithLaFlagDisabled');
+        } else if (userType === 'matSchoolWithMatFlagDisabled') {
+          cy.login('matSchoolWithMatFlagDisabled');
+        } else if (userType === 'schoolNonMatFlagOn') {
+          cy.login('schoolNonMatFlagOn');
         } else if (userType === 'MAT') {
           cy.login('MAT');
         } else if (userType === 'basic') {
@@ -92,6 +110,10 @@ Cypress.Commands.add('checkSession', (userType: string) => {
         cy.login('schoolCanReviewEvidenceDisabled');
       } else if (userType === 'matSchoolWithLaFlagDisabled') {
         cy.login('matSchoolWithLaFlagDisabled');
+      } else if (userType === 'matSchoolWithMatFlagDisabled') {
+        cy.login('matSchoolWithMatFlagDisabled');
+      } else if (userType === 'schoolNonMatFlagOn') {
+        cy.login('schoolNonMatFlagOn');
       } else if (userType === 'MAT') {
         cy.login('MAT');
       } else if (userType === 'basic') {
@@ -112,6 +134,10 @@ Cypress.Commands.add('login', (userType) => {
       cy.loginSchoolUserCanReviewEvidenceDisabled();
     } else if (userType === 'matSchoolWithLaFlagDisabled') {
       cy.loginMatSchoolWithLaFlagDisabled();
+    } else if (userType === 'matSchoolWithMatFlagDisabled') {
+      cy.loginMatSchoolWithMatFlagDisabled();
+    } else if (userType === 'schoolNonMatFlagOn') {
+      cy.loginSchoolNonMatFlagOn();
     } else if (userType === 'MAT') {
       cy.loginMultiAcademyTrustUser();
     } else if (userType === "basic") {
@@ -121,6 +147,23 @@ Cypress.Commands.add('login', (userType) => {
     }
     cy.storeCookies(userType);
   });
+});
+
+Cypress.Commands.add('loginSchoolNonMatFlagOn', () => {
+  cy.reload();
+  cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+  cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
+  cy.get('button[type="submit"]').click();
+  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
+  cy.get('button[type="submit"]').click();
+  cy.reload();
+
+  cy.contains('The Astley Cooper School')
+    .parent()
+    .find('input[type="radio"]')
+    .check();
+
+  cy.contains('Continue').click();
 });
 
 Cypress.Commands.add('loginSchoolUser', () => {
@@ -171,6 +214,23 @@ Cypress.Commands.add('loginMatSchoolWithLaFlagDisabled', () => {
     .parent()
     .find('input[type="radio"]')
     .check();
+
+  cy.contains('Continue').click();
+});
+
+Cypress.Commands.add('loginMatSchoolWithMatFlagDisabled', () => {
+  cy.reload(true);
+  cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+  cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
+  cy.get('button[type="submit"]').click();
+  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
+  cy.get('button[type="submit"]').click();
+  cy.reload();
+
+  cy.contains('The Telford Park School')
+    .closest('.govuk-radios__item')
+    .find('input[type="radio"]')
+    .check({ force: true });
 
   cy.contains('Continue').click();
 });
@@ -256,6 +316,10 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
           cy.login('schoolCanReviewEvidenceDisabled');
         } else if (userType === 'matSchoolWithLaFlagDisabled') {
           cy.login('matSchoolWithLaFlagDisabled');
+        } else if (userType === 'matSchoolWithMatFlagDisabled') {
+          cy.login('matSchoolWithMatFlagDisabled');
+        } else if (userType === 'schoolNonMatFlagOn') {
+          cy.login('schoolNonMatFlagOn');
         } else if (userType === 'MAT') {
           cy.login('MAT');
         } else if (userType === 'basic') {
@@ -272,6 +336,10 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
         cy.login('schoolCanReviewEvidenceDisabled');
       } else if (userType === 'matSchoolWithLaFlagDisabled') {
         cy.login('matSchoolWithLaFlagDisabled');
+      } else if (userType === 'matSchoolWithMatFlagDisabled') {
+        cy.login('matSchoolWithMatFlagDisabled');
+      } else if (userType === 'schoolNonMatFlagOn') {
+        cy.login('schoolNonMatFlagOn');
       } else if (userType === 'MAT') {
         cy.login('MAT');
       } else if (userType === 'basic') {

@@ -1,6 +1,7 @@
 using CheckYourEligibility.Admin.Boundary.Requests;
 using CheckYourEligibility.Admin.Boundary.Responses;
 using CheckYourEligibility.Admin.Controllers;
+using CheckYourEligibility.Admin.Domain.DfeSignIn;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Models;
@@ -28,6 +29,7 @@ public class BulkCheckFsmBasicControllerTests
     private Mock<IParseBulkCheckFileUseCase_FsmBasic> _parseBulkCheckFileUseCaseMock = null!;
     private Mock<IDeleteBulkCheckFileUseCase_FsmBasic> _deleteBulkCheckFileUseCaseMock = null!;
     private Mock<IDfeSignInApiService> _dfeSignInApiServiceCaseMock = null;
+    private Mock<ISchoolMenuContextResolver> _schoolMenuContextResolverMock;
 
     private BulkCheckFsmBasicController _controller = null!;
 
@@ -41,9 +43,13 @@ public class BulkCheckFsmBasicControllerTests
         _parseBulkCheckFileUseCaseMock = new Mock<IParseBulkCheckFileUseCase_FsmBasic>();
         _deleteBulkCheckFileUseCaseMock = new Mock<IDeleteBulkCheckFileUseCase_FsmBasic>();
         _dfeSignInApiServiceCaseMock = new Mock<IDfeSignInApiService>();
+        _schoolMenuContextResolverMock = new Mock<ISchoolMenuContextResolver>();
+        _schoolMenuContextResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<DfeClaims>()))
+            .ReturnsAsync(new SchoolMenuContext());
 
-    // Setup configuration
-    _configurationMock.Setup(c => c["BulkEligibilityCheckLimit"]).Returns("500");
+        // Setup configuration
+        _configurationMock.Setup(c => c["BulkEligibilityCheckLimit"]).Returns("500");
         _configurationMock.Setup(c => c["BulkUploadAttemptLimit"]).Returns("5");
         
         // Setup HttpContext with session
@@ -73,7 +79,8 @@ public class BulkCheckFsmBasicControllerTests
             _parseBulkCheckFileUseCaseMock.Object,
             _getBulkCheckStatusesUseCaseMock.Object,
             _deleteBulkCheckFileUseCaseMock.Object,
-            _dfeSignInApiServiceCaseMock.Object
+            _dfeSignInApiServiceCaseMock.Object,
+            _schoolMenuContextResolverMock.Object
         );
 		_controller.ControllerContext.HttpContext = httpContext;
 		_controller.GetDfeClaimsAsync().Wait();
@@ -475,7 +482,8 @@ public class BulkCheckFsmBasicControllerTests
             _parseBulkCheckFileUseCaseMock.Object,
             _getBulkCheckStatusesUseCaseMock.Object,
             _deleteBulkCheckFileUseCaseMock.Object,
-            _dfeSignInApiServiceCaseMock.Object
+            _dfeSignInApiServiceCaseMock.Object,
+            _schoolMenuContextResolverMock.Object
         );
         laController.ControllerContext = new ControllerContext { HttpContext = httpContext };
         await laController.GetDfeClaimsAsync();

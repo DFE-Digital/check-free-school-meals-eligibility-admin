@@ -13,15 +13,18 @@ public class HomeController : BaseController
     private readonly ILocalAuthoritySettingsGateway _localAuthoritySettingsGateway;
     private readonly IAdminGateway _adminGateway;
     private readonly IMemoryCache _cache;
+    private readonly ISchoolMenuContextResolver _schoolMenuContextResolver;
 
     public HomeController(
     IDfeSignInApiService dfeSignInApiService,
     ILocalAuthoritySettingsGateway localAuthoritySettingsGateway,
+    ISchoolMenuContextResolver schoolMenuContextResolver,
     IAdminGateway adminGateway,
-    IMemoryCache cache) : base(dfeSignInApiService)
+    IMemoryCache cache) : base(dfeSignInApiService, schoolMenuContextResolver)
     {
         _localAuthoritySettingsGateway = localAuthoritySettingsGateway;
         _adminGateway = adminGateway;
+        _schoolMenuContextResolver = schoolMenuContextResolver;
         _cache = cache;
     }
 
@@ -58,12 +61,14 @@ public class HomeController : BaseController
             return View("UnauthorizedRole");
         }
 
-        var schoolCanReviewEvidence = await CacheAndGetSchoolCanReviewEvidence();
-        var schoolIsPartOfMat = await CacheAndGetSchoolIsPartOfMat();
+        var schoolMenuContext = ViewBag.SchoolMenuContext as SchoolMenuContext ?? new SchoolMenuContext();
+        var schoolCanReviewEvidence = schoolMenuContext.ShowReviewEvidenceTiles;
+        var schoolIsPartOfMat = schoolMenuContext.IsPartOfMat;
 
         var model = new HomeIndexViewModel
         {
             Claims = _Claims,
+            SchoolMenuContext = schoolMenuContext,
             SchoolCanReviewEvidence = schoolCanReviewEvidence,
             SchoolIsPartOfMat = schoolIsPartOfMat
         };
@@ -96,72 +101,4 @@ public class HomeController : BaseController
 
     public IActionResult EvidenceGuidance() => View("Guidance_steps/Evidence_Guidance");
 
-    private async Task<bool> CacheAndGetSchoolCanReviewEvidence()
-    {
-        var isSchoolUser = _Claims?.Roles?.Any(r =>
-            string.Equals(r.Code, Constants.RoleCodeSchool, StringComparison.OrdinalIgnoreCase)) == true;
-
-        if (!isSchoolUser)
-        {
-            return false;
-        }
-
-        var laCodeString = _Claims?.Organisation?.LocalAuthority?.Code;
-
-        if (!int.TryParse(laCodeString, out var laCode))
-        {
-            return false;
-        }
-
-        var cacheKey = $"LocalAuthoritySettings_{laCode}";
-
-        if (_cache.TryGetValue(cacheKey, out LocalAuthoritySettingsResponse? cachedSettings))
-        {
-            return cachedSettings?.SchoolCanReviewEvidence ?? false;
-        }
-
-        // ELIG-2661B: cache LA settings before MenuProvider builds school dashboard
-        var localAuthoritySettings =
-            await _localAuthoritySettingsGateway.GetLocalAuthoritySettingsAsync(laCode);
-
-        if (localAuthoritySettings != null)
-        {
-            _cache.Set(cacheKey, localAuthoritySettings, TimeSpan.FromMinutes(5));
-        }
-
-        return localAuthoritySettings?.SchoolCanReviewEvidence ?? false;
-    }
-
-    private async Task<bool> CacheAndGetSchoolIsPartOfMat()
-    {
-        var isSchoolUser = _Claims?.Roles?.Any(r =>
-            string.Equals(r.Code, Constants.RoleCodeSchool, StringComparison.OrdinalIgnoreCase)) == true;
-
-        if (!isSchoolUser)
-        {
-            return false;
-        }
-
-        var establishmentIdString = _Claims?.Organisation?.Urn;
-
-        if (!int.TryParse(establishmentIdString, out var establishmentId))
-        {
-            return false;
-        }
-
-        var cacheKey = $"SchoolMatMembership_{establishmentId}";
-
-        if (_cache.TryGetValue(cacheKey, out bool cachedIsPartOfMat))
-        {
-            return cachedIsPartOfMat;
-        }
-
-        var matId = await _adminGateway.GetMultiAcademyTrustIdForEstablishment(establishmentId);
-
-        var schoolIsPartOfMat = matId > 0;
-
-        _cache.Set(cacheKey, schoolIsPartOfMat, TimeSpan.FromMinutes(5));
-
-        return schoolIsPartOfMat;
-    }
 }

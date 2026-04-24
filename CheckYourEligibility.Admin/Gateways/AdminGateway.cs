@@ -110,4 +110,22 @@ public class AdminGateway : BaseGateway, IAdminGateway
             throw;
         }
     }
+
+    public async Task<MultiAcademyTrustSettingsResponse?> GetMultiAcademyTrustSettingsAsync(int matId)
+    {
+        try
+        {
+            var response = await ApiDataGetAsynch(
+                $"{_httpClient.BaseAddress?.OriginalString}/multi-academy-trusts/{matId}/settings",
+                new MultiAcademyTrustSettingsResponse());
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                $"Get failed. uri-{_httpClient.BaseAddress}/multi-academy-trusts/{matId}/settings");
+            throw;
+        }
+    }
 }

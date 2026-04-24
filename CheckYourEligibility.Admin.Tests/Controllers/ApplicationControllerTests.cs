@@ -40,9 +40,20 @@ public class ApplicationControllerTests : TestBase
 		_downloadEvidenceFileUseCaseMock = new Mock<IDownloadEvidenceFileUseCase>();
 		_sendNotificationUseCaseMock = new Mock<ISendNotificationUseCase>();
 		_dfeSignInApiServiceCaseMock = new Mock<IDfeSignInApiService>();
+        _schoolMenuContextResolverMock = new Mock<ISchoolMenuContextResolver>();
+        _schoolMenuContextResolverMock
+            .Setup(x => x.ResolveAsync(It.IsAny<DfeClaims>()))
+            .ReturnsAsync(new SchoolMenuContext());
 
-		_sut = new ApplicationController(_loggerMock, _adminGatewayMock.Object, _configurationMock.Object, _downloadEvidenceFileUseCaseMock.Object, _sendNotificationUseCaseMock.Object, _dfeSignInApiServiceCaseMock.Object);
-		base.SetUp();
+        _sut = new ApplicationController(
+            _loggerMock,
+            _adminGatewayMock.Object,
+            _configurationMock.Object,
+            _downloadEvidenceFileUseCaseMock.Object,
+            _sendNotificationUseCaseMock.Object,
+            _dfeSignInApiServiceCaseMock.Object,
+            _schoolMenuContextResolverMock.Object);
+        base.SetUp();
 		_sut.ControllerContext.HttpContext = _httpContext.Object;
 		_sut.GetDfeClaimsAsync().Wait();
 	}
@@ -60,6 +71,7 @@ public class ApplicationControllerTests : TestBase
     private Mock<IDownloadEvidenceFileUseCase> _downloadEvidenceFileUseCaseMock;
     private Mock<ISendNotificationUseCase> _sendNotificationUseCaseMock;
     private Mock<IDfeSignInApiService> _dfeSignInApiServiceCaseMock;
+    private Mock<ISchoolMenuContextResolver> _schoolMenuContextResolverMock;
 
     // system under test
     private ApplicationController _sut;
