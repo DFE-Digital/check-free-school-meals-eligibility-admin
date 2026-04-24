@@ -34,5 +34,14 @@ describe('SchoolCanReviewEvidence dashboard tile visibility', () => {
             .should('be.visible')
             .and('have.attr', 'href')
             .and('include', '/Home/Guidance');
+    });   
+
+    it('does not show review tiles for MAT-linked schools when the MAT flag is disabled even if the LA flag is enabled', () => {
+        cy.checkSession('matSchoolWithMatFlagDisabled');
+        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+    
+        cy.get('.govuk-caption-l').should('contain.text', 'The Telford Park School');
+        cy.contains('a', 'Pending applications').should('not.exist');
+        cy.contains('a', 'Guidance for reviewing evidence').should('not.exist');
     });
 });
