@@ -1,3 +1,4 @@
+using AspNetCoreGeneratedDocument;
 using CheckYourEligibility.Admin.Boundary.Responses;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
@@ -5,6 +6,7 @@ using CheckYourEligibility.Admin.Models;
 using CheckYourEligibility.Admin.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System.Linq.Expressions;
 
 namespace CheckYourEligibility.Admin.Controllers;
 
@@ -100,5 +102,6 @@ public class HomeController : BaseController
     public IActionResult BatchCheck() => View("Guidance_steps/Batch_Check");
 
     public IActionResult EvidenceGuidance() => View("Guidance_steps/Evidence_Guidance");
+    public IActionResult Rechecks() => View("Guidance_steps/Rechecks");
 
 }
