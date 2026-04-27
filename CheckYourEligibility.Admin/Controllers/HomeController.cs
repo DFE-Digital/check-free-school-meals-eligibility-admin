@@ -1,4 +1,3 @@
-using AspNetCoreGeneratedDocument;
 using CheckYourEligibility.Admin.Boundary.Responses;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
@@ -6,7 +5,6 @@ using CheckYourEligibility.Admin.Models;
 using CheckYourEligibility.Admin.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using System.Linq.Expressions;
 
 namespace CheckYourEligibility.Admin.Controllers;
 
