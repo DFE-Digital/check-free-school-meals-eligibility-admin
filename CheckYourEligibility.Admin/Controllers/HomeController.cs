@@ -100,6 +100,7 @@ public class HomeController : BaseController
     public IActionResult BatchCheck() => View("Guidance_steps/Batch_Check");
 
     public IActionResult EvidenceGuidance() => View("Guidance_steps/Evidence_Guidance");
+    public IActionResult Rechecks() => View("Guidance_steps/Rechecks");
 
 
     public IActionResult Expansion() => View("Guidance_steps/Expansion");
