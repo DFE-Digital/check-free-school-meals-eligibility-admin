@@ -28,7 +28,7 @@
     @if (Model.ShowSelectorCheck)
     {
         <td class="govuk-checkboxes__item moj-multi-select__checkbox centerer">
-            @Html.CheckBoxFor(model => model.Selected)
+            @Html.CheckBoxFor(model => model.Selected, new { aria_label = "select " + Model.Person.Reference })
         </td>
     }
     else
