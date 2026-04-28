@@ -17,8 +17,10 @@
     <div class="govuk-width-container">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
-                <p class="govuk-body">All the children in the table on this page are entitled to free school meals. Now
-                    you should finalise their applications.</p>
+                <p class="govuk-body">
+                    All the children in the table on this page are entitled to free school meals. Now
+                    you should finalise their applications.
+                </p>
             </div>
         </div>
     </div>
@@ -36,6 +38,7 @@
         <div class="govuk-grid-column-full @(string.IsNullOrEmpty(errorMessage) ? "" : "govuk-form-group--error")">
             @if (!string.IsNullOrEmpty(errorMessage))
             {
+                ViewData["Title"] = "Error: " + errorMessage;
                 <p id="file-upload-1-error" class="govuk-error-message">
                     <span class="govuk-visually-hidden">Error:</span> @errorMessage
                 </p>
@@ -46,22 +49,22 @@
 
                     <input type="submit" name="operation" id="submit" value="Finalise applications"
                            class="govuk-button  @(string.IsNullOrEmpty(errorMessage) ? "" : "govuk-file-upload--error")"
-                           data-module="govuk-button"/>
+                           data-module="govuk-button" />
 
                     @Html.ActionLink("Download all files", "FinalisedApplicationsdownload", "Application", null, new { @class = "govuk-button govuk-button--secondary" })
                 </div>
 
-                <table class="govuk-table" data-module="moj-multi-select" data-multi-select-checkbox="#select-all">
+                <table class="govuk-table">
                     <thead class="govuk-table__head">
-                    <tr class="govuk-table__row">
-                        <th class="govuk-table__header" scope="col" id="select-all"></th>
-                        <th class="govuk-table__header" scope="col">Reference</th>
-                        <th class="govuk-table__header" scope="col">Parent / Guardian</th>
-                        <th class="govuk-table__header" scope="col">Child</th>
-                        <th class="govuk-table__header" scope="col">Child date of birth</th>
-                        <th class="govuk-table__header" scope="col"> Status</th>
-                        <th class="govuk-table__header" scope="col">Submission date</th>
-                    </tr>
+                        <tr class="govuk-table__row">
+                            <th class="govuk-table__header" scope="col" id="select-all" aria-label="Select records"></th>
+                            <th class="govuk-table__header" scope="col">Reference</th>
+                            <th class="govuk-table__header" scope="col">Parent / Guardian</th>
+                            <th class="govuk-table__header" scope="col">Child</th>
+                            <th class="govuk-table__header" scope="col">Child date of birth</th>
+                            <th class="govuk-table__header" scope="col"> Status</th>
+                            <th class="govuk-table__header" scope="col">Submission date</th>
+                        </tr>
                     </thead>
 
                     @Html.EditorFor(model => model.People)
