@@ -3,6 +3,7 @@ using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Models;
 using CheckYourEligibility.Admin.ViewModels;
+using FluentValidation.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -101,4 +102,6 @@ public class HomeController : BaseController
 
     public IActionResult EvidenceGuidance() => View("Guidance_steps/Evidence_Guidance");
 
+
+    public IActionResult Expansion() => View("Guidance_steps/Expansion");
 }
