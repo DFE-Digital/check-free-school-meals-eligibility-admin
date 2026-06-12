@@ -131,7 +131,7 @@ describe('Full journey of creating an application through school portal through 
                     .replace(/\u00A0/g, ' ')
                     .replace(/\s+/g, ' ')
                     .trim();
-                expect(clean).to.eq('nn123456c');
+                    expect(clean).to.eq('NN123456C');
             });
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
         cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
@@ -152,7 +152,7 @@ describe('Full journey of creating an application through school portal through 
         //Approve Not Eligible Appeal Application from earlier
         cy.url().should('contain', 'Application/PendingApplications');
         cy.get('ul.govuk-pagination__list').find('li').last().find('a').click();
-        cy.scanPagesForNewValue(referenceNumber);
+        cy.scanPagesForNewValue(referenceNumber, 10);
         cy.contains('.govuk-button', 'Approve application').click();
         cy.contains('.govuk-button', 'Yes, approve now').click();
 

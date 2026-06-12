@@ -2,6 +2,13 @@
 
 @{
     ViewData["Title"] = "Run a check for one parent or guardian";
+
+    var ninoInputClasses = "govuk-input govuk-!-width-one-third js-nino-input";
+
+    if (ViewData.ModelState["NationalInsuranceNumber"]?.Errors.Count > 0)
+    {
+        ninoInputClasses += " govuk-input--error";
+    }
 }
 
 <div class="govuk-grid-column-two-thirds">
@@ -99,12 +106,13 @@
                     <span asp-validation-for="NationalInsuranceNumber"></span>
                 </p>
 
-                <input class="govuk-input govuk-!-width-one-third @(ViewData.ModelState["NationalInsuranceNumber"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-controller="Check"
-                       asp-for="NationalInsuranceNumber"
-                       type="text"
-                       spellcheck="false"
-                       autocomplete="text">
+               <input class="@ninoInputClasses"
+                                   asp-controller="Check"
+                                   asp-for="NationalInsuranceNumber"
+                                   type="text"
+                                   spellcheck="false"
+                                   autocomplete="text"
+                                   maxlength="9">
             </div>
             <p class="govuk-body">
                 @Html.ActionLink("Parent or guardian is an asylum seeker", "Guidance_Redirect", "Home", null)

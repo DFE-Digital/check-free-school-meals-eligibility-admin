@@ -58,7 +58,7 @@ describe('Full journey of creating an application through school portal through 
                     .replace(/\u00A0/g, ' ')
                     .replace(/\s+/g, ' ')
                     .trim();
-                expect(clean).to.eq('nn123456c');
+                expect(clean).to.eq('NN123456C');
             });
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
         cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
