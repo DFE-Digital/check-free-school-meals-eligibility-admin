@@ -351,7 +351,7 @@ public class BulkCheckController : BaseController
     {
         try
         {
-            var allChecks = await _getBulkCheckStatusesUseCase.Execute();
+            var allChecks = await _checkGateway.GetBulkCheckStatuses();
 
             var checksList = allChecks
                 .Where(c => c.Status != "Deleted")
