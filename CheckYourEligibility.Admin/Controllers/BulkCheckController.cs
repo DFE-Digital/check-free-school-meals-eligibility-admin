@@ -353,7 +353,7 @@ public class BulkCheckController : BaseController
         {
             var allChecks = await _checkGateway.GetBulkCheckStatuses();
 
-            var checksList = allChecks
+            var checksList = allChecks.Checks
                 .Where(c => c.Status != "Deleted")
                 .OrderByDescending(x => x.SubmittedDate)
                 .ToList();
@@ -369,7 +369,7 @@ public class BulkCheckController : BaseController
             {
                 Checks = pagedChecks.Select(c => new BulkCheckFsmBasicStatusViewModel
                 {
-                    BulkCheckId = c.BulkCheckId,
+                    BulkCheckId = c.Id,
                     Filename = c.Filename,
                     NumberOfRecords = c.NumberOfRecords,
                     FinalNameInCheck = c.FinalNameInCheck,
