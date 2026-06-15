@@ -22,6 +22,9 @@ public interface ICheckGateway
     Task<CheckEligibilityBulkStatusResponse> GetBulkCheckProgress_FsmBasic(string bulkCheckUrl);
     Task<CheckEligibilityBulkResponse> GetBulkCheckResults_FsmBasic(string resultsUrl);
     Task<CheckEligibilityBulkProgressByLAResponse> GetBulkCheckStatuses_FsmBasic(string organisationId);
+
+    Task<CheckEligibilityBulkProgressByLAResponse> GetBulkCheckStatuses();
+
     Task<CheckEligiblityBulkDeleteResponse> DeleteBulkChecksFor_FsmBasic(string bulkCheckDeleteUrl);
     Task<IEnumerable<IBulkExport>> LoadBulkCheckResults_FsmBasic(string bulkCheckId, string fsmPolicy);
 

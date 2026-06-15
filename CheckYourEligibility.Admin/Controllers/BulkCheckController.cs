@@ -5,6 +5,7 @@ using CheckYourEligibility.Admin.Domain.Validation;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Models;
+using CheckYourEligibility.Admin.ViewModels;
 using CsvHelper;
 using CsvHelper.Configuration;
 using FluentValidation.Results;
@@ -344,5 +345,49 @@ public class BulkCheckController : BaseController
         }
 
         return errorCount;
+    }
+
+    public async Task<IActionResult> Bulk_Check_History(int pageNumber = 1, int pageSize = 10)
+    {
+        try
+        {
+            var allChecks = await _getBulkCheckStatusesUseCase.Execute();
+
+            var checksList = allChecks
+                .Where(c => c.Status != "Deleted")
+                .OrderByDescending(x => x.SubmittedDate)
+                .ToList();
+
+            var totalRecords = checksList.Count;
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            var pagedChecks = checksList
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var viewModel = new BulkCheckFsmBasicStatusesViewModel
+            {
+                Checks = pagedChecks.Select(c => new BulkCheckFsmBasicStatusViewModel
+                {
+                    BulkCheckId = c.BulkCheckId,
+                    Filename = c.Filename,
+                    NumberOfRecords = c.NumberOfRecords,
+                    FinalNameInCheck = c.FinalNameInCheck,
+                    DateSubmitted = c.SubmittedDate,
+                    SubmittedBy = c.SubmittedBy,
+                    Status = c.Status
+                }).ToList(),
+                CurrentPage = pageNumber,
+                TotalPages = totalPages,
+                TotalRecords = totalRecords
+            };
+
+            return View("Bulk_Check_History", viewModel);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading bulk check history");
+            return View("Bulk_Check_History", new BulkCheckFsmBasicStatusesViewModel());
+        }
     }
 }

@@ -5,7 +5,7 @@
     var errorMessage = TempData["ErrorMessage"] as string;
 }
 
-<div class="govuk-grid-column-two-thirds">
+<div class="govuk-grid-column-full">
     <a class="govuk-back-link backLinkJS" href="@Url.Action("Index", "Home")">Back</a>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -25,7 +25,19 @@
         </div>
     }
 
-    <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+    <div class="moj-page-header-actions">
+        <div class="moj-page-header-actions__title">
+            <span class="govuk-caption-l">@ViewData["Title"]</span>
+            <h1 class="govuk-heading-l">Run a manual batch check</h1>
+        </div>
+        <div class="moj-page-header-actions__actions">
+            <div class="moj-button-group moj-button-group--inline">
+                <a href="@Url.Action("Bulk_Check_History", "BulkCheck")" class="govuk-button govuk-button--secondary" data-module="govuk-button">
+                    Batch checks history
+                </a>
+            </div>
+        </div>
+    </div>
     <p>Upload a template with details of the parents or guardians who applied for free school meals.</p>
     <h2 class="govuk-heading-m">Running a batch check</h2>
     <ol class="govuk-list govuk-list--number">

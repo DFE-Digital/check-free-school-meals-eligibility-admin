@@ -187,6 +187,20 @@ public class CheckGateway : BaseGateway, ICheckGateway
         }
     }
 
+    public async Task<CheckEligibilityBulkProgressByLAResponse> GetBulkCheckStatuses()
+    {
+        try
+        {
+            var result = await ApiDataGetAsynch("bulk-check", new CheckEligibilityBulkProgressByLAResponse());
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"get failed. uri:-{_httpClient.BaseAddress}bulk-check");
+            throw;
+        }
+    }
+
     public async Task<CheckEligiblityBulkDeleteResponse> DeleteBulkChecksFor_FsmBasic(string bulkCheckDeleteUrl)
     {
         try
