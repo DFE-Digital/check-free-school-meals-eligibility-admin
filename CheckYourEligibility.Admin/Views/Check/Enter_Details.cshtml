@@ -4,7 +4,6 @@
 @{
     ViewData["Title"] = "Run a check for one parent or guardian";
     var orgType = TempData["organisationType"] as OrganisationCategory?;
-}
 
     var ninoInputClasses = "govuk-input govuk-!-width-one-third js-nino-input";
 
@@ -148,41 +147,17 @@
                     <span asp-validation-for="NationalInsuranceNumber"></span>
                 </p>
 
-                    <div class="govuk-radios" data-module="govuk-radios">
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input" id="nin-asrn-radios-1" asp-for="NinAsrSelection" type="radio"
-                                   value="NinSelected" aria-controls="conditional-NIN" aria-expanded="false"
-                                   aria-label="National Insurance number">
-                            <label class="govuk-label govuk-radios__label" for="nin-asrn-radios-1">
-                                National Insurance number
-                            </label>
-                        </div>
+                    <input class="@ninoInputClasses"
+                       id="NationalInsuranceNumber"
+                       aria-describedby="NIN-hint"
+                       asp-controller="Check"
+                       asp-for="NationalInsuranceNumber"
+                       type="text"
+                       spellcheck="false"
+                       autocomplete="text"
+                       maxlength="9">
 
-                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden"
-                             id="conditional-NIN">
-                            <div class="govuk-form-group">
-                                <label class="govuk-label" for="NationalInsuranceNumber">
-                                    Parent or guardian National Insurance number
-                                </label>
-                                <input class="@ninoInputClasses"
-                                   aria-describedby="NIN-hint"
-                                   asp-controller="Check"
-                                   asp-for="NationalInsuranceNumber"
-                                   type="text"
-                                   spellcheck="false"
-                                   autocomplete="text"
-                                   maxlength="9">
-                            </div>
-                        </div>
-
-                        <div class="govuk-radios__item">
-                            <input class="govuk-radios__input" id="nin-asrn-radios-2" asp-for="NinAsrSelection" type="radio"
-                                   value="AsrnSelected" aria-controls="conditional-ASRN" aria-expanded="false"
-                                   aria-label="asylum support reference number">
-                            <label class="govuk-label govuk-radios__label" for="nin-asrn-radios-2">
-                                Asylum support reference number
-                            </label>
-                        </div>
+            </div>
 
             @if (!(orgType == OrganisationCategory.Establishment))
             {
