@@ -15,6 +15,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Remove="Views\BulkCheckFsmBasic\PaginationPartial.cshtml" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Content Include="Attributes\NinoAttribute.cs" />
         <Content Include="Attributes\NameAttribute.cs" />
     </ItemGroup>

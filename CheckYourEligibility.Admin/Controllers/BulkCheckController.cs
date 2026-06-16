@@ -382,12 +382,12 @@ public class BulkCheckController : BaseController
                 TotalRecords = totalRecords
             };
 
-            return View("Bulk_Check_History", viewModel);
+            return View("BulkOutcome/Bulk_Check_History", viewModel);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading bulk check history");
-            return View("Bulk_Check_History", new BulkCheckFsmBasicStatusesViewModel());
+            return View("BulkOutcome/Bulk_Check_History", new BulkCheckFsmBasicStatusesViewModel());
         }
     }
 }
