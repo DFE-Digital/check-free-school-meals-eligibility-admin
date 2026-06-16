@@ -20,20 +20,36 @@ public class BulkCheckController : BaseController
     private readonly ICheckGateway _checkGateway;
     private readonly IConfiguration _config;
     private readonly ILogger<BulkCheckController> _logger;
+    private readonly IWebHostEnvironment _environment;
 
     public BulkCheckController(ILogger<BulkCheckController> logger, ICheckGateway checkGateway,
-        IConfiguration configuration, IDfeSignInApiService dfeSignInApiService,
+        IConfiguration configuration, IWebHostEnvironment environment, IDfeSignInApiService dfeSignInApiService,
         ISchoolMenuContextResolver schoolMenuContextResolver,
         ILocalAuthoritySettingsGateway localAuthoritySettingsGateway) : base(dfeSignInApiService, schoolMenuContextResolver, localAuthoritySettingsGateway)
     {
         _config = configuration;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _checkGateway = checkGateway ?? throw new ArgumentNullException(nameof(checkGateway));
+        _environment = environment ?? throw new ArgumentNullException(nameof(environment));
     }
 
     public IActionResult Bulk_Check()
     {
         return View();
+    }
+
+    [HttpGet]
+    public IActionResult DownloadTemplate()
+    {
+        const string fileName = "BulkCheckTemplate.csv";
+
+        var path = Path.Combine(_environment.WebRootPath, "documents", fileName);
+
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate, max-age=0";
+        Response.Headers.Pragma = "no-cache";
+        Response.Headers.Expires = "0";
+
+        return PhysicalFile(path, "text/csv", fileName);
     }
 
     [HttpPost]
@@ -142,7 +158,6 @@ public class BulkCheckController : BaseController
                         ? dtval.ToString("yyyy-MM-dd")
                         : string.Empty,
                     NationalInsuranceNumber = item.Ni.ToUpper(),
-                    NationalAsylumSeekerServiceNumber = item.Nass.ToUpper(),
                     Sequence = sequence
                 };
                 var validationResults = validator.Validate(requestItem);
@@ -290,18 +305,6 @@ public class BulkCheckController : BaseController
                 case ValidationMessages.NI:
                     {
                         message = $"<li>Line {sequence}: Issue with National Insurance number</li>";
-                        errorCount = AddLineIfNotExist(validationResultsItems, errorCount, message);
-                    }
-                    break;
-                case ValidationMessages.NI_and_NASS:
-                    {
-                        message = $"<li>Line {sequence}: Issue {ValidationMessages.NI_and_NASS}</li>";
-                        errorCount = AddLineIfNotExist(validationResultsItems, errorCount, message);
-                    }
-                    break;
-                case ValidationMessages.NI_or_NASS:
-                    {
-                        message = $"<li>Line {sequence}: Issue {ValidationMessages.NI_or_NASS}</li>";
                         errorCount = AddLineIfNotExist(validationResultsItems, errorCount, message);
                     }
                     break;
