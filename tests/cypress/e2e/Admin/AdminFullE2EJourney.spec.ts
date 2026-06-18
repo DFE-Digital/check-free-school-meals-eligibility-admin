@@ -6,8 +6,7 @@ describe('Full journey of creating an application through school portal through 
     const childFirstName = 'Timmy';
     const childLastName = 'Smith';
 
-    it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {
-        let referenceNumber: string;
+    it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {       
 
         cy.checkSession('school');
         cy.visit((Cypress.config().baseUrl ?? "") + "/home");
@@ -100,7 +99,7 @@ describe('Full journey of creating an application through school portal through 
         //Go to the last page of results
         cy.get('.govuk-pagination__list').find('a[href*="PageNumber"]').not('[rel="next"]').last().click();
         cy.get<string>('@referenceNumber').then((ref) => {
-            cy.scanPagesForNewValue(ref);
+            cy.scanPagesForNewValue(ref, 10);
         });
 
         cy.contains('.govuk-button', 'Approve application').click();
@@ -208,52 +207,7 @@ describe('Full journey of creating an application through school portal through 
 
         //Applications Registered confirmation page
         cy.url().should('include', '/Check/ApplicationsRegistered');
-    });
+    });  
 
-    it('Allows a user when logged into the LA portal to approve the application review', () => {
-        skipSetup = true; //don't restore school session
-        //Log in a LA and navigate to Pending Applications
-        cy.checkSession('LA');
-        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
-        cy.get('.govuk-caption-l').should('include.text', 'Telford And Wrekin Council');
-        cy.contains('.govuk-link', 'Pending applications').click();
-
-        //Approve Not Eligible Appeal Application from earlier
-        cy.url().should('contain', 'Application/PendingApplications');
-        cy.get('ul.govuk-pagination__list').find('li').last().find('a').click();
-        cy.scanPagesForNewValue(referenceNumber, 10);
-        cy.contains('.govuk-button', 'Approve application').click();
-        cy.contains('.govuk-button', 'Yes, approve now').click();
-
-        //Search for approved application
-        cy.visit('/home');
-        cy.contains('Search all records').click();
-        cy.url().should('contain', 'Application/SearchResults');
-        cy.get('#Keyword').type(referenceNumber);
-        cy.contains('button.govuk-button', 'Apply filters').click(); //Apply filters
-        cy.url().should('include', 'Application/SearchResults');
-        cy.get('h2').should('contain.text', 'Showing 1 results');
-        cy.get('.govuk-table')
-            .find('tbody tr')
-            .eq(0)
-            .find('td')
-            .eq(0)
-            .should('contain.text', referenceNumber);
-        cy.get('.govuk-table')
-            .find('tbody tr')
-            .eq(0)
-            .find('td')
-            .eq(5)
-            .should('contain.text', 'Reviewed entitled');
-        skipSetup = false;
-    });
-
-    it('Allows a user when back logged into the School portal to finalise the application', () => {
-        cy.contains('Finalise applications').click();
-        cy.url().should('contain', 'Application/FinaliseApplications');
-        cy.findNewApplicationFinalise(referenceNumber).then(() => {
-            cy.contains('.govuk-button', 'Finalise applications').click();
-            cy.contains('.govuk-button', 'Yes, finalise now').click();
-        });
-    });
+   
 });
