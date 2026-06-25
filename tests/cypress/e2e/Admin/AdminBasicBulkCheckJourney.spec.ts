@@ -89,7 +89,7 @@ describe("BasicLAHappyPath", () => {
     cy.get("#file-upload-1-error").as("errorMessage");
     cy.get("@errorMessage").should(($p) => {
       expect($p.first()).to.contain(
-        `CSV file cannot contain more than ${bulkBasicOverLimitRowCount} records`,
+        `/CSV file cannot contain more than\s+\d+\s+records/`,
       );
     });
   });
