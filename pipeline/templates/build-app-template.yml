@@ -26,6 +26,15 @@ stages:
               platform: '$(buildPlatform)'
               configuration: '$(buildConfiguration)'
 
+          - task: DotNetCoreCLI@2
+            displayName: 'Run tests'
+            inputs:
+              command: 'test'
+              projects: 'CheckYourEligibility.Admin.Tests/CheckYourEligibility.Admin.Tests.csproj'
+              arguments: '--configuration $(buildConfiguration) --verbosity minimal'
+              publishTestResults: true
+              testRunTitle: 'Unit Tests'
+
           - task: CopyFiles@2
             inputs:
               SourceFolder: 'tests'
