@@ -10,6 +10,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using System.Globalization;
 using System.Text;
 using static CheckYourEligibility.Admin.Helpers.CsvBulkCheckValidatorHelper;
 
@@ -48,6 +49,9 @@ public class ParseBulkCheckFileUseCaseTests
             _serviceProviderMock.Object,
             _configurationMock.Object,
             _checkGatewayMock.Object);
+
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-GB");
+        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-GB");
     }
 
     #endregion

@@ -30,7 +30,7 @@ stages:
             displayName: 'Run tests'
             inputs:
               command: 'test'
-              projects: 'CheckYourEligibility.Admin.Tests/CheckYourEligibility.Admin.Tests.csproj'
+              projects: 'CheckYourEligibility.Admin.Tests\CheckYourEligibility.Admin.Tests.csproj'
               arguments: '--configuration $(buildConfiguration) --verbosity minimal'
               publishTestResults: true
               testRunTitle: 'Unit Tests'
