@@ -8,8 +8,7 @@
     ViewData["Title"] = "Guidance";
 
     var orgType = TempData["organisationType"] as OrganisationCategory?;
-    bool expandedEnabled = ViewBag.FreeSchoolMealsPolicy.EligibilityCriteria == EligibilityCriteria.expanded.ToString();
-
+    bool expandedEnabled = ViewBag.IsExpandedFSMEnabled;
     var SchoolCanReviewEvidence = Model.SchoolCanReviewEvidence;
 }
 

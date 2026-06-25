@@ -109,7 +109,7 @@
                     </div>
 
                     <div class="govuk-radios" data-module="govuk-radios">
-                        @if (bool.Parse(ViewBag.IsExpandedFSMEnabled.ToString()))
+                        @if (ViewBag.IsExpandedFSMEnabled)
                         {
                             <div class="govuk-radios__item">
                                 <input class="govuk-radios__input" id="Decision-ApproveExpanded" type="radio" name="Decision"
