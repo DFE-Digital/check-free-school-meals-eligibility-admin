@@ -109,6 +109,6 @@ public static class DateTimeExtensions
     }
     public static string ToLocalString12HourFormatReadable(this DateTime datetime)
     {
-        return GetLocalTime(datetime).ToString("dd MMM yyyy hh:mmtt").Replace("AM", "am").Replace("PM", "pm");
+        return GetLocalTime(datetime).ToString("dd MMM yyyy h:mmtt").Replace("AM", "am").Replace("PM", "pm");
     }
 }
