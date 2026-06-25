@@ -141,7 +141,7 @@ public class BaseController : Controller
     {
         var policy = await GetFreeSchoolMealsPolicy();
         var isExpanded = policy != null && policy.EligibilityCriteria == EligibilityCriteria.expanded;
-        ViewBag.IsExpandedFSMEnabled = isExpanded.ToString();
+        ViewBag.IsExpandedFSMEnabled = isExpanded;
         return isExpanded;
     }
 }
