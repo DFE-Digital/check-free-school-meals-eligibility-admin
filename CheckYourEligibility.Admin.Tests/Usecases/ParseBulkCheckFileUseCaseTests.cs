@@ -50,8 +50,14 @@ public class ParseBulkCheckFileUseCaseTests
             _configurationMock.Object,
             _checkGatewayMock.Object);
 
-        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-GB");
-        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-GB");
+        var culture = new CultureInfo("en-GB");
+
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+
     }
 
     #endregion
