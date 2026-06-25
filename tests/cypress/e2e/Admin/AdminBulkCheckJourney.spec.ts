@@ -98,7 +98,7 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
 
       cy.get("#file-upload-1-error").should(
         "contain",
-        "CSV file cannot contain more than 250 records",
+        `CSV file cannot contain more than ${bulkOverLimitRowCount} records`,
       );
     });
 
