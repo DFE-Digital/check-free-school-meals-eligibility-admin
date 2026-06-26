@@ -100,7 +100,7 @@ internal class BaseControllerTests : TestBase
     }
 
     [Test]
-    public async Task GetFreeSchoolMealsPolicy_WhenGatewayThrows_ReturnsDefaultStandardPolicy()
+    public async Task GetFreeSchoolMealsPolicy_WhenGatewayThrows_ReturnsDefaultExpandedPolicy()
     {
         // Arrange
         _localAuthoritySettingsGatewayMock
@@ -113,7 +113,7 @@ internal class BaseControllerTests : TestBase
         // Assert
         policy.Should().NotBeNull();
         policy.CheckType.Should().Be(CheckEligibilityType.FreeSchoolMeals.ToString());
-        policy.EligibilityCriteria.Should().Be(EligibilityCriteria.standard);
+        policy.EligibilityCriteria.Should().Be(EligibilityCriteria.expanded);
     }
 
     [Test]

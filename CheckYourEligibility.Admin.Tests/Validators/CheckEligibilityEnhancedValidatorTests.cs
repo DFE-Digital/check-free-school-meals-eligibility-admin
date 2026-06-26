@@ -30,8 +30,18 @@ namespace CheckYourEligibility.Admin.Tests.Validators
         {
             var model = new CheckEligibilityRequestData_Enhanced
             {
+                NationalInsuranceNumber = "AA123456C",
+                LastName = "Test",
+                FirstName = "Test",
+                DateOfBirth = "1985-04-23",
+                Sequence = 1,
+
+                ChildFirstName = "Emily",
+                ChildLastName = "Test",
+                ChildDateOfBirth = "2015-09-10",
                 ChildSchoolUrn = urn
             };
+
 
             var context = CreateContext(model, new HashSet<int> { 123456 });
 
@@ -44,8 +54,18 @@ namespace CheckYourEligibility.Admin.Tests.Validators
         {
             var model = new CheckEligibilityRequestData_Enhanced
             {
+                NationalInsuranceNumber = "AA123456C",
+                LastName = "Test",
+                FirstName = "Test",
+                DateOfBirth = "1985-04-23",
+                Sequence = 1,
+
+                ChildFirstName = "Emily",
+                ChildLastName = "Test",
+                ChildDateOfBirth = "2015-09-10",
                 ChildSchoolUrn = "999999"
             };
+
 
             var context = CreateContext(
                 model,
