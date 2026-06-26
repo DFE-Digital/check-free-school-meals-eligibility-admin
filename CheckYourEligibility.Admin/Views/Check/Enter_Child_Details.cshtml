@@ -149,7 +149,12 @@
                                        value="@(Model.ChildList[i].School != null && !string.IsNullOrEmpty(Model.ChildList[i].School.URN) ? string.Join(", ", Model.ChildList[i].School.Name, Model.ChildList[i].School.URN, Model.ChildList[i].School.Postcode, Model.ChildList[i].School.LA) : "")"
                                        type="text"
                                        autocomplete="off"
-                                       aria-label="School Search" />
+                                       aria-label="School Search"
+                                       role="combobox"
+                                       aria-autocomplete="list"
+                                       aria-expanded="false"
+                                       aria-controls="schoolList@(i)"
+                                       aria-activedescendant="" />
                                 <input hidden asp-for="ChildList[i].School.Name" id="ChildList[@i].School.Name" />
                                 <input asp-for="ChildList[i].School.URN" id="ChildList[@i].School.URN"
                                        class="noJsShow govuk-search govuk-input" aria-label="School" />
