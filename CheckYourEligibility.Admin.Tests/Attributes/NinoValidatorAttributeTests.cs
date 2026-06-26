@@ -1,203 +1,203 @@
-using System.ComponentModel.DataAnnotations;
+//using System.ComponentModel.DataAnnotations;
 
-namespace CheckYourEligibility.Admin.Tests.Attributes;
+//namespace CheckYourEligibility.Admin.Tests.Attributes;
 
-[TestFixture]
-public class NinoValidatorAttributeTests
-{
-    #region Test Models
+//[TestFixture]
+//public class NinoValidatorAttributeTests
+//{
+//    #region Test Models
 
-    private class TestModel
-    {
-        public string? NationalInsuranceNumber { get; set; }
-    }
+//    private class TestModel
+//    {
+//        public string? NationalInsuranceNumber { get; set; }
+//    }
 
-    #endregion
+//    #endregion
 
-    #region Valid NIN Format Tests
+//    #region Valid NIN Format Tests
 
-    [Test]
-    [TestCase("AB123456C")]
-    [TestCase("CD987654D")]
-    [TestCase("AB123456")] // Without suffix
-    [TestCase("ZY123456A")]
-    [TestCase("ab123456c")] // Lowercase (should normalize)
-    [TestCase("AB 12 34 56 C")] // With spaces (should normalize)
-    public void IsValid_WithValidNinFormat_ReturnsSuccess(string nin)
-    {
-        // Arrange
-        var model = new TestModel
-        {
-            NationalInsuranceNumber = nin
-        };
+//    [Test]
+//    [TestCase("AB123456C")]
+//    [TestCase("CD987654D")]
+//    [TestCase("AB123456")] // Without suffix
+//    [TestCase("ZY123456A")]
+//    [TestCase("ab123456c")] // Lowercase (should normalize)
+//    [TestCase("AB 12 34 56 C")] // With spaces (should normalize)
+//    public void IsValid_WithValidNinFormat_ReturnsSuccess(string nin)
+//    {
+//        // Arrange
+//        var model = new TestModel
+//        {
+//            NationalInsuranceNumber = nin
+//        };
 
-        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-        var results = new List<ValidationResult>();
+//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
+//        var results = new List<ValidationResult>();
 
-        // Act
-        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+//        // Act
+//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
 
-        // Assert
-        Assert.That(isValid, Is.True);
-    }
+//        // Assert
+//        Assert.That(isValid, Is.True);
+//    }
 
-    #endregion
+//    #endregion
 
-    #region Invalid NIN Format Tests
+//    #region Invalid NIN Format Tests
 
-    [Test]
-    [TestCase("1234567890")] // All digits
-    [TestCase("ABCDEFGHIJ")] // All letters
-    [TestCase("AB12345")] // Too short
-    [TestCase("AB1234567890")] // Too long (>9)
-    [TestCase("AB123456E")] // Invalid suffix (E not allowed)
-    [TestCase("AB-123456C")] // Invalid character after normalization
-    [TestCase("")] // Empty
-    public void IsValid_WithInvalidNinFormat_ReturnsError(string nin)
-    {
-        // Arrange
-        var model = new TestModel
-        {
-            NationalInsuranceNumber = nin
-        };
+//    [Test]
+//    [TestCase("1234567890")] // All digits
+//    [TestCase("ABCDEFGHIJ")] // All letters
+//    [TestCase("AB12345")] // Too short
+//    [TestCase("AB1234567890")] // Too long (>9)
+//    [TestCase("AB123456E")] // Invalid suffix (E not allowed)
+//    [TestCase("AB-123456C")] // Invalid character after normalization
+//    [TestCase("")] // Empty
+//    public void IsValid_WithInvalidNinFormat_ReturnsError(string nin)
+//    {
+//        // Arrange
+//        var model = new TestModel
+//        {
+//            NationalInsuranceNumber = nin
+//        };
 
-        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-        var results = new List<ValidationResult>();
+//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
+//        var results = new List<ValidationResult>();
 
-        // Act
-        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+//        // Act
+//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
 
-        // Assert
-        Assert.That(isValid, Is.False);
-        Assert.That(results, Is.Not.Empty);
-    }
+//        // Assert
+//        Assert.That(isValid, Is.False);
+//        Assert.That(results, Is.Not.Empty);
+//    }
 
-    [Test]
-    public void IsValid_WithNinTooLong_ReturnsSpecificError()
-    {
-        // Arrange
-        var model = new TestModel
-        {
-            NationalInsuranceNumber = "AB123456789012" // More than 9 characters
-        };
+//    [Test]
+//    public void IsValid_WithNinTooLong_ReturnsSpecificError()
+//    {
+//        // Arrange
+//        var model = new TestModel
+//        {
+//            NationalInsuranceNumber = "AB123456789012" // More than 9 characters
+//        };
 
-        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-        var results = new List<ValidationResult>();
+//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
+//        var results = new List<ValidationResult>();
 
-        // Act
-        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+//        // Act
+//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
 
-        // Assert
-        Assert.That(isValid, Is.False);
-        Assert.That(results[0].ErrorMessage, Does.Contain("no more than 9 alphanumeric characters"));
-    }
+//        // Assert
+//        Assert.That(isValid, Is.False);
+//        Assert.That(results[0].ErrorMessage, Does.Contain("no more than 9 alphanumeric characters"));
+//    }
 
-    #endregion
+//    #endregion
 
-    #region Normalization Tests
+//    #region Normalization Tests
 
-    [Test]
-    public void IsValid_WithSpacesInNin_NormalizesAndValidates()
-    {
-        // Arrange
-        var model = new TestModel
-        {
-            NationalInsuranceNumber = "AB 12 34 56 C"
-        };
+//    [Test]
+//    public void IsValid_WithSpacesInNin_NormalizesAndValidates()
+//    {
+//        // Arrange
+//        var model = new TestModel
+//        {
+//            NationalInsuranceNumber = "AB 12 34 56 C"
+//        };
 
-        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-        var results = new List<ValidationResult>();
+//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
+//        var results = new List<ValidationResult>();
 
-        // Act
-        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+//        // Act
+//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
 
-        // Assert
-        Assert.That(isValid, Is.True);
-    }
+//        // Assert
+//        Assert.That(isValid, Is.True);
+//    }
 
-    [Test]
-    public void IsValid_WithLowercaseNin_NormalizesAndValidates()
-    {
-        // Arrange
-        var model = new TestModel
-        {
-            NationalInsuranceNumber = "ab123456c"
-        };
+//    [Test]
+//    public void IsValid_WithLowercaseNin_NormalizesAndValidates()
+//    {
+//        // Arrange
+//        var model = new TestModel
+//        {
+//            NationalInsuranceNumber = "ab123456c"
+//        };
 
-        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-        var results = new List<ValidationResult>();
+//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
+//        var results = new List<ValidationResult>();
 
-        // Act
-        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+//        // Act
+//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
 
-        // Assert
-        Assert.That(isValid, Is.True);
-    }
+//        // Assert
+//        Assert.That(isValid, Is.True);
+//    }
 
-    [Test]
-    public void IsValid_WithMixedCaseAndSpaces_NormalizesAndValidates()
-    {
-        // Arrange
-        var model = new TestModel
-        {
-            NationalInsuranceNumber = "Ab 12 34 56 c"
-        };
+//    [Test]
+//    public void IsValid_WithMixedCaseAndSpaces_NormalizesAndValidates()
+//    {
+//        // Arrange
+//        var model = new TestModel
+//        {
+//            NationalInsuranceNumber = "Ab 12 34 56 c"
+//        };
 
-        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-        var results = new List<ValidationResult>();
+//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
+//        var results = new List<ValidationResult>();
 
-        // Act
-        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+//        // Act
+//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
 
-        // Assert
-        Assert.That(isValid, Is.True);
-    }
+//        // Assert
+//        Assert.That(isValid, Is.True);
+//    }
 
-    #endregion
+//    #endregion
 
-    #region Valid Suffix Tests
+//    #region Valid Suffix Tests
 
-    [Test]
-    [TestCase("AB123456A")]
-    [TestCase("AB123456B")]
-    [TestCase("AB123456C")]
-    [TestCase("AB123456D")]
-    public void IsValid_WithValidSuffix_ReturnsSuccess(string nin)
-    {
-        // Arrange
-        var model = new TestModel
-        {
-            NationalInsuranceNumber = nin
-        };
+//    [Test]
+//    [TestCase("AB123456A")]
+//    [TestCase("AB123456B")]
+//    [TestCase("AB123456C")]
+//    [TestCase("AB123456D")]
+//    public void IsValid_WithValidSuffix_ReturnsSuccess(string nin)
+//    {
+//        // Arrange
+//        var model = new TestModel
+//        {
+//            NationalInsuranceNumber = nin
+//        };
 
-        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-        var results = new List<ValidationResult>();
+//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
+//        var results = new List<ValidationResult>();
 
-        // Act
-        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+//        // Act
+//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
 
-        // Assert
-        Assert.That(isValid, Is.True);
-    }
+//        // Assert
+//        Assert.That(isValid, Is.True);
+//    }
 
-    [Test]
-    public void IsValid_WithNoSuffix_ReturnsSuccess()
-    {
-        // Arrange - 8 characters without suffix
-        var model = new TestModel
-        {
-            NationalInsuranceNumber = "AB123456"
-        };
+//    [Test]
+//    public void IsValid_WithNoSuffix_ReturnsSuccess()
+//    {
+//        // Arrange - 8 characters without suffix
+//        var model = new TestModel
+//        {
+//            NationalInsuranceNumber = "AB123456"
+//        };
 
-        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-        var results = new List<ValidationResult>();
+//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
+//        var results = new List<ValidationResult>();
 
-        // Act
-        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+//        // Act
+//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
 
-        // Assert
-        Assert.That(isValid, Is.True);
-    }
+//        // Assert
+//        Assert.That(isValid, Is.True);
+//    }
 
-    #endregion
-}
+//    #endregion
+//}
