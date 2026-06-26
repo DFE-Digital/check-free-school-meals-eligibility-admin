@@ -96,10 +96,10 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
 
       cy.contains("button", "Run a batch check").click();
 
-      cy.get("#file-upload-1-error").should(
-        "contain",
-        `/CSV file cannot contain more than\s+\d+\s+records/`,
-      );
+    cy.get("#file-upload-1-error")
+      .should(($el) => {
+        expect($el.text()).to.match(/CSV file cannot contain more than\s+\d+\s+records/);
+      });
     });
 
     it("runs a successful batch check", () => {

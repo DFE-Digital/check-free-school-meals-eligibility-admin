@@ -86,12 +86,11 @@ describe("BasicLAHappyPath", () => {
       },
     ]);
     cy.contains("button", "Run a batch check").click();
-    cy.get("#file-upload-1-error").as("errorMessage");
-    cy.get("@errorMessage").should(($p) => {
-      expect($p.first()).to.contain(
-        `/CSV file cannot contain more than\s+\d+\s+records/`,
-      );
-    });
+
+    cy.get("#file-upload-1-error")
+      .should(($el) => {
+        expect($el.text()).to.match(/CSV file cannot contain more than\s+\d+\s+records/);
+      });
   });
 
 it("will run a successful batch check", () => {
