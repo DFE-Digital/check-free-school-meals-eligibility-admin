@@ -148,3 +148,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 //END-- Back link in views
+
+//BEGIN-- Restrict National Insurance number inputs to alphanumeric characters only
+document.addEventListener("DOMContentLoaded", function () {
+    const ninoInputs = document.querySelectorAll(".js-nino-input");
+
+    ninoInputs.forEach(input => {
+        input.addEventListener("input", function () {
+            this.value = this.value
+                .replace(/[^a-zA-Z0-9]/g, "")
+                .toUpperCase()
+                .slice(0, 9);
+        });
+    });
+});
+//END-- Restrict National Insurance number inputs to alphanumeric characters only

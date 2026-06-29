@@ -11,7 +11,7 @@ public class NinValidatorAttribute : ValidationAttribute
     public NinValidatorAttribute()
     {
         ErrorMessage = "Enter a National Insurance number in the correct format";
-        _regex = new Regex("^[A-Z0-9]{2}\\d{6}[A-D]?$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        _regex = new Regex("^[A-Z0-9]{2}\\d{6}[A-D]$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     }
 
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
