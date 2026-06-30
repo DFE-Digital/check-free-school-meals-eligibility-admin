@@ -6,8 +6,7 @@ describe('Full journey of creating an application through school portal through 
     const childFirstName = 'Timmy';
     const childLastName = 'Smith';
 
-    it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {
-        let referenceNumber: string;
+    it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {       
 
         cy.checkSession('school');
         cy.visit((Cypress.config().baseUrl ?? "") + "/home");
@@ -100,7 +99,7 @@ describe('Full journey of creating an application through school portal through 
         //Go to the last page of results
         cy.get('.govuk-pagination__list').find('a[href*="PageNumber"]').not('[rel="next"]').last().click();
         cy.get<string>('@referenceNumber').then((ref) => {
-            cy.scanPagesForNewValue(ref);
+            cy.scanPagesForNewValue(ref, 10);
         });
 
         cy.contains('Approve for expanded free school meals').parent().find('input[type="radio"]').check();
@@ -202,7 +201,7 @@ describe('Full journey of creating an application through school portal through 
                     .replace(/\u00A0/g, ' ')
                     .replace(/\s+/g, ' ')
                     .trim();
-                expect(clean).to.eq('nn123456c');
+                    expect(clean).to.eq('NN123456C');
             });
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
         cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
@@ -210,5 +209,7 @@ describe('Full journey of creating an application through school portal through 
 
         //Applications Registered confirmation page
         cy.url().should('include', '/Check/ApplicationsRegistered');
-    });
+    });  
+
+   
 });
