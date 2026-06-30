@@ -46,7 +46,7 @@ public class ApplicationController : BaseController
         if (response.Data == null || (!response.Data.Any() && detailView == "ApplicationDetail"))
         {
             TempData["Message"] = "There are no records matching your search.";
-            return RedirectToAction("SearchResults");
+            return RedirectToAction("Search");
         }
 
         var criteria = JsonConvert.SerializeObject(applicationSearch);
