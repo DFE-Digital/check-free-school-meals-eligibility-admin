@@ -137,10 +137,14 @@
                                             </li>
                                         </ul>
                                     }
-                                    @if (selectedStatus.Count > 0)
+                                    @{
+                                        var nonArchivedStatuses = selectedStatus.Where(s => s != "Archived").ToList();
+                                        var hasArchivedFilter = selectedStatus.Contains("Archived");
+                                    }
+                                    @if (nonArchivedStatuses.Count > 0)
                                     {
                                         <h3 class="govuk-heading-s govuk-!-margin-bottom-0">Status</h3>
-                                        foreach (var status in selectedStatus)
+                                        foreach (var status in nonArchivedStatuses)
                                         {
                                             <ul class="moj-filter-tags">
                                                 <li>
@@ -152,6 +156,19 @@
                                                 </li>
                                             </ul>
                                         }
+                                    }
+
+                                    @if (hasArchivedFilter)
+                                    {
+                                        <ul class="moj-filter-tags">
+                                            <li>
+                                                <a class="moj-filter__tag"
+                                                   href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "Status", "Archived")"
+                                                   src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                    <span class="govuk-visually-hidden">Remove this filter</span>Archived
+                                                </a>
+                                            </li>
+                                        </ul>
                                     }
                                 </div>
                                 <div class="moj-filter__options">
@@ -237,6 +254,24 @@
                                                         </label>
                                                     </div>
                                                 }
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                    <div class="govuk-form-group">
+                                        <fieldset class="govuk-fieldset">
+                                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+                                                <h1 class="govuk-fieldset__heading">View archived applications</h1>
+                                            </legend>
+                                            <div class="govuk-form-group">
+                                                <div class="govuk-checkboxes__item">
+                                                    <input class="govuk-checkboxes__input" id="Status_Archived"
+                                                           name="Status" type="checkbox" value="Archived"
+                                                           @(selectedStatus.Contains("Archived") ? "checked" : "")>
+                                                    <label class="govuk-label govuk-checkboxes__label"
+                                                           for="Status_Archived">
+                                                        Archived
+                                                    </label>
+                                                </div>
                                             </div>
                                         </fieldset>
                                     </div>
