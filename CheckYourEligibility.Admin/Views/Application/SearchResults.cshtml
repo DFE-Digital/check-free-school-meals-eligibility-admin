@@ -35,7 +35,6 @@
             { "ReviewedEntitled.targeted", "Reviewed entitled targeted" },
             { "ReviewedEntitled.expanded", "Reviewed entitled expanded" },
             { "ReviewedNotEntitled", "Reviewed not entitled" },
-            { "Archived", "Archived" }
         };
     }
 
@@ -149,8 +148,8 @@
                                             <ul class="moj-filter-tags">
                                                 <li>
                                                     <a class="moj-filter__tag"
-                                                       href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "Status", status)"
-                                                       src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                    href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "Status", status)"
+                                                    src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
                                                         <span class="govuk-visually-hidden">Remove this filter</span>@statusFilters[status]
                                                     </a>
                                                 </li>
@@ -163,8 +162,8 @@
                                         <ul class="moj-filter-tags">
                                             <li>
                                                 <a class="moj-filter__tag"
-                                                   href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "Status", "Archived")"
-                                                   src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "Status", "Archived")"
+                                                src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
                                                     <span class="govuk-visually-hidden">Remove this filter</span>Archived
                                                 </a>
                                             </li>
@@ -265,10 +264,10 @@
                                             <div class="govuk-form-group">
                                                 <div class="govuk-checkboxes__item">
                                                     <input class="govuk-checkboxes__input" id="Status_Archived"
-                                                           name="Status" type="checkbox" value="Archived"
-                                                           @(selectedStatus.Contains("Archived") ? "checked" : "")>
+                                                        name="Status" type="checkbox" value="Archived"
+                                                        @(selectedStatus.Contains("Archived") ? "checked" : "")>
                                                     <label class="govuk-label govuk-checkboxes__label"
-                                                           for="Status_Archived">
+                                                        for="Status_Archived">
                                                         Archived
                                                     </label>
                                                 </div>

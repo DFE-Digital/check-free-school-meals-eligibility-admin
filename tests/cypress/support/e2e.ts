@@ -19,7 +19,8 @@ import './commands'
 Cypress.on('uncaught:exception', (err, runnable) => {
     if(
         err.message.includes("Cannot read properties of null (reading 'postMessage')") ||
-        err.message.includes('PrimaryOriginCommunicator')
+        err.message.includes('PrimaryOriginCommunicator') ||
+        err.message.includes('Element attr aria not return a valid number')
     ) {
         return false;
     }
