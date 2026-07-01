@@ -43,11 +43,6 @@ public class ApplicationController : BaseController
     {
         var response = await _adminGateway.PostApplicationSearch(applicationSearch);
         response ??= new ApplicationSearchResponse { Data = new List<ApplicationResponse>(), Meta = new ApplicationSearchResponseMeta() };
-        if (response.Data == null || (!response.Data.Any() && detailView == "ApplicationDetail"))
-        {
-            TempData["Message"] = "There are no records matching your search.";
-            return RedirectToAction("SearchResults");
-        }
 
         var criteria = JsonConvert.SerializeObject(applicationSearch);
         TempData["SearchCriteria"] = criteria;
