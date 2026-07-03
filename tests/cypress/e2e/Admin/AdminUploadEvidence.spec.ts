@@ -36,8 +36,8 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('02');
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('09');
         cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
         cy.contains('button', 'Save and continue').click();
 
@@ -100,8 +100,8 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('02');
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('09');
         cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
         cy.contains('button', 'Save and continue').click();
 
@@ -140,8 +140,8 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('02');
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('09');
         cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
         cy.contains('button', 'Save and continue').click();
 
