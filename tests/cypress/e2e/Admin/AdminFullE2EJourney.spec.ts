@@ -38,8 +38,8 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('02');
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('09');
         cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
         cy.contains('button', 'Add another child').click();
         cy.contains('button', 'Remove').click();
@@ -184,8 +184,8 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('02');
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('09');
         cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
         cy.contains('button', 'Save and continue').click();
 
@@ -211,5 +211,58 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Check/ApplicationsRegistered');
     });  
 
-   
+    it('Will prevent a child aged 19 at the beginning of the academic year from continuing', () => {
+
+        cy.checkSession('school');
+        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+        cy.wait(1);
+        cy.get('.govuk-caption-l').should('include.text', 'The Telford Park School');
+    
+        // Add parent details
+        cy.contains('Run a check for one parent or guardian').click();
+        cy.get('#consent').check();
+        cy.get('#submitButton').click();
+    
+        cy.url().should('include', '/Check/Enter_Details');
+    
+        cy.get('#FirstName').type(parentFirstName);
+        cy.get('#LastName').type(parentLastName);
+        cy.get('#EmailAddress').type(parentEmailAddress);
+    
+        cy.get('[id="DateOfBirth.Day"]').type('01');
+        cy.get('[id="DateOfBirth.Month"]').type('01');
+        cy.get('[id="DateOfBirth.Year"]').type('1990');
+    
+        cy.get('#NationalInsuranceNumber').type("nn123456c");
+    
+        cy.contains('button', 'Perform check').click();
+    
+        // Loader page
+        cy.url().should('include', 'Check/Loader');
+    
+        // Eligible outcome page
+        cy.get('.govuk-notification-banner__heading', { timeout: 80000 })
+            .should('include.text', 'are eligible for free school meals.');
+    
+        cy.contains('a.govuk-button', "Continue to add child details").click();
+    
+        // Enter child details
+        cy.url().should('include', '/Enter_Child_Details');
+    
+        cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
+        cy.get('[id="ChildList[0].LastName"]').type(childLastName);
+    
+        // Exactly 19 at academic year start - should fail
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('09');
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+    
+        cy.contains('button', 'Save and continue').click();
+    
+        cy.url().should('include', '/Enter_Child_Details');
+    
+        cy.contains(
+            'Child 1 must be under the age of 19 at the beginning of the academic year to be eligible'
+        ).should('exist');
+    });
 });
