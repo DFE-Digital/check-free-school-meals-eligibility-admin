@@ -168,11 +168,11 @@ public class DobAttribute : ValidationAttribute
                     var academicYearStart = new DateTime(currentAcademicYear, 9, 1);
                     var ageOnAcademicYearStart = CalculateAge(dob, academicYearStart);
 
-                    if (ageOnAcademicYearStart < 4 || ageOnAcademicYearStart > 19)
+                    if (ageOnAcademicYearStart >= 19)
                     {
                         TextInfo ti = CultureInfo.CurrentCulture.TextInfo;
                         return new ValidationResult(
-                            $"{ti.ToTitleCase(_objectName)} {childIndex} must have been aged between 4 and 19 at the beginning of the academic year to be eligible",
+                            $"{ti.ToTitleCase(_objectName)} {childIndex} must be under the age of 19 at the beginning of the academic year to be eligible",
                             new[] { "DateOfBirth", "Day", "Month", "Year" });
                     }
                 }
