@@ -18,8 +18,10 @@
                 <div class="govuk-error-summary__body">
                     <ul class="govuk-list govuk-error-summary__list">
                         <li>
-                            <a href="#consent-error">Select if the parent or guardian is with you and has given
-                                consent</a>
+                            <a href="#consent">
+                                Select if the parent or guardian is with you and has given
+                                consent
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -44,12 +46,15 @@
                         Confirm you have consent
                     </h1>
                 </legend>
-                <div id="consent-hint" class="govuk-hint">
-                    Select if the parent or guardian is with you and has given consent
-                </div>
-                @if (Model)
+                @if (!Model)
                 {
-                    <p id="consent-error" class="govuk-error-message">
+                    <div id="consent-hint" class="govuk-hint">
+                        Select if the parent or guardian is with you and has given consent
+                    </div>
+                }
+                else
+                {
+                    <p id="consent-hint" class="govuk-error-message">
                         <span class="govuk-visually-hidden">Error:</span> Select if the parent or guardian is with you
                         and has given consent
                     </p>
