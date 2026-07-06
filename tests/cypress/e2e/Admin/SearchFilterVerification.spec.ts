@@ -1,3 +1,4 @@
+import { getValidChildDob } from '../../support/dateHelpers';
 
 describe('Keyword search validation', () => {
   const parentFirstName = 'Sinkler';
@@ -41,9 +42,13 @@ describe('Keyword search validation', () => {
     cy.url().should('include', '/Enter_Child_Details');
     cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
     cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-    cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('02');
-    cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('09');
-    cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+
+    const childDob = getValidChildDob();
+
+    cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+    cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+    cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+
     cy.contains('button', 'Save and continue').click();
 
     //skip uploading evidence
