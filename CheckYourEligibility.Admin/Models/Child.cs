@@ -14,7 +14,7 @@ public class Child
     public string? LastName { get; set; }
 
     [NotMapped]
-    [Dob("date of birth", "child", "ChildIndex", "Day", "Month", "Year", true, true)]
+    [Dob("date of birth", "child", "ChildIndex", "Day", "Month", "Year", true, true, false)]
     public string? DateOfBirth { get; set; }
 
     public string? Day { get; set; }
