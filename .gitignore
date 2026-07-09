@@ -421,3 +421,4 @@ FodyWeavers.xsd
 /tests/cypress/screenshots/AdminReviewEvidenceVisibility.spec.ts
 /tests/run-cypress.ps1
 /.github/copilot-instructions.md
+*.ps1

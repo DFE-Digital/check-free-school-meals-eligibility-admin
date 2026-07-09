@@ -241,7 +241,7 @@ Cypress.Commands.add('loginLocalAuthorityUser', () => {
   cy.visit((Cypress.config().baseUrl ?? "") + "/home");
   cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
   cy.get('button[type="submit"]').click();
-  cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
+  cy.get('#password', { timeout: 10000 }).type(Cypress.env('DFE_ADMIN_PASSWORD'));
   cy.get('button[type="submit"]').click();
   cy.contains('Telford and Wrekin Council')
     .parent()

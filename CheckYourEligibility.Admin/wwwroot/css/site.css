@@ -515,3 +515,10 @@ hr {
     }
 }
 /* END - Hides in print dialouge for FSM enchanced details */
+
+/*BEGIN - SchoolListSearch in SchoolList should be accessible using only the keyboard*/
+[role="option"][aria-selected="true"] {
+    background-color: #ffdd00; /* GOV.UK focus yellow */
+    outline: 2px solid #0b0c0c;
+}
+/*END - SchoolListSearch in SchoolList should be accessible using only the keyboard*/

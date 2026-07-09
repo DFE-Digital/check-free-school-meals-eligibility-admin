@@ -3,6 +3,7 @@ using Azure.Identity;
 using CheckYourEligibility.Admin;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
+using CheckYourEligibility.Admin.Mappings;
 using CheckYourEligibility.Admin.Usecases;
 using CheckYourEligibility.Admin.UseCases;
 using Microsoft.FeatureManagement;
@@ -28,6 +29,11 @@ if (Environment.GetEnvironmentVariable("FSM_ADMIN_KEY_VAULT_NAME") != null)
         }
     );
 }
+
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<BulkExportProfile>();
+});
 
 // Add services to the container.
 builder.Services.AddServices(builder.Configuration);
@@ -96,7 +102,7 @@ app.Use((context, next) =>
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
     if (!builder.Configuration.GetValue<bool>("AllowSearchIndexing"))
     {
-        context.Response.Headers["X-Robots-Tag"] = "none";
+        context.Response.Headers["X-Robots-Tag"] = "noindex,nofollow";
     }
     return next.Invoke();
 });
