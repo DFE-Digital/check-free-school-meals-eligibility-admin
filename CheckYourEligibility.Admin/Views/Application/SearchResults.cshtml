@@ -369,7 +369,19 @@
                                                         }
                                                     </tbody>
                                                 </table>
-                                                var paginationModel = new PaginationPartialViewModel { CurrentPage = ViewBag.CurrentPage, TotalPages = ViewBag.TotalPages, RecordsPerPage = ViewBag.RecordsPerPage, TotalRecords = ViewBag.TotalRecords, ControllerName = "SearchResults", Status = ViewBag.Status, Keyword = selectedKeyword, DateFrom = selectedDateFrom };
+
+                                                var paginationModel = new PaginationPartialViewModel
+                                                {
+                                                    CurrentPage = ViewBag.CurrentPage,
+                                                    TotalPages = ViewBag.TotalPages,
+                                                    RecordsPerPage = ViewBag.RecordsPerPage,
+                                                    TotalRecords = ViewBag.TotalRecords,
+                                                    ControllerName = "SearchResults",
+                                                    Status = applicationSearch.Status,
+                                                    IsArchived = applicationSearch.IsArchived,
+                                                    Keyword = selectedKeyword,
+                                                    DateFrom = selectedDateFrom
+                                                };
                                                 @Html.Partial("_PaginationPartial", paginationModel)
                                             }
                                         }

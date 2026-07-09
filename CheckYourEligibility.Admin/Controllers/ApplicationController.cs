@@ -181,10 +181,32 @@ public class ApplicationController : BaseController
         }
 
         var expanded = await IsExpandedFSMEnabled();
+        var archivedStatus = nameof(ApplicationStatus.Archived);
+        IEnumerable<string> statuses;
+
+        if (!request.IsArchived && !request.Status.Any())
+        {
+            statuses = Enum.GetNames<ApplicationStatus>()
+                .Where(x => x != archivedStatus);
+        }
+        else if (!request.IsArchived && request.Status.Any())
+        {
+            statuses = request.Status;
+        }
+        else if (request.IsArchived && !request.Status.Any())
+        {
+            statuses = Enum.GetNames<ApplicationStatus>();
+        }
+        else
+        {
+            statuses = request.Status
+                .Append(archivedStatus)
+                .Distinct();
+        }
 
         var applicationSearch = new ApplicationRequestSearch
         {
-            Meta = new ApplicationRequestSearchMeta()
+            Meta = new ApplicationRequestSearchMeta
             {
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize
@@ -194,13 +216,17 @@ public class ApplicationController : BaseController
                 LocalAuthority = _Claims.Organisation.Category.Name == Constants.CategoryTypeLA
                     ? Convert.ToInt32(_Claims.Organisation.EstablishmentNumber)
                     : null,
+
                 MultiAcademyTrust = _Claims.Organisation.Category.Name == Constants.CategoryTypeMAT
                     ? Convert.ToInt32(_Claims.Organisation.Uid)
                     : null,
+
                 Establishment = _Claims.Organisation.Category.Name == Constants.CategoryTypeSchool
                     ? Convert.ToInt32(_Claims.Organisation.Urn)
                     : null,
+
                 Keyword = request.Keyword,
+
                 DateRange = request.DateRange != null
                     ? new DateRange
                     {
@@ -208,7 +234,8 @@ public class ApplicationController : BaseController
                         DateTo = DateTime.Now
                     }
                     : null,
-                StatusDescriptions = request.Status.Any() ? request.Status : null // Apply filter only if statuses are selected
+
+                StatusDescriptions = statuses
             }
         };
 
@@ -222,8 +249,9 @@ public class ApplicationController : BaseController
         OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
         TempData["organisationType"] = organisationType;
 
-        return await GetResultsForSearch(applicationSearch, "ApplicationDetail", false, false, false, viewModel);
+        return await GetResultsForSearch(applicationSearch,"ApplicationDetail", false, false, false, viewModel);
     }
+
 
 
     [HttpGet]
