@@ -235,10 +235,10 @@ public class ApplicationController : BaseController
 
         var expanded = await IsExpandedFSMEnabled();
 
-        string viewName = organisationType == OrganisationCategory.LocalAuthority
-                                            || organisationType == OrganisationCategory.MultiAcademyTrust
-                                            ? "ApplicationDetailLa" : "ApplicationDetail";
-        return View(viewName, GetViewData(response));
+        // "ApplicationDetailLa" contains the approve/decline decision form needed to action
+        // pending applications and must be used for all organisation types (including schools).
+        // The "ApplicationDetail" view has no decision form and should not be routed to here.
+        return View("ApplicationDetailLa", GetViewData(response));
     }
 
     [HttpGet]
