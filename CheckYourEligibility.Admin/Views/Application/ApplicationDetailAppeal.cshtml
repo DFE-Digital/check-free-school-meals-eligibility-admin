@@ -1,4 +1,5 @@
-﻿@model CheckYourEligibility.Admin.ViewModels.ApplicationDetailViewModel
+﻿@using CheckYourEligibility.Admin.Domain.Enums
+@model CheckYourEligibility.Admin.ViewModels.ApplicationDetailViewModel
 
 @{
     ViewData["Title"] = Model.ParentName;
@@ -20,7 +21,7 @@
             </div>
         </div>
     </div>
-    @if (Model.Status.Equals("EvidenceNeeded"))
+    @if (Model.Status == ApplicationStatus.EvidenceNeeded)
     {
         <div class="govuk-width-container">
             <div class="govuk-grid-row">
