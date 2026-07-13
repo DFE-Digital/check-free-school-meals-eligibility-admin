@@ -4,6 +4,13 @@
 @{
     ViewData["Title"] = "Run a check for one parent or guardian";
     var orgType = TempData["organisationType"] as OrganisationCategory?;
+
+    var ninoInputClasses = "govuk-input govuk-!-width-one-third js-nino-input";
+
+    if (ViewData.ModelState["NationalInsuranceNumber"]?.Errors.Count > 0)
+    {
+        ninoInputClasses += " govuk-input--error";
+    }
 }
 
 <div class="govuk-grid-column-two-thirds">
@@ -140,14 +147,16 @@
                     <span asp-validation-for="NationalInsuranceNumber"></span>
                 </p>
 
-                <input class="govuk-input govuk-input--width-10 govuk-input--extra-letter-spacing @(ViewData.ModelState["NationalInsuranceNumber"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
+                    <input class="@ninoInputClasses"
                        id="NationalInsuranceNumber"
                        aria-describedby="NIN-hint"
                        asp-controller="Check"
                        asp-for="NationalInsuranceNumber"
                        type="text"
                        spellcheck="false"
-                       autocomplete="text">
+                       autocomplete="text"
+                       maxlength="9">
+
             </div>
 
             @if (!(orgType == OrganisationCategory.Establishment))

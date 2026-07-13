@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using AutoMapper;
 using CheckYourEligibility.Admin.Boundary.Requests;
 using CheckYourEligibility.Admin.Boundary.Responses;
 using FluentAssertions;
@@ -20,6 +21,7 @@ internal class CheckGatewayTests
     private Mock<ILoggerFactory> _loggerFactoryMock;
     private Mock<ILogger> _loggerMock;
     private DerivedCheckGateway _sut;
+    private Mock<IMapper> _mapperMock; 
 
     [SetUp]
     public void Setup()
@@ -27,6 +29,7 @@ internal class CheckGatewayTests
         _loggerFactoryMock = new Mock<ILoggerFactory>();
         _loggerMock = new Mock<ILogger>();
         _loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(_loggerMock.Object);
+        _mapperMock = new Mock<IMapper>();
 
         _configMock = new Mock<IConfiguration>();
         _configMock.Setup(x => x["Api:AuthorisationUsername"]).Returns("SomeValue");
@@ -40,7 +43,7 @@ internal class CheckGatewayTests
             BaseAddress = new Uri("https://localhost:7000")
         };
 
-        _sut = new DerivedCheckGateway(_loggerFactoryMock.Object, _httpClient, _configMock.Object, _httpContextAccessor);
+        _sut = new DerivedCheckGateway(_loggerFactoryMock.Object, _httpClient, _configMock.Object, _httpContextAccessor, _mapperMock.Object);
     }
 
     [TearDown]
@@ -84,7 +87,7 @@ internal class CheckGatewayTests
     public async Task Given_PostCheck_When_CalledWithValidRequest_Should_ReturnCheckEligibilityResponse()
     {
         // Arrange
-        var requestBody = new CheckEligibilityRequest_Fsm();
+        var requestBody = new CheckEligibilityRequest_Enhanced();
         var responseContent = new CheckEligibilityResponse();
         var responseMessage = new HttpResponseMessage
         {
@@ -148,7 +151,7 @@ internal class CheckGatewayTests
         Given_PostCheck_When_ApiReturnsUnauthorized_Should_LogApiErrorAnd_Throw_UnauthorizedAccessException()
     {
         // Arrange
-        var requestBody = new CheckEligibilityRequest_Fsm();
+        var requestBody = new CheckEligibilityRequest_Enhanced();
         var responseMessage = new HttpResponseMessage
         {
             StatusCode = HttpStatusCode.Unauthorized,

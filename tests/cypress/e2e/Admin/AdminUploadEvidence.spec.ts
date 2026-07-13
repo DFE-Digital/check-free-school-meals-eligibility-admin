@@ -1,3 +1,4 @@
+import { getValidChildDob } from '../../support/dateHelpers';
 describe('Full journey of creating an application through school portal through to approving in LA portal', () => {
     const parentFirstName = 'Tim';
     const parentLastName = Cypress.env('lastName');
@@ -36,9 +37,13 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+
+        const childDob = getValidChildDob();
+
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+
         cy.contains('button', 'Save and continue').click();
 
         //Example of how to add a single file
@@ -100,9 +105,13 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+
+        const childDob = getValidChildDob();
+
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+
         cy.contains('button', 'Save and continue').click();
 
         cy.get('h1').should('include.text', 'Send supporting evidence');
@@ -140,9 +149,13 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+
+        const childDob = getValidChildDob();
+
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+
         cy.contains('button', 'Save and continue').click();
 
         // Load files from fixtures folder

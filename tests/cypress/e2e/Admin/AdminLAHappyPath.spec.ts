@@ -1,3 +1,5 @@
+import { getValidChildDob } from '../../support/dateHelpers';
+
 describe('Full journey of creating an application through school portal through to approving in LA portal', () => {
     const parentFirstName = 'Tim';
     let referenceNumber: string;
@@ -33,9 +35,13 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+
+        const childDob = getValidChildDob();
+
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+
         cy.get('[id="ChildList[0].School"]').type('The Telford Park School');
 
         cy.get('#schoolList0')
@@ -56,7 +62,7 @@ describe('Full journey of creating an application through school portal through 
                     .replace(/\u00A0/g, ' ')
                     .replace(/\s+/g, ' ')
                     .trim();
-                expect(clean).to.eq('nn123456c');
+                expect(clean).to.eq('NN123456C');
             });
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
         cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
