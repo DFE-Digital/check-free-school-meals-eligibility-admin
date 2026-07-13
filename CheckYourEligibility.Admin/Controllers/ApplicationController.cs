@@ -179,31 +179,20 @@ public class ApplicationController : BaseController
             TempData["Errors"] = JsonConvert.SerializeObject(errors);
             return View(new SearchAllRecordsViewModel { ApplicationSearch = request });
         }
-
         var expanded = await IsExpandedFSMEnabled();
-        var archivedStatus = nameof(ApplicationStatus.Archived);
-        IEnumerable<string> statuses;
+        var allNonArchivedStatuses = Enum.GetNames<ApplicationStatus>()
+            .Where(x => x != nameof(ApplicationStatus.Archived));
 
-        if (!request.IsArchived && !request.Status.Any())
+        var statuses = request.Status.Any()
+            ? request.Status
+            : allNonArchivedStatuses;
+
+        if (request.ShowArchived)
         {
-            statuses = Enum.GetNames<ApplicationStatus>()
-                .Where(x => x != archivedStatus);
-        }
-        else if (!request.IsArchived && request.Status.Any())
-        {
-            statuses = request.Status;
-        }
-        else if (request.IsArchived && !request.Status.Any())
-        {
-            statuses = Enum.GetNames<ApplicationStatus>();
-        }
-        else
-        {
-            statuses = request.Status
-                .Append(archivedStatus)
+            statuses = statuses
+                .Append(nameof(ApplicationStatus.Archived))
                 .Distinct();
         }
-
         var applicationSearch = new ApplicationRequestSearch
         {
             Meta = new ApplicationRequestSearchMeta

@@ -12,6 +12,6 @@ public class PaginationPartialViewModel
     public string? Keyword { get; set; }
     public IEnumerable<string>? Status { get; set; }
     public string? DateFrom { get; set; }
-    public bool? IsArchived { get; set; }
+    public bool? ShowArchived { get; set; }
 
 }
