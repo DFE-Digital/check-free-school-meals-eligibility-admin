@@ -179,13 +179,13 @@ public class ApplicationController : BaseController
         var allNonArchivedStatuses = Enum.GetNames<ApplicationStatus>()
             .Where(x => x != nameof(ApplicationStatus.Archived));
 
-        var statuses = request.Status.Any()
-            ? request.Status
+        var statusesFilter = request.SelectedStatuses.Any()
+            ? request.SelectedStatuses
             : allNonArchivedStatuses;
 
         if (request.ShowArchived)
         {
-            statuses = statuses
+            statusesFilter = statusesFilter
                 .Append(nameof(ApplicationStatus.Archived))
                 .Distinct();
         }

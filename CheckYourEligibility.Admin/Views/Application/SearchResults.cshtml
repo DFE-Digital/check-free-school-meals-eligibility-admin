@@ -48,7 +48,7 @@
     @{
         var applicationSearchJson = TempData["ApplicationSearch"] as string;
         var applicationSearch = string.IsNullOrEmpty(applicationSearchJson) ? new ApplicationSearch() : JsonConvert.DeserializeObject<ApplicationSearch>(applicationSearchJson);
-        var selectedStatus = applicationSearch.Status?.ToList() ?? new List<string>();
+        var selectedStatus = applicationSearch.SelectedStatuses?.ToList() ?? new List<string>();
         var selectedDateFrom = applicationSearch.DateRange?.DateFrom.Date.ToString("yyyy-MM-dd");
         var currentMonthLabel = "Current month to date";
         var lastThreeMonthsLabel = "Last 3 months";
@@ -376,7 +376,7 @@
                                                     RecordsPerPage = ViewBag.RecordsPerPage,
                                                     TotalRecords = ViewBag.TotalRecords,
                                                     ControllerName = "SearchResults",
-                                                    Status = applicationSearch.Status,
+                                                    Status = applicationSearch.SelectedStatuses,
                                                     ShowArchived = applicationSearch.ShowArchived,
                                                     Keyword = selectedKeyword,
                                                     DateFrom = selectedDateFrom
