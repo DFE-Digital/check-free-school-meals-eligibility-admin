@@ -218,7 +218,7 @@ public class ApplicationController : BaseController
                     }
                     : null,
 
-                StatusDescriptions = statuses
+                StatusDescriptions = statusesFilter
             }
         };
 
