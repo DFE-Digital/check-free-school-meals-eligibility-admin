@@ -35,8 +35,8 @@ public class CheckEligibilityRequestDataValidator : AbstractValidator<IEligibili
                     // NI (required + valid)
                     baseValidator.RuleFor(x => x.NationalInsuranceNumber)
                         .NotEmpty()
-                        .Must(DataValidation.BeAValidNi)
-                        .When(x => !string.IsNullOrWhiteSpace(x.NationalInsuranceNumber))
+                        .WithMessage(ValidationMessages.NI)
+                        .Must(DataValidation.BeAValidNi)                     
                         .WithMessage(ValidationMessages.NI);
                 });
         });
