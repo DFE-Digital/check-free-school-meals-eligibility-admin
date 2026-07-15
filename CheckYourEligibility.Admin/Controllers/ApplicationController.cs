@@ -175,12 +175,23 @@ public class ApplicationController : BaseController
             TempData["Errors"] = JsonConvert.SerializeObject(errors);
             return View(new SearchAllRecordsViewModel { ApplicationSearch = request });
         }
-
         var expanded = await IsExpandedFSMEnabled();
+        var allNonArchivedStatuses = Enum.GetNames<ApplicationStatus>()
+            .Where(x => x != nameof(ApplicationStatus.Archived));
 
+        var statusesFilter = request.SelectedStatuses.Any()
+            ? request.SelectedStatuses
+            : allNonArchivedStatuses;
+
+        if (request.ShowArchived)
+        {
+            statusesFilter = statusesFilter
+                .Append(nameof(ApplicationStatus.Archived))
+                .Distinct();
+        }
         var applicationSearch = new ApplicationRequestSearch
         {
-            Meta = new ApplicationRequestSearchMeta()
+            Meta = new ApplicationRequestSearchMeta
             {
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize
@@ -196,7 +207,9 @@ public class ApplicationController : BaseController
                 Establishment = _Claims.Organisation.Category.Name == DfeSignInRoles.CategoryTypeSchool
                     ? Convert.ToInt32(_Claims.Organisation.Urn)
                     : null,
+
                 Keyword = request.Keyword,
+
                 DateRange = request.DateRange != null
                     ? new DateRange
                     {
@@ -204,7 +217,8 @@ public class ApplicationController : BaseController
                         DateTo = DateTime.Now
                     }
                     : null,
-                StatusDescriptions = request.Status.Any() ? request.Status : null // Apply filter only if statuses are selected
+
+                StatusDescriptions = statusesFilter
             }
         };
 
@@ -218,8 +232,9 @@ public class ApplicationController : BaseController
         OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
         TempData["organisationType"] = organisationType;
 
-        return await GetResultsForSearch(applicationSearch, "ApplicationDetail", false, false, false, viewModel);
+        return await GetResultsForSearch(applicationSearch,"ApplicationDetail", false, false, false, viewModel);
     }
+
 
 
     [HttpGet]
