@@ -40,10 +40,8 @@
 
     @if (!ViewData.ModelState.IsValid)
     {
-        ViewData["Title"] = "Error: Check Details";
         <partial name="_ValidationSummary" model="ViewData.ModelState" />
     }
-
 
     @{
         var applicationSearchJson = TempData["ApplicationSearch"] as string;
