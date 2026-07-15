@@ -15,6 +15,8 @@
         "yyyy-MM-dd",
         CultureInfo.DefaultThreadCurrentCulture
     ) : DateTime.UtcNow;
+
+    bool isWelsh = false;
 }
 
 <div class="govuk-grid-column-full">
@@ -87,7 +89,7 @@
                 <p class="govuk-body">
                     @Html.ActionLink("How and when to complete annual rechecks", "Rechecks", "Home", null, new { @class = "govuk-link" })
 
-                    @if (fsmPolicy.EligibilityCriteria == EligibilityCriteria.expanded)
+                    @if (fsmPolicy.EligibilityCriteria == EligibilityCriteria.expanded || isWelsh)
                     {
                         <div class="govuk-inset-text">
                             <p><strong>Targeted and expanded free school meals</strong></p>
@@ -96,20 +98,36 @@
                             <p>
                                 <strong class="govuk-tag govuk-tag--purple tag-wider">Eligible @CheckEligibilityExpandedTier.targeted.ToString():</strong>
                                 this covers children in households in receipt of Universal Credit with annual household earnings of £7,400 or less.
-                                These children will attract pupil premium and other disadvantage funding for their schools.
-                                Other education entitlements, such as the holiday activities and food programme (HAF) and the ‘extended rights’ element of school travel assistance, will be based on targeted free school meals.
+
+                                @if (isWelsh)
+                                {
+                                    <span>
+                                        These children will attract the pupil development grant and other disadvantage funding for their schools.
+                                        Other education entitlements such as the Food and Fun, School Holiday Enrichment Programme will be based on targeted free school meals.
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>
+                                        These children will attract pupil premium and other disadvantage funding for their schools.
+                                        Other education entitlements, such as the holiday activities and food programme(HAF) and the ‘extended rights’ element of school travel assistance, will be based on targeted free school meals.
+                                    </span>
+                                }
                             </p>
                             <p>
                                 <strong class="govuk-tag govuk-tag--green tag-wider">Eligible @CheckEligibilityExpandedTier.expanded.ToString():</strong>
                                 this covers children who are in households receiving Universal Credit with annual household earnings exceeding £7,400.
                                 Children will be entitled to free school meals only.
                             </p>
-                            <p>
-                                For more information, read
-                                <a href="https://www.gov.uk/government/publications/free-school-meals-guidance-for-schools-and-local-authorities" class="govuk-link" target="_blank" rel="noopener noreferrer">
-                                    Free school meals: guidance for schools and local authorities.
-                                </a>
-                            </p>
+                            @if (!isWelsh)
+                            {
+                                <p>
+                                    For more information, read
+                                    <a href="https://www.gov.uk/government/publications/free-school-meals-guidance-for-schools-and-local-authorities" class="govuk-link" target="_blank" rel="noopener noreferrer">
+                                        Free school meals: guidance for schools and local authorities.
+                                    </a>
+                                </p>
+                            }
                         </div>
                     }
                 </p>
