@@ -133,31 +133,24 @@ public class BulkCheckController : BaseController
             return RedirectToAction("Bulk_Check");
         }
 
-        // Rate limiting
+        // Rate limiting - only successful uploads count towards the limit; failed/errored
+        // uploads (validation issues, parse errors, submission failures) are not counted.
         var timeNow = DateTime.UtcNow;
         if (!string.IsNullOrEmpty(HttpContext.Session.GetString("FirstSubmissionTimeStamp")))
         {
             var firstSubmissionTimeStampString = HttpContext.Session.GetString("FirstSubmissionTimeStamp");
             DateTime.TryParse(firstSubmissionTimeStampString, out var firstSubmissionTimeStamp);
             var timein1Hour = firstSubmissionTimeStamp.AddHours(1);
-            if (timeNow >= timein1Hour) HttpContext.Session.Remove("BulkSubmissions");
+            if (timeNow >= timein1Hour)
+            {
+                HttpContext.Session.Remove("BulkSubmissions");
+                HttpContext.Session.Remove("FirstSubmissionTimeStamp");
+            }
         }
 
-        var sessionCount = 0;
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("BulkSubmissions")))
-        {
-            HttpContext.Session.SetInt32("BulkSubmissions", 0);
-            HttpContext.Session.SetString("FirstSubmissionTimeStamp", DateTime.UtcNow.ToString());
-        }
-        else
-        {
-            sessionCount = HttpContext.Session.GetInt32("BulkSubmissions") ?? 0;
-        }
+        var sessionCount = HttpContext.Session.GetInt32("BulkSubmissions") ?? 0;
 
-        sessionCount++;
-        HttpContext.Session.SetInt32("BulkSubmissions", sessionCount);
-
-        if (sessionCount > int.Parse(_config["BulkUploadAttemptLimit"] ?? "5"))
+        if (sessionCount >= int.Parse(_config["BulkUploadAttemptLimit"] ?? "5"))
         {
             TempData["ErrorMessage"] = "You have exceeded the maximum number of bulk upload attempts. Please try again later.";
             return RedirectToAction("Bulk_Check");
@@ -450,6 +443,17 @@ public class BulkCheckController : BaseController
             : typeof(BulkExportBaseCsvMap);
     }
 
+    private void RecordSuccessfulBulkUploadAttempt()
+    {
+        var newCount = (HttpContext.Session.GetInt32("BulkSubmissions") ?? 0) + 1;
+        HttpContext.Session.SetInt32("BulkSubmissions", newCount);
+
+        if (newCount == 1)
+        {
+            HttpContext.Session.SetString("FirstSubmissionTimeStamp", DateTime.UtcNow.ToString());
+        }
+    }
+
     private IActionResult ValidateParseResult<T>(BulkCheckCsvResult<T> parseResult, string filename) where T : CheckEligibilityRequestDataBase
     {
         if (!string.IsNullOrEmpty(parseResult.ErrorMessage))
@@ -496,6 +500,7 @@ public class BulkCheckController : BaseController
             if (response?.Links?.Get_BulkCheck_Status != null)
             {
                 HttpContext.Session.SetString("BulkCheckUrl", response.Links.Get_BulkCheck_Status);
+                RecordSuccessfulBulkUploadAttempt();
 
                 var fileSubmittedViewModel = new BulkCheckFileSubmittedViewModel
                 {
