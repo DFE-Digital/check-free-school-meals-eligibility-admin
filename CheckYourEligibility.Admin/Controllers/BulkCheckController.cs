@@ -349,6 +349,38 @@ public class BulkCheckController : BaseController
         }
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Bulk_Check_Summary(string bulkCheckId)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(bulkCheckId))
+            {
+                return RedirectToAction("Bulk_Check_History");
+            }
+
+            var isEnhanced = _Claims.Roles[0].Code == DfeSignInRoles.RoleCodeBasic ? false : true;
+            await GetFreeSchoolMealsPolicy();
+            var expanded = await IsExpandedFSMEnabled();
+            var summary = await _checkGateway.GetBulkCheckSummary(bulkCheckId);
+
+            if (summary == null)
+            {
+                TempData["ErrorMessage"] = "No results found for this bulk check.";
+                return RedirectToAction("Bulk_Check_History");
+            }
+            var viewModel = BuildBulkCheckSummaryViewModel(summary);
+            return View("Summary", viewModel);
+        }
+        catch (Exception ex)
+        {
+            var safeBulkCheckId = bulkCheckId?.Replace("\r", "").Replace("\n", "");
+            _logger.LogError(ex, "Error loading bulk check summary for ID: {BulkCheckId}", safeBulkCheckId);
+            TempData["ErrorMessage"] = "Error loading results.";
+            return RedirectToAction("Bulk_Check_History");
+        }
+    }
+
     public async Task<IActionResult> Bulk_Check_Download(string bulkCheckId)
     {
         try
@@ -428,7 +460,7 @@ public class BulkCheckController : BaseController
 
     private void WriteBulkExportRecords(CsvWriter csv,IEnumerable results, bool isEnhanced,EligibilityCriteria eligibilityCriteria)
     {
-       
+
         // Select correct map
         var mapType = GetCsvMapType(isEnhanced, eligibilityCriteria);
 
@@ -450,6 +482,38 @@ public class BulkCheckController : BaseController
             : typeof(BulkExportBaseCsvMap);
     }
 
+    private BulkCheckSummaryViewModel BuildBulkCheckSummaryViewModel(BulkCheckSummaryResponse results)
+    {
+        var eligibleCount = results.Outcomes.ContainsKey("eligible") ? results.Outcomes["eligible"] : 0;
+        var eligibleTargetedCount = results.Outcomes.ContainsKey("eligible-targeted") ? results.Outcomes["eligible-targeted"] : 0;
+        var eligibleExpandedCount = results.Outcomes.ContainsKey("eligible-expanded") ? results.Outcomes["eligible-expanded"] : 0;
+        var notEligibleCount = results.Outcomes.ContainsKey("notEligible") ? results.Outcomes["notEligible"] : 0;
+        var notFoundCount = (results.Outcomes.ContainsKey("notFound") ? results.Outcomes["notFound"] : 0) +
+        (results.Outcomes.ContainsKey("parentNotFound") ? results.Outcomes["parentNotFound"] : 0);
+        ;
+        var errorCount = (results.Outcomes.ContainsKey("error") ? results.Outcomes["error"] : 0);
+
+        var eligibilityEndDate = results.SubmittedDate <= new DateTime(results.SubmittedDate.Year, 5, 31)
+            ? new DateTime(results.SubmittedDate.Year, 7, 31)
+            : new DateTime(results.SubmittedDate.Year + 1, 7, 31);
+
+        var currentAcademicYear = results.SubmittedDate.Month >= 5 ? results.SubmittedDate.Year : results.SubmittedDate.Year - 1;
+       
+        return new BulkCheckSummaryViewModel
+        {
+            FileName = results.Filename,
+            SubmittedDate = results.SubmittedDate,
+            EligibleCount = eligibleCount,
+            EligibleTargetedCount = eligibleTargetedCount,
+            EligibleExpandedCount = eligibleExpandedCount,
+            NotEligibleTotalCount = notEligibleCount,
+            NotFoundCount = notFoundCount,
+            ErrorCount = errorCount,
+            EligiblityEndDate = eligibilityEndDate,
+            AcademicYear = currentAcademicYear,
+            Expanded = ViewBag.IsExpandedFSMEnabled ?? false
+        };
+    }
     private IActionResult ValidateParseResult<T>(BulkCheckCsvResult<T> parseResult, string filename) where T : CheckEligibilityRequestDataBase
     {
         if (!string.IsNullOrEmpty(parseResult.ErrorMessage))
