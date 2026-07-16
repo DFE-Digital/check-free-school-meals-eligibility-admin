@@ -1,5 +1,6 @@
 ﻿@using System.Globalization
 @using CheckYourEligibility.Admin.Boundary.Responses
+@using CheckYourEligibility.Admin.Domain.Constants
 @using CheckYourEligibility.Admin.Domain.DfeSignIn
 @using CheckYourEligibility.Admin.Domain.Enums
 @model TieredOutcome
@@ -16,7 +17,8 @@
         CultureInfo.DefaultThreadCurrentCulture
     ) : DateTime.UtcNow;
 
-    bool isWelsh = false;
+    var laRegion = ViewBag.LaRegion as string;
+    bool isWelshLA = laRegion == LocalAuthorityRegion.Wales;
 }
 
 <div class="govuk-grid-column-full">
@@ -89,7 +91,7 @@
                 <p class="govuk-body">
                     @Html.ActionLink("How and when to complete annual rechecks", "Rechecks", "Home", null, new { @class = "govuk-link" })
 
-                    @if (fsmPolicy.EligibilityCriteria == EligibilityCriteria.expanded || isWelsh)
+                    @if (fsmPolicy.EligibilityCriteria == EligibilityCriteria.expanded || isWelshLA)
                     {
                         <div class="govuk-inset-text">
                             <p><strong>Targeted and expanded free school meals</strong></p>
@@ -99,7 +101,7 @@
                                 <strong class="govuk-tag govuk-tag--purple tag-wider">Eligible @CheckEligibilityExpandedTier.targeted.ToString():</strong>
                                 this covers children in households in receipt of Universal Credit with annual household earnings of £7,400 or less.
 
-                                @if (isWelsh)
+                                @if (isWelshLA)
                                 {
                                     <span>
                                         These children will attract the pupil development grant and other disadvantage funding for their schools.
@@ -119,7 +121,7 @@
                                 this covers children who are in households receiving Universal Credit with annual household earnings exceeding £7,400.
                                 Children will be entitled to free school meals only.
                             </p>
-                            @if (!isWelsh)
+                            @if (!isWelshLA)
                             {
                                 <p>
                                     For more information, read
