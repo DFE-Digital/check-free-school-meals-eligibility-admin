@@ -6,6 +6,7 @@ describe('Full journey of creating an application through school portal through 
     const NIN = 'PN668767B'
     const childFirstName = 'Timmy';
     const childLastName = 'Smith';
+    const accentedChildFirstName = 'Dénis';
 
     it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {       
 
@@ -138,6 +139,153 @@ describe('Full journey of creating an application through school portal through 
             .find('td')
             .eq(5)
             .should('contain.text', 'Reviewed entitled');
+
+        cy.get('a.signOut').click();
+        cy.wait(1000);
+
+        //Allows a user when back logged into the School portal to finalise the application
+        cy.checkSession('school');
+        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+        cy.wait(1);
+        cy.get('.govuk-caption-l').should('include.text', 'The Telford Park School');
+
+        cy.contains('Finalise applications').click();
+        cy.url().should('contain', 'Application/FinaliseApplications');
+        cy.get<string>('@referenceNumber').then((ref) => {
+            cy.findNewApplicationFinalise(ref).then(() => {
+                cy.contains('.govuk-button', 'Finalise applications').click();
+                cy.contains('.govuk-button', 'Yes, finalise now').click();
+            });
+        });
+    });
+
+    it('Will find an application when searching using an unaccented child first name', () => {     
+        
+        cy.checkSession('school');
+        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+        cy.wait(1);
+        cy.get('.govuk-caption-l').should('include.text', 'The Telford Park School');
+
+        //Add parent details
+        cy.contains('Run a check for one parent or guardian').click();
+        cy.get('#consent').check();
+        cy.get('#submitButton').click();
+        cy.url().should('include', '/Check/Enter_Details');
+        cy.get('#FirstName').type(parentFirstName);
+        cy.get('#LastName').type(parentLastName);
+        cy.get('#EmailAddress').type(parentEmailAddress);
+        cy.get('[id="DateOfBirth.Day"]').type('01');
+        cy.get('[id="DateOfBirth.Month"]').type('01');
+        cy.get('[id="DateOfBirth.Year"]').type('1990');
+        cy.get('#NationalInsuranceNumber').type(NIN);
+        cy.contains('button', 'Perform check').click();
+
+        //Loader page
+        cy.url().should('include', 'Check/Loader');
+
+        //Not eligible outcome
+        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'may not be eligible for free school meals.');
+        cy.contains('a.govuk-button', 'Appeal now').click();
+
+        //Enter child details
+        cy.url().should('include', '/Enter_Child_Details');
+        cy.get('[id="ChildList[0].FirstName"]').type(accentedChildFirstName);
+        cy.get('[id="ChildList[0].LastName"]').type(childLastName);
+
+        const childDob = getValidChildDob();
+
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);        
+
+        cy.contains('button', 'Add another child').click();
+        cy.contains('button', 'Remove').click();
+        cy.contains('button', 'Save and continue').click();
+
+        //Add supporting evidence or skip
+        cy.url().should('include', '/UploadEvidence');
+        cy.fixture('TestImage.png').then(fileContent => {
+            cy.get('input[type="file"]').attachFile({
+                fileContent,
+                fileName: 'TestImage.png',
+                mimeType: 'image/png'
+            });
+        });
+        cy.contains('button', 'Attach evidence').click();
+
+        //Check answers page
+        cy.get('.govuk-heading-l').should('include.text', 'Check your answers before submitting');
+        cy.CheckValuesInSummaryCard('Parent or guardian details', 'Name', `${parentFirstName} ${parentLastName}`);
+        cy.CheckValuesInSummaryCard('Parent or guardian details', 'Date of birth', '1 January 1990');
+        cy.CheckValuesInSummaryCard('Parent or guardian details', 'National Insurance number', NIN);
+        cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
+        cy.CheckValuesInSummaryCard(
+            'Child 1 details',
+            'Name',
+            `${accentedChildFirstName} ${childLastName}`
+        );
+        cy.CheckValuesInSummaryCard('Evidence', "TestImage.png", "Uploaded");
+        cy.contains('button', 'Save details').click();
+
+        //Appeals Registered confirmation page
+        cy.url().should('include', '/Check/AppealsRegistered');        
+
+        cy.get('.govuk-table tbody tr')
+            .first()
+            .find('td')
+            .eq(1)
+            .invoke('text')
+            .should('not.be.empty')
+            .then(text => text.trim())
+            .as('referenceNumber');
+
+        cy.get('@referenceNumber').then((ref) => {
+            cy.log(`Reference number is: ${ref}`);
+        });
+        
+        cy.get('a.signOut').click();
+        cy.wait(1000);
+
+        //Allows a user when logged into the LA portal to approve the application review
+        //Log in a LA and navigate to Pending Applications
+        cy.checkSession('LA');
+        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+        cy.get('.govuk-caption-l').should('include.text', 'Telford And Wrekin Council');
+        cy.contains('.govuk-link', 'Pending applications').click();
+
+        //Approve Not Eligible Appeal Application from earlier
+        cy.url().should('contain', 'Application/PendingApplications');
+
+        cy.get<string>('@referenceNumber').then((ref) => {
+            cy.scanPagesForNewValue(ref);
+        });
+
+        cy.contains('Approve for expanded free school meals')
+            .parent()
+            .find('input[type="radio"]')
+            .check();
+
+        cy.contains('.govuk-button', 'Save and continue').click();
+        cy.contains('.govuk-button', 'Approve now').click();
+
+        //Search for approved application
+        cy.visit('/home');
+        cy.contains('Search all records').click();
+        cy.url().should('contain', 'Application/SearchResults');
+
+        cy.get('#Keyword').type('denis');
+
+        cy.contains('button.govuk-button', 'Apply filters').click();
+
+        cy.url().should('include', 'Application/SearchResults');
+        
+        cy.get<string>('@referenceNumber').then((ref) => {
+            cy.scanPagesForValue(ref);
+        
+            cy.url().should('include', 'Application');
+            cy.get('body').should('contain.text', ref);
+            cy.get('body').should('contain.text', 'Reviewed entitled');
+        });
 
         cy.get('a.signOut').click();
         cy.wait(1000);
