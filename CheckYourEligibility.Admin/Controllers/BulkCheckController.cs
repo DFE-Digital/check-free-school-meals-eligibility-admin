@@ -270,7 +270,7 @@ public class BulkCheckController : BaseController
     // GET: Batch checks history with table
     public async Task<IActionResult> Bulk_Check_History(int pageNumber = 1, int pageSize = 10)
     {
-        bool isEnhanced = _Claims.Roles[0].Code == DfeSignInRoles.RoleCodeBasic ? false : true;
+        bool isEnhanced = _Claims?.Roles?.FirstOrDefault()?.Code != null ? _Claims.Roles[0].Code != DfeSignInRoles.RoleCodeBasic : false;
         try
         {
             if (_organisation.id == 0)
