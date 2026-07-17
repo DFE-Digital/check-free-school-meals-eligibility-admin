@@ -417,16 +417,29 @@ Cypress.Commands.add('CheckValuesInSummaryCard', (sectionTitle: string, key: str
     });
 });
 
-Cypress.Commands.add('scanPagesForValue', (value: string) => {
-  cy.get('body').then((body) => {
-    if (body.find(`td a:contains("${value}")`).length > 0) {
-      cy.get(`td a:contains("${value}")`).click();
-    }
-    else {
-      cy.contains('.govuk-link', 'Next').click();
-      cy.scanPagesForValue(value);
-    }
-  });
+Cypress.Commands.add('scanPagesForValue', (value, maxPages = 3) => {
+  const checkForValue = (pageCount = 1) => {
+    cy.get('body').then((body) => {
+      if (body.find(`td a:contains("${value}")`).length > 0) {
+        cy.get(`td a:contains("${value}")`).click();
+      }
+      else if (
+        pageCount < maxPages &&
+        body.find('.govuk-pagination__next a').length > 0
+      ) {
+        cy.get('.govuk-pagination__next a')
+          .click()
+          .then(() => {
+            checkForValue(pageCount + 1);
+          });
+      }
+      else {
+        throw new Error(`Record not found within ${maxPages} pages`);
+      }
+    });
+  };
+
+  checkForValue();
 });
 
 Cypress.Commands.add('scanPagesForNewValue', (value, maxPages = 3) => {
