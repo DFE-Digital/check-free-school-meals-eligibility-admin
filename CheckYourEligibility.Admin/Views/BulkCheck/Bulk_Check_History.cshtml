@@ -88,13 +88,25 @@
                                         <td class="govuk-table__cell"></td>
                                         break;
                                     case "Completed":
-                                        <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">@(check.Status)</strong></td>
-                                        <td class="govuk-table__cell">
-                                            @Html.ActionLink("View results", "Bulk_Check_Summary", "BulkCheck", new { bulkCheckId = check.BulkCheckId, DateSubmitted = check.DateSubmitted }, new { aria_label = "Delete results submitted on " + check.DateSubmitted })
-                                        </td>
-                                        <td class="govuk-table__cell">
-                                            @Html.ActionLink("Download results", "Bulk_Check_Download", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = "Download results submitted on " + check.DateSubmitted })
-                                        </td>
+                                        @if (Model.Enhanced == true)
+                                        {
+                                            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">@(check.Status)</strong></td>
+                                            <td class="govuk-table__cell">
+                                                @Html.ActionLink("View results", "Bulk_Check_Summary", "BulkCheck", new { bulkCheckId = check.BulkCheckId, DateSubmitted = check.DateSubmitted }, new { aria_label = "Delete results submitted on " + check.DateSubmitted })
+                                            </td>
+                                            <td class="govuk-table__cell">
+                                                @Html.ActionLink("Download results", "Bulk_Check_Download", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = "Download results submitted on " + check.DateSubmitted })
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">@(check.Status)</strong></td>
+                                            <td class="govuk-table__cell">
+                                                @Html.ActionLink("Download results", "Bulk_Check_Download", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = "Download results submitted on " + check.DateSubmitted })
+                                                |
+                                                @Html.ActionLink("Delete", "Bulk_Check_Delete", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = "Delete results submitted on " + check.DateSubmitted })
+                                            </td>
+                                        }
                                         break;
                                     default:
                                         <td class="govuk-table__cell">@(check.Status)</td>

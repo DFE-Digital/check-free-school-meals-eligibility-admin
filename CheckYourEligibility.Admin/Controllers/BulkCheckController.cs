@@ -270,7 +270,7 @@ public class BulkCheckController : BaseController
     // GET: Batch checks history with table
     public async Task<IActionResult> Bulk_Check_History(int pageNumber = 1, int pageSize = 10)
     {
-
+        bool isEnhanced = _Claims.Roles[0].Code == DfeSignInRoles.RoleCodeBasic ? false : true;
         try
         {
             if (_organisation.id == 0)
@@ -280,7 +280,7 @@ public class BulkCheckController : BaseController
             }
 
             var allChecks = await _getBulkCheckStatusesUseCase.Execute(_organisation.id);
-
+            
             // Pagination
             var totalRecords = allChecks.Count();
             var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
@@ -303,7 +303,9 @@ public class BulkCheckController : BaseController
                 }).ToList(),
                 CurrentPage = pageNumber,
                 TotalPages = totalPages,
-                TotalRecords = totalRecords
+                TotalRecords = totalRecords,
+                Enhanced = isEnhanced
+
             };
 
             return View(viewModel);
@@ -359,9 +361,6 @@ public class BulkCheckController : BaseController
                 return RedirectToAction("Bulk_Check_History");
             }
 
-            var isEnhanced = _Claims.Roles[0].Code == DfeSignInRoles.RoleCodeBasic ? false : true;
-            await GetFreeSchoolMealsPolicy();
-            var expanded = await IsExpandedFSMEnabled();
             var summary = await _checkGateway.GetBulkCheckSummary(bulkCheckId);
 
             if (summary == null)
@@ -511,7 +510,6 @@ public class BulkCheckController : BaseController
             ErrorCount = errorCount,
             EligiblityEndDate = eligibilityEndDate,
             AcademicYear = currentAcademicYear,
-            Expanded = ViewBag.IsExpandedFSMEnabled ?? false
         };
     }
     private IActionResult ValidateParseResult<T>(BulkCheckCsvResult<T> parseResult, string filename) where T : CheckEligibilityRequestDataBase
