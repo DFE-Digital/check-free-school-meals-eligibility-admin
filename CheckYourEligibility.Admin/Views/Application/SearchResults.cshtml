@@ -23,18 +23,18 @@
     @{
         Dictionary<string, string> statusFilters = new()
         {
-            { "Entitled", "Eligible (2025-2026)" },
-            { "Entitled.targeted", "Eligible targeted" },
-            { "Entitled.expanded", "Eligible expanded" },
-            { "EvidenceNeeded", "Evidence needed" },
-            { "Receiving", "Receiving entitlement (2025-2026)" },
-            { "Receiving.targeted", "Receiving targeted FSM" },
-            { "Receiving.expanded", "Receiving expanded FSM" },
-            { "SentForReview", "Sent for review" },
-            { "ReviewedEntitled", "Reviewed entitled (2025-2026)" },
-            { "ReviewedEntitled.targeted", "Reviewed entitled targeted" },
-            { "ReviewedEntitled.expanded", "Reviewed entitled expanded" },
-            { "ReviewedNotEntitled", "Reviewed not entitled" },
+        { "Entitled", "Eligible (2025-2026)" },
+        { "Entitled.targeted", "Eligible targeted" },
+        { "Entitled.expanded", "Eligible expanded" },
+        { "EvidenceNeeded", "Evidence needed" },
+        { "Receiving", "Receiving entitlement (2025-2026)" },
+        { "Receiving.targeted", "Receiving targeted FSM" },
+        { "Receiving.expanded", "Receiving expanded FSM" },
+        { "SentForReview", "Sent for review" },
+        { "ReviewedEntitled", "Reviewed entitled (2025-2026)" },
+        { "ReviewedEntitled.targeted", "Reviewed entitled targeted" },
+        { "ReviewedEntitled.expanded", "Reviewed entitled expanded" },
+        { "ReviewedNotEntitled", "Reviewed not entitled" },
         };
     }
 
@@ -138,7 +138,7 @@
                                     }
                                     @{
                                         var nonArchivedStatuses = selectedStatus.Where(s => s != "Archived").ToList();
-                                        var hasArchivedFilter = selectedStatus.Contains("Archived");
+                                        bool hasArchivedFilter = applicationSearch.ShowArchived;
                                     }
                                     @if (nonArchivedStatuses.Count > 0)
                                     {
@@ -149,22 +149,21 @@
                                                 <li>
                                                     <a class="moj-filter__tag"
                                                        href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "SelectedStatuses", status)"
-                                                    src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                       src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
                                                         <span class="govuk-visually-hidden">Remove this filter</span>@statusFilters[status]
                                                     </a>
                                                 </li>
                                             </ul>
                                         }
                                     }
-
                                     @if (hasArchivedFilter)
                                     {
                                         <ul class="moj-filter-tags">
                                             <li>
                                                 <a class="moj-filter__tag"
-                                                href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "Status", "Archived")"
-                                                src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
-                                                    <span class="govuk-visually-hidden">Remove this filter</span>Archived
+                                                   href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "ShowArchived", "true")" src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                    <span class="govuk-visually-hidden">Remove this filter</span>
+                                                    Archived
                                                 </a>
                                             </li>
                                         </ul>
@@ -263,11 +262,14 @@
                                             </legend>
                                             <div class="govuk-form-group">
                                                 <div class="govuk-checkboxes__item">
-                                                    <input class="govuk-checkboxes__input" id="Status_Archived"
-                                                        name="Status" type="checkbox" value="Archived"
-                                                        @(selectedStatus.Contains("Archived") ? "checked" : "")>
+                                                    <input class="govuk-checkboxes__input"
+                                                           id="Status_Archived"
+                                                           name="ShowArchived"
+                                                           type="checkbox"
+                                                           value="true"
+                                                           @(applicationSearch.ShowArchived ? "checked" : "")>
                                                     <label class="govuk-label govuk-checkboxes__label"
-                                                        for="Status_Archived">
+                                                           for="Status_Archived">
                                                         Archived
                                                     </label>
                                                 </div>
@@ -338,7 +340,7 @@
                                                             else
                                                             @if (orgType == OrganisationCategory.Establishment)
                                                             {
-                                                                
+
                                                             }
                                                             <th class="govuk-table__header" scope="col">
                                                                 Date
@@ -356,8 +358,10 @@
                                                                 <td class="govuk-table__cell">@Html.ActionLink(person.Person.Reference, person.DetailView, "application", new { id = person.Person.Id }, new { @class = "govuk-link" })</td>
                                                                 <td class="govuk-table__cell">@(person.Person.ChildFirstName + " " + person.Person.ChildLastName)</td>
                                                                 <td class="govuk-table__cell">@(Convert.ToDateTime(person.Person.ChildDateOfBirth).ToString("d MMM yyyy"))</td>
-                                                                @if(orgType != OrganisationCategory.Establishment)
-                                                                {<td class="govuk-table__cell"> @person.Person.Establishment.Name </td>}
+                                                                @if (orgType != OrganisationCategory.Establishment)
+                                                                {
+                                                                    <td class="govuk-table__cell"> @person.Person.Establishment.Name </td>
+                                                                }
                                                                 <td class="govuk-table__cell">@person.Person.Created.ToString("d MMM yyyy")</td>
                                                                 <td class="govuk-table__cell">
                                                                     <strong class="govuk-tag @person.Person.Status.GetApplicationStatusColor(person.Person.Tier)">
