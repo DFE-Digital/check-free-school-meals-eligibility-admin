@@ -172,7 +172,19 @@ public class CheckGateway : BaseGateway, ICheckGateway
             throw;
         }
     }
-
+    public async Task<BulkCheckSummaryResponse> GetBulkCheckSummary(string bulkCheckID)
+    {
+        try
+        {
+            var result = await ApiDataGetAsynch($"/bulk-checks/{bulkCheckID}/summary", new BulkCheckSummaryResponse());
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"get failed. uri:-{_httpClient.BaseAddress}bulk-check");
+            throw;
+        }
+    }
     public async Task<CheckEligiblityBulkDeleteResponse> DeleteBulkChecks(string bulkCheckDeleteUrl)
     {
         try

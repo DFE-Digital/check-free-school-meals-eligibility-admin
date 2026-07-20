@@ -136,16 +136,23 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
           cy.get("td").eq(5).find("strong").should("have.class", "govuk-tag");
         });
 
+      
       waitForStatusCompleted("valid.csv");
 
-      cy.contains("table tbody tr", "valid.csv").within(() => {
+      cy.contains("table tbody tr", "valid.csv")
+      .first()
+      .within(() => {
         cy.get("td").eq(5).should("contain.text", "Completed");
 
         cy.get("td")
           .eq(6)
-          .should("contain.text", "Download results")
-          .and("contain.text", "Delete");
+          .should("contain.text", "View results");
+
+        cy.get("td")
+          .eq(7)
+          .should("contain.text", "Download results");
       });
+
     });
 
     it("returns error after exceeding attempt limit", () => {
