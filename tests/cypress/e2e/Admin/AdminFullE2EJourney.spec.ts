@@ -6,7 +6,13 @@ describe('Full journey of creating an application through school portal through 
     const NIN = 'PN668767B'
     const childFirstName = 'Timmy';
     const childLastName = 'Smith';
-    const accentedChildFirstName = 'Dénis';
+    const uniqueSuffix = Cypress._.times(
+        6,
+        () => Cypress._.sample('abcdefghijklmnopqrstuvwxyz')
+    ).join('');
+    
+    const accentedChildFirstName = `Dénis${uniqueSuffix}`;
+    const unaccentedChildFirstName = `Denis${uniqueSuffix}`;
 
     it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {       
 
@@ -273,7 +279,7 @@ describe('Full journey of creating an application through school portal through 
         cy.contains('Search all records').click();
         cy.url().should('contain', 'Application/SearchResults');
 
-        cy.get('#Keyword').type('denis');
+        cy.get('#Keyword').type(unaccentedChildFirstName);
 
         cy.contains('button.govuk-button', 'Apply filters').click();
 
