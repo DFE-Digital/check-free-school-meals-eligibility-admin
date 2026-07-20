@@ -1,10 +1,12 @@
 ﻿@model CheckYourEligibility.Admin.ViewModels.BulkCheckSummaryViewModel;
 @{
+    ViewData["Title"] = $"Batch check results for {Model.FileName} on {Model.SubmittedDate}";
     var fileName = string.IsNullOrWhiteSpace(Model.FileName) ? "the selected batch check" : Model.FileName;
     var submittedDate = Model.SubmittedDate == default ? DateTime.UtcNow : Model.SubmittedDate;
     var eligibilityEndDate = Model.EligiblityEndDate?.ToString("dd MMMM yyyy");
 }
 <div class="govuk-width-container">
+    <a class="govuk-back-link" href="@Url.Action("Bulk_Check_History", "BulkCheck")">Back</a>
     <main class="govuk-main-wrapper" id="main-content">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
