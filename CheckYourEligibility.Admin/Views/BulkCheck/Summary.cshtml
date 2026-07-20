@@ -1,6 +1,6 @@
 ﻿@model CheckYourEligibility.Admin.ViewModels.BulkCheckSummaryViewModel;
 @{
-    ViewData["Title"] = $"Batch check results for {Model.FileName} on {Model.SubmittedDate}";
+    ViewData["Title"] = $"Batch check results for {Model.FileName} on {Model.SubmittedDate.ToString("dd MMMM yyyy")}";
     var fileName = string.IsNullOrWhiteSpace(Model.FileName) ? "the selected batch check" : Model.FileName;
     var submittedDate = Model.SubmittedDate == default ? DateTime.UtcNow : Model.SubmittedDate;
     var eligibilityEndDate = Model.EligiblityEndDate?.ToString("dd MMMM yyyy");
