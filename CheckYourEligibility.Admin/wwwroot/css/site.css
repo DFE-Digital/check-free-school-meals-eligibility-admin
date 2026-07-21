@@ -522,3 +522,62 @@ hr {
     outline: 2px solid #0b0c0c;
 }
 /*END - SchoolListSearch in SchoolList should be accessible using only the keyboard*/
+
+.govuk-table__actions {
+    margin: 0;
+    // Reset default user agent styles @include govuk-media-query($from: tablet)
+
+{
+    display: table-cell;
+}
+
+}
+
+.govuk-table__actions {
+    margin-bottom: 15px;
+}
+
+.govuk-table__actions-list {
+    width: 100%;
+    margin: 0;
+    padding-left: 0px;
+}
+
+.govuk-table__actions-list-item {
+    display: inline-block;
+    margin-right: 10px;
+    padding-right: 10px;
+    border-right: 1px solid #b1b4b6;
+}
+
+    .govuk-table__actions-list-item:last-child {
+        margin-right: 0;
+        padding-right: 0;
+        border: 0;
+    }
+
+    .govuk-table__actions-list-item .govuk-link:focus {
+        isolation: isolate;
+    }
+
+// Full table font size override
+.govuk-table-\!-font-size-16 :is(TD, TH, .govuk-tag, .govuk-link) {
+    font-size: 14px !important;
+    font-size: 0.875 !important;
+    line-height: 1.33333 !important;
+}
+
+@media (min-width: 40.0625em) {
+    .govuk-table-\!-font-size-16 :is(TD, TH, .govuk-tag, .govuk-link) {
+        font-size: 16px !important;
+        font-size: 1 !important;
+        line-height: 1.33333 !important;
+    }
+}
+
+@media print {
+    .govuk-table-\!-font-size-16 :is(TD, TH, .govuk-tag, .govuk-link) {
+        font-size: 14pt !important;
+        line-height: 1.2 !important;
+    }
+}

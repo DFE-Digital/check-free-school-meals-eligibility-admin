@@ -12,21 +12,54 @@
     <div id="content" data-type="success" class="govuk-grid-row">
         <div class="govuk-grid-column-full">
 
-            @if (TempData["SuccessMessage"]?.ToString() != null)
+
+            @if (TempData["SuccessMessage"] != null)
             {
-                <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+                var targeted = Convert.ToInt32(TempData["EligibleTargeted"] ?? 0);
+                var expanded = Convert.ToInt32(TempData["EligibleExpanded"] ?? 0);
+                var total = targeted + expanded;
+
+                var fileName = TempData["FileName"]?.ToString();
+
+                var submittedDate = TempData["SubmittedDate"] is DateTime dt
+                ? dt
+                : DateTime.MinValue;
+
+                <div class="govuk-notification-banner govuk-notification-banner--success"
+                     role="alert"
+                     aria-labelledby="govuk-notification-banner-title"
+                     data-module="govuk-notification-banner">
+
                     <div class="govuk-notification-banner__header">
-                        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                            Success
+                        <h2 class="govuk-notification-banner__title"
+                            id="govuk-notification-banner-title">
+                            Applications successfully created
                         </h2>
                     </div>
+
                     <div class="govuk-notification-banner__content">
                         <h3 class="govuk-notification-banner__heading">
-                            @TempData["SuccessMessage"]
+                            @total applications created for batch check @fileName
+                            on @submittedDate.ToString("dd MMMM yyyy")
                         </h3>
+
+                        <p class="govuk-body">
+                            <strong class="govuk-tag govuk-tag--purple">
+                                Eligible targeted
+                            </strong>
+                            <strong>@targeted</strong>
+                        </p>
+
+                        <p class="govuk-body">
+                            <strong class="govuk-tag govuk-tag--green">
+                                Eligible expanded
+                            </strong>
+                            <strong>@expanded</strong>
+                        </p>
                     </div>
                 </div>
             }
+
             else if (TempData["ErrorMessage"]?.ToString() != null)
             {
                 <div class="govuk-error-summary" data-module="govuk-error-summary">
@@ -63,57 +96,97 @@
                             <th scope="col" class="govuk-table__header">Submitted by</th>
                             <th scope="col" class="govuk-table__header">Status</th>
                             <th scope="col" class="govuk-table__header">Actions </th>
-                            <th scope="col" class="govuk-table__header"></th>
                         </tr>
                     </thead>
+
                     <tbody class="govuk-table__body">
                         @foreach (var check in Model.Checks)
                         {
-                            <tr>
-                                <td class="govuk-table__cell">@(check.Filename)</td>
-                                <td class="govuk-table__cell">@(check.NumberOfRecords)</td>
-                                <td class="govuk-table__cell">@(check.FinalNameInCheck)</td>
-                                <td class="govuk-table__cell">@(check.DateSubmitted.ToLocalString12HourFormatReadable())</td>
-                                <td class="govuk-table__cell">@(check.SubmittedBy)</td>
+                            string tagClass;
 
-                                @switch (check.Status)
-                                {
-                                    case "Not started":
-                                        <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--grey">@(check.Status)</strong></td>
-                                        <td class="govuk-table__cell">
-                                            @Html.ActionLink("Delete", "Bulk_Check_Delete", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = "Delete results submitted on " + check.DateSubmitted.ToLocalString12HourFormatReadable() })
-                                        </td>
-                                        break;
-                                    case "In progress":
-                                        <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--blue">@(check.Status)</strong></td>
-                                        <td class="govuk-table__cell"></td>
-                                        break;
-                                    case "Completed":
-                                        @if (Model.Enhanced == true)
-                                        {
-                                            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">@(check.Status)</strong></td>
-                                            <td class="govuk-table__cell">
-                                                @Html.ActionLink("View results", "Bulk_Check_Summary", "BulkCheck", new { bulkCheckId = check.BulkCheckId, DateSubmitted = check.DateSubmitted }, new { aria_label = "View results submitted on " + check.DateSubmitted.ToLocalString12HourFormatReadable() })
-                                            </td>
-                                            <td class="govuk-table__cell">
-                                                @Html.ActionLink("Download results", "Bulk_Check_Download", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = "Download results submitted on " + check.DateSubmitted.ToLocalString12HourFormatReadable() })
-                                            </td>
-                                        }
-                                        else
-                                        {
-                                            <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--green">@(check.Status)</strong></td>
-                                            <td class="govuk-table__cell">
-                                                @Html.ActionLink("Download results", "Bulk_Check_Download", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = "Download results submitted on " + check.DateSubmitted.ToLocalString12HourFormatReadable() })
-                                                |
-                                                @Html.ActionLink("Delete", "Bulk_Check_Delete", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = "Delete results submitted on " + check.DateSubmitted.ToLocalString12HourFormatReadable() })
-                                            </td>
-                                        }
-                                        break;
-                                    default:
-                                        <td class="govuk-table__cell">@(check.Status)</td>
-                                        <td class="govuk-table__cell"></td>
-                                        break;
-                                }
+                            switch (check.Status)
+                            {
+                                case "Not started":
+                                    tagClass = "govuk-tag--grey";
+                                    break;
+
+                                case "In progress":
+                                case "ApplicationCreationInProgress":
+                                    tagClass = "govuk-tag--blue";
+                                    break;
+
+                                case "Completed":
+                                case "ApplicationsCreated":
+                                    tagClass = "govuk-tag--green";
+                                    break;
+
+                                default:
+                                    tagClass = "govuk-tag--red";
+                                    break;
+                            }
+                            string? statusWording = null;
+                            switch (check.Status)
+                            {
+                                case "ApplicationCreationInProgress":
+                                    statusWording = "Application creation in progress";
+                                    break;
+                                case "ApplicationsCreated":
+                                    statusWording = "Applications created";
+                                    break;
+                                case "ApplicationCreationFailed":
+                                    statusWording = "Application creation failed";
+                                    break;
+                            }
+                            var showDelete =
+                            check.Status == "Not started" ||
+                            (check.Status == "Completed" && !Model.Enhanced);
+
+                            var showViewResults =
+                            check.Status == "Completed" &&
+                            Model.Enhanced;
+
+                            var showDownloadResults =
+                            check.Status == "Completed" ||
+                            check.Status == "ApplicationsCreated";
+
+                            var showSearchApplications =
+                            check.Status == "ApplicationsCreated";
+
+                            <tr>
+                                <td class="govuk-table__cell">@check.Filename</td>
+                                <td class="govuk-table__cell">@check.NumberOfRecords</td>
+                                <td class="govuk-table__cell">@check.FinalNameInCheck</td>
+                                <td class="govuk-table__cell">@check.DateSubmitted.ToLocalString12HourFormatReadable()</td>
+                                <td class="govuk-table__cell">@check.SubmittedBy</td>
+
+                                <td class="govuk-table__cell">
+                                    <strong class="govuk-tag @tagClass">@(statusWording ?? check.Status)</strong>
+                                </td>
+
+                                <td class="govuk-table__cell">
+                                    <div class="govuk-table__actions">
+                                        <ul class="govuk-table__actions-list">
+                                            @if (showViewResults)
+                                            {
+                                                <li class="govuk-table__actions-list-item">@Html.ActionLink("View results", "Bulk_Check_Summary", "BulkCheck", new { bulkCheckId = check.BulkCheckId, DateSubmitted = check.DateSubmitted }, new { aria_label = $"View results submitted on {check.DateSubmitted.ToLocalString12HourFormatReadable()}" })</li>
+                                            }
+                                            @if (showSearchApplications)
+                                            {
+
+                                                <li class="govuk-table__actions-list-item">@Html.ActionLink("Search applications ", "SearchResults", "Application")</li>
+                                            }
+                                            @if (showDownloadResults)
+                                            {
+
+                                                <li class="govuk-table__actions-list-item">@Html.ActionLink("Download results", "Bulk_Check_Download", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = $"Download results submitted on {check.DateSubmitted.ToLocalString12HourFormatReadable()}" }) </li>
+                                            }
+                                            @if (showDelete)
+                                            {
+                                                <li class="govuk-table__actions-list-item">@Html.ActionLink("Delete", "Bulk_Check_Delete", "BulkCheck", new { bulkCheckId = check.BulkCheckId }, new { aria_label = $"Delete results submitted on {check.DateSubmitted.ToLocalString12HourFormatReadable()}" }) </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </td>
                             </tr>
                         }
                     </tbody>

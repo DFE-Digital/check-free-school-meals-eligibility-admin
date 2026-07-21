@@ -5,6 +5,7 @@ using CheckYourEligibility.Admin.Domain.Constants;
 using CheckYourEligibility.Admin.Domain.Constants.BulkCheck;
 using CheckYourEligibility.Admin.Domain.DfeSignIn;
 using CheckYourEligibility.Admin.Domain.Enums;
+using CheckYourEligibility.Admin.Gateways;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Models;
@@ -14,6 +15,7 @@ using CsvHelper;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 using static CheckYourEligibility.Admin.Domain.Constants.DfeSignInRoles;
 using static CheckYourEligibility.Admin.Helpers.CsvBulkCheckValidatorHelper;
@@ -316,7 +318,44 @@ public class BulkCheckController : BaseController
             return View(new BulkCheckViewModel());
         }
     }
+    [HttpPost]
+    public async Task<IActionResult> Bulk_Check_Application(string bulkCheckId)
+    {
 
+        if (string.IsNullOrWhiteSpace(bulkCheckId))
+        {
+            TempData["ErrorMessage"] = "Bulk check ID is required.";
+            return RedirectToAction(nameof(Bulk_Check_History));
+        }
+
+        try
+        {
+            var summary = await _checkGateway.GetBulkCheckSummary(bulkCheckId);
+            var response = await _checkGateway.CreateApplicationFromBulkCheck(bulkCheckId);
+
+            TempData["SuccessMessage"] = response?.Data
+                ?? "Applications created successfully.";
+
+            TempData["FileName"] = summary.Filename;
+            TempData["SubmittedDate"] = summary.SubmittedDate;
+            TempData["EligibleTargeted"] = summary.Outcomes.ContainsKey("eligible-targeted") ? summary.Outcomes["eligible-targeted"] : 0;
+            TempData["EligibleExpanded"] = summary.Outcomes.ContainsKey("eligible-expanded") ? summary.Outcomes["eligible-expanded"] : 0;
+
+            return RedirectToAction(nameof(Bulk_Check_History));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to create applications from bulk check {BulkCheckId}",
+                bulkCheckId);
+
+            TempData["ErrorMessage"] =
+                "Unable to create applications from the batch check.";
+
+            return RedirectToAction(nameof(Bulk_Check_History));
+        }
+
+    }
     // GET: View results for a specific bulk check
     public async Task<IActionResult> Bulk_Check_View_Results(string bulkCheckId)
     {
@@ -368,7 +407,7 @@ public class BulkCheckController : BaseController
                 TempData["ErrorMessage"] = "No results found for this bulk check.";
                 return RedirectToAction("Bulk_Check_History");
             }
-            var viewModel = BuildBulkCheckSummaryViewModel(summary);
+            var viewModel = BuildBulkCheckSummaryViewModel(summary, bulkCheckId);
             return View("Summary", viewModel);
         }
         catch (Exception ex)
@@ -481,7 +520,7 @@ public class BulkCheckController : BaseController
             : typeof(BulkExportBaseCsvMap);
     }
 
-    private BulkCheckSummaryViewModel BuildBulkCheckSummaryViewModel(BulkCheckSummaryResponse results)
+    private BulkCheckSummaryViewModel BuildBulkCheckSummaryViewModel(BulkCheckSummaryResponse results, string bulkCheckId)
     {
         var eligibleCount = results.Outcomes.ContainsKey("eligible") ? results.Outcomes["eligible"] : 0;
         var eligibleTargetedCount = results.Outcomes.ContainsKey("eligible-targeted") ? results.Outcomes["eligible-targeted"] : 0;
@@ -497,7 +536,8 @@ public class BulkCheckController : BaseController
             : new DateTime(results.SubmittedDate.Year + 1, 7, 31);
 
         var currentAcademicYear = results.SubmittedDate.Month >= 5 ? results.SubmittedDate.Year : results.SubmittedDate.Year - 1;
-       
+        TempData["EligibleTargeted"] = eligibleTargetedCount;
+        TempData["EligibleExpanded"] = eligibleExpandedCount;
         return new BulkCheckSummaryViewModel
         {
             FileName = results.Filename,
@@ -510,6 +550,7 @@ public class BulkCheckController : BaseController
             ErrorCount = errorCount,
             EligiblityEndDate = eligibilityEndDate,
             AcademicYear = currentAcademicYear,
+            bulkCheckId = bulkCheckId
         };
     }
     private IActionResult ValidateParseResult<T>(BulkCheckCsvResult<T> parseResult, string filename) where T : CheckEligibilityRequestDataBase

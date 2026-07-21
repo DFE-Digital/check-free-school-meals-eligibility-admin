@@ -189,8 +189,9 @@ public class CheckGateway : BaseGateway, ICheckGateway
     {
         try
         {
-            var result = await ApiDataPostAsynch($"/bulk-check/{bulkCheckID}/applications", new MessageResponse());
-            return result
+            
+            var result = await ApiDataPostAsynch($"/bulk-check/{bulkCheckID}/applications", new BulkCheckApplicationRequest() ,new MessageResponse());
+            return result;
         }
         catch (Exception ex) 
         {
