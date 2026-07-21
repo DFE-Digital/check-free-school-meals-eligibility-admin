@@ -578,9 +578,11 @@ public class CheckController : BaseController
             }
         }
 
+        //Handle no evidence files selected
         if ((request.EvidenceFiles == null || !request.EvidenceFiles.Any()) && !evidenceExists)
         {
             isValid = false;
+            ModelState.AddModelError("EvidenceFiles", $"You have not selected a file");
             TempData["ErrorMessage"] = "You have not selected a file";
         }
 

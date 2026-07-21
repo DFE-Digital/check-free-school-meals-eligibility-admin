@@ -169,28 +169,43 @@ describe('Keyword search validation', () => {
 
   it('Returns date filtered results when a radio is selected and filter can be removed', () => {
     cy.contains('Search all records').click();
-  
+
     cy.get("#DateRangeNow").click();
     cy.contains(".govuk-button", "Apply filters").click();
-  
+
     cy.contains(".moj-filter__tag", "Current month to date", { timeout: 8000 })
       .should('be.visible')
       .click();
-  
+
     cy.contains(".moj-filter__tag", "Current month to date").should('not.exist');
   });
 
-  it('Returns status filtered results when a Status is selected and filter can be removed', () => {
+  it('Returns filtered results when a Archived applications is selected and filter can be removed', () => {
     cy.contains('Search all records').click();
-  
-    cy.get("#Status_ReviewedEntitled").click();
+
+    cy.get("#StatusFilterMode-Archived").click();
     cy.contains(".govuk-button", "Apply filters").click();
-  
-    cy.contains(".moj-filter__tag", "Reviewed entitled", { timeout: 8000 })
+
+    cy.contains(".moj-filter__tag", "Archived applications", { timeout: 8000 })
       .should('be.visible')
       .click();
-  
-    cy.contains(".moj-filter__tag", "Reviewed entitled").should('not.exist');
+
+    cy.contains(".moj-filter__tag", "Archived applications").should('not.exist');
+  });
+
+  it('Returns filtered results when a Selected statuses is selected and filter can be removed', () => {
+    cy.contains('Search all records').click();
+
+    cy.get("#StatusFilterMode-Selected").click();
+    cy.wait(100);
+    cy.get("#Status_SentForReview").click();
+    cy.contains(".govuk-button", "Apply filters").click();
+
+    cy.contains(".moj-filter__tag", "Sent for review", { timeout: 8000 })
+      .should('be.visible')
+      .click();
+
+    cy.contains(".moj-filter__tag", "Sent for review").should('not.exist');
   });
 
   it('Returns the record when First and Last name of Parent are searched', () => {
