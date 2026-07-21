@@ -351,62 +351,6 @@ Cypress.Commands.add('loadCookies', (userType: string) => {
   });
 });
 
-Cypress.Commands.add('SignInLA', () => {
-  cy.session('Session SessionLA', () => {
-    cy.visit('/');
-    cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
-    cy.get('button[type="submit"]').click()
-
-    cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
-    cy.get('button[type="submit"]').click()
-
-    cy.contains('Telford and Wrekin Council')
-      .parent()
-      .find('input[type="radio"]')
-      .check();
-
-    cy.contains('Continue', { timeout: 15000 }).click();
-  });
-});
-
-Cypress.Commands.add('SignInSchool', () => {
-  cy.session('Session SessionSchool', () => {
-
-    cy.visit('/');
-    cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
-    cy.get('button[type="submit"]').click()
-
-    cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
-    cy.get('button[type="submit"]').click()
-
-    cy.contains('The Telford Park School')
-      .parent()
-      .find('input[type="radio"]')
-      .check();
-
-    cy.contains('Continue').click();
-  });
-});
-
-Cypress.Commands.add('SignInMAT', () => {
-  cy.session('Session SessionMAT', () => {
-
-    cy.visit('/');
-    cy.get('#username').type(Cypress.env('DFE_ADMIN_EMAIL_ADDRESS'));
-    cy.get('button[type="submit"]').click()
-
-    cy.get('#password').type(Cypress.env('DFE_ADMIN_PASSWORD'));
-    cy.get('button[type="submit"]').click()
-
-    cy.contains('THOMAS TELFORD MULTI ACADEMY TRUST')
-      .parent()
-      .find('input[type="radio"]')
-      .check();
-
-    cy.contains('Continue').click();
-  });
-});
-
 Cypress.Commands.add('CheckValuesInSummaryCard', (sectionTitle: string, key: string, expectedValue: string) => {
   cy.contains('.govuk-summary-card__title', sectionTitle)
     .parents('.govuk-summary-card')

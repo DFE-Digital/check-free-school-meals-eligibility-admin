@@ -10,8 +10,8 @@ public class PaginationPartialViewModel
     public int TotalRecords { get; set; }
     public string ControllerName { get; set; }
     public string? Keyword { get; set; }
-    public IEnumerable<string>? Status { get; set; }
+    public IEnumerable<string>? SelectedStatuses { get; set; }
     public string? DateFrom { get; set; }
-    public bool? ShowArchived { get; set; }
+    public string? StatusFilterMode { get; set; }
 
 }

@@ -14,8 +14,9 @@ public class ApplicationSearch
 
     public int? LocalAuthority { get; set; }
     public int? School { get; set; }
-    public List<string> SelectedStatuses { get; set; } = new();
-    public bool ShowArchived { get; set; }
+
+    public string StatusFilterMode { get; set; } = "live"; // Default to live applications
+    public List<string>? SelectedStatuses { get; set; }
     [LastName("last name", "Child", "ChildIndex")]
     public string? ChildLastName { get; set; }
 
