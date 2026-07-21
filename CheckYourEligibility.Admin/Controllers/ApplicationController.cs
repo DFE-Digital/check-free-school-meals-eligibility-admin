@@ -41,11 +41,12 @@ public class ApplicationController : BaseController
     private async Task<IActionResult> GetResults(ApplicationRequestSearch? applicationSearch, string detailView,
         bool showSelector, bool showSchool, bool showParentDob)
     {
+        var criteria = JsonConvert.SerializeObject(applicationSearch);
+        TempData["SearchCriteria"] = criteria;
+        
         var response = await _adminGateway.PostApplicationSearch(applicationSearch);
         response ??= new ApplicationSearchResponse { Data = new List<ApplicationResponse>(), Meta = new ApplicationSearchResponseMeta() };
 
-        var criteria = JsonConvert.SerializeObject(applicationSearch);
-        TempData["SearchCriteria"] = criteria;
         ViewBag.CurrentPage = applicationSearch.Meta.PageNumber;
         ViewBag.TotalPages = response.Meta.TotalPages;
         ViewBag.TotalRecords = response.Meta.TotalRecords;
@@ -68,6 +69,9 @@ public class ApplicationController : BaseController
         string detailView, bool showSelector, bool showSchool, bool showParentDob, SearchAllRecordsViewModel viewModel)
     {
         var response = await _adminGateway.PostApplicationSearch(applicationSearch);
+        var criteria = JsonConvert.SerializeObject(applicationSearch);
+        TempData["SearchCriteria"] = criteria;
+
         response ??= new ApplicationSearchResponse { Data = new List<ApplicationResponse>() };
         if (response.Data == null || (!response.Data.Any() && detailView == "ApplicationDetail"))
         {
@@ -75,8 +79,6 @@ public class ApplicationController : BaseController
             return View(viewModel);
         }
 
-        var criteria = JsonConvert.SerializeObject(applicationSearch);
-        TempData["SearchCriteria"] = criteria;
         ViewBag.CurrentPage = applicationSearch.Meta.PageNumber;
         ViewBag.TotalPages = response.Meta.TotalPages;
         ViewBag.TotalRecords = response.Meta.TotalRecords;
@@ -176,18 +178,19 @@ public class ApplicationController : BaseController
             return View(new SearchAllRecordsViewModel { ApplicationSearch = request });
         }
         var expanded = await IsExpandedFSMEnabled();
-        var allNonArchivedStatuses = Enum.GetNames<ApplicationStatus>()
-            .Where(x => x != nameof(ApplicationStatus.Archived));
 
-        var statusesFilter = request.SelectedStatuses.Any()
-            ? request.SelectedStatuses
-            : allNonArchivedStatuses;
-
-        if (request.ShowArchived)
+        var statusesFilter = request.SelectedStatuses;
+        if (request.StatusFilterMode == "live")
         {
-            statusesFilter = statusesFilter
-                .Append(nameof(ApplicationStatus.Archived))
-                .Distinct();
+            statusesFilter = ApplicationConstants.StatusFilters.Keys.Where(x => x != "Archived").ToList();
+        }
+        else if (request.StatusFilterMode == "archived")
+        {
+            statusesFilter = ["Archived"];
+        }
+        else if (request.StatusFilterMode == "selected")
+        {
+            statusesFilter = request.SelectedStatuses != null && request.SelectedStatuses.Any() ? request.SelectedStatuses : ["none"];
         }
         var applicationSearch = new ApplicationRequestSearch
         {
@@ -232,7 +235,7 @@ public class ApplicationController : BaseController
         OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
         TempData["organisationType"] = organisationType;
 
-        return await GetResultsForSearch(applicationSearch,"ApplicationDetail", false, false, false, viewModel);
+        return await GetResultsForSearch(applicationSearch, "ApplicationDetail", false, false, false, viewModel);
     }
 
 

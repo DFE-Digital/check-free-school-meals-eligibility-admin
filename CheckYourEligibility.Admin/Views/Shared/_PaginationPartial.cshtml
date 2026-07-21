@@ -6,7 +6,7 @@
         <ul class="govuk-pagination__list">
             <li class="govuk-pagination__item @(Model.CurrentPage == 1 ? "govuk-pagination__item--current" : "")">
                 <a class="govuk-link govuk-pagination__link"
-                   href="@Url.Action(Model.ControllerName, new { PageNumber = 1, Model.Keyword, Model.SelectedStatuses, Model.ShowArchived })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
+                   href="@Url.Action(Model.ControllerName, new { PageNumber = 1, Model.Keyword, Model.SelectedStatuses, Model.StatusFilterMode })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
                    aria-label="Page 1" @(Model.CurrentPage == 1 ? "aria-current=\"page\"" : "")>1</a>
             </li>
         </ul>
@@ -18,7 +18,7 @@
         {
             <div class="govuk-pagination__prev">
                 <a class="govuk-link govuk-pagination__link"
-                   href="@Url.Action(Model.ControllerName, new { PageNumber = Model.CurrentPage - 1, Model.Keyword, Model.SelectedStatuses, Model.ShowArchived })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
+                   href="@Url.Action(Model.ControllerName, new { PageNumber = Model.CurrentPage - 1, Model.Keyword, Model.SelectedStatuses, Model.StatusFilterMode })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
                    rel="prev">
                     <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg"
                          height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
@@ -36,7 +36,7 @@
         <ul class="govuk-pagination__list">
             <li class="govuk-pagination__item @(Model.CurrentPage == 1 ? "govuk-pagination__item--current" : "")">
                 <a class="govuk-link govuk-pagination__link"
-                   href="@Url.Action(Model.ControllerName, new { PageNumber = 1, Model.Keyword, Model.SelectedStatuses, Model.ShowArchived })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
+                   href="@Url.Action(Model.ControllerName, new { PageNumber = 1, Model.Keyword, Model.SelectedStatuses, Model.StatusFilterMode })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
                    aria-label="Page 1" @(Model.CurrentPage == 1 ? "aria-current=\"page\"" : "")>1</a>
             </li>
             @if (Model.CurrentPage > 3)
@@ -49,7 +49,7 @@
             {
                 <li class="govuk-pagination__item @(Model.CurrentPage == i ? "govuk-pagination__item--current" : "")">
                     <a class="govuk-link govuk-pagination__link"
-                       href="@Url.Action(Model.ControllerName, new { PageNumber = i, Model.Keyword, Model.SelectedStatuses, Model.ShowArchived })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
+                       href="@Url.Action(Model.ControllerName, new { PageNumber = i, Model.Keyword, Model.SelectedStatuses, Model.StatusFilterMode })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
                        aria-label="Page @i" @(Model.CurrentPage == i ? "aria-current=\"page\"" : "")>@i</a>
                 </li>
             }
@@ -62,7 +62,7 @@
             <li
                 class="govuk-pagination__item @(Model.CurrentPage == Model.TotalPages ? "govuk-pagination__item--current" : "")">
                 <a class="govuk-link govuk-pagination__link"
-                   href="@Url.Action(Model.ControllerName, new { PageNumber = Model.TotalPages, Model.Keyword, Model.SelectedStatuses, Model.ShowArchived })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
+                   href="@Url.Action(Model.ControllerName, new { PageNumber = Model.TotalPages, Model.Keyword, Model.SelectedStatuses, Model.StatusFilterMode })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
                    aria-label="Page @Model.TotalPages" @(Model.CurrentPage == Model.TotalPages ? "aria-current=\"page\"" :
                            "")>@Model.TotalPages</a>
             </li>
@@ -72,7 +72,7 @@
         {
             <div class="govuk-pagination__next">
                 <a class="govuk-link govuk-pagination__link"
-                   href="@Url.Action(Model.ControllerName, new { PageNumber = Model.CurrentPage + 1, Model.Keyword, Model.SelectedStatuses, Model.ShowArchived })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
+                   href="@Url.Action(Model.ControllerName, new { PageNumber = Model.CurrentPage + 1, Model.Keyword, Model.SelectedStatuses, Model.StatusFilterMode })@(Model.DateFrom == null ? "" : $"&DateRange.DateFrom={Model.DateFrom}")"
                    rel="next">
                     <span class="govuk-pagination__link-title">
                         Next<span class="govuk-visually-hidden"> page</span>
