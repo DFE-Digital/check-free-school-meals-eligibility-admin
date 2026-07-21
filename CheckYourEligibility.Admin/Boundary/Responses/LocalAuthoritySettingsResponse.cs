@@ -6,6 +6,8 @@ public sealed class LocalAuthoritySettingsResponse
 {
     public bool SchoolCanReviewEvidence { get; set; }
 
+    public string? Region { get; set; }
+
     public IEnumerable<EligibilityPolicyAssignment> EligibilityPolicies { get; set; }
 }
 
