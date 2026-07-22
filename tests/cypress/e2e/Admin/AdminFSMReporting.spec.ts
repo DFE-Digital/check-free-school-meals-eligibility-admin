@@ -1,5 +1,4 @@
-describe('Admin FSM Reporting', () => {
-    const reportRows = '.govuk-table tbody tr[data-report-id]';
+describe('Admin FSM Reporting', () => {   
 
     const getReportIds = ($tbody: JQuery<HTMLElement>): string[] =>
         Array.from($tbody[0].querySelectorAll<HTMLTableRowElement>('tr[data-report-id]'))
@@ -159,13 +158,17 @@ describe('Admin FSM Reporting', () => {
             cy.contains('th', 'Status').should('be.visible');
         });
 
-        cy.get(reportRows).each(($row) => {
-            cy.wrap($row).within(() => {
-                cy.get('.govuk-tag').invoke('text').then((status) => {
-                    if (status.trim() === 'Complete') {
-                        cy.contains('a', 'Download report').should('be.visible');
-                        cy.contains('a', 'Delete').should('be.visible');
-                    }
+        cy.get('.govuk-table tbody').then(($tbody) => {
+            const rows = $tbody.find('tr[data-report-id]').toArray();
+        
+            rows.forEach((row) => {
+                cy.wrap(row).within(() => {
+                    cy.get('.govuk-tag').invoke('text').then((status) => {
+                        if (status.trim() === 'Complete') {
+                            cy.contains('a', 'Download report').should('be.visible');
+                            cy.contains('a', 'Delete').should('be.visible');
+                        }
+                    });
                 });
             });
         });
