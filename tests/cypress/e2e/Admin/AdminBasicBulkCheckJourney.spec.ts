@@ -133,7 +133,7 @@ it("will run a successful batch check", () => {
   cy.contains("table tbody tr", "BASIC-bulkchecktemplate_complete.csv")
     .should("exist")
     .then(($row) => {
-      cy.wrap($row).find("td").eq(5).should("contain.text", "Completed");
+      cy.wrap($row).find("td").eq(5).should("contain.text", "Checks completed");
 
       cy.wrap($row)
         .find("td")
