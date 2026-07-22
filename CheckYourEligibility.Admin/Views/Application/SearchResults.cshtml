@@ -20,35 +20,16 @@
 <div class="govuk-grid-column-full">
     <a class="govuk-back-link backLinkJS" href="@Url.Action("Index", "Home")">Back</a>
 
-    @{
-        Dictionary<string, string> statusFilters = new()
-        {
-            { "Entitled", "Eligible (2025-2026)" },
-            { "Entitled.targeted", "Eligible targeted" },
-            { "Entitled.expanded", "Eligible expanded" },
-            { "EvidenceNeeded", "Evidence needed" },
-            { "Receiving", "Receiving entitlement (2025-2026)" },
-            { "Receiving.targeted", "Receiving targeted FSM" },
-            { "Receiving.expanded", "Receiving expanded FSM" },
-            { "SentForReview", "Sent for review" },
-            { "ReviewedEntitled", "Reviewed entitled (2025-2026)" },
-            { "ReviewedEntitled.targeted", "Reviewed entitled targeted" },
-            { "ReviewedEntitled.expanded", "Reviewed entitled expanded" },
-            { "ReviewedNotEntitled", "Reviewed not entitled" },
-        };
-    }
 
     @if (!ViewData.ModelState.IsValid)
     {
-        ViewData["Title"] = "Error: Check Details";
         <partial name="_ValidationSummary" model="ViewData.ModelState" />
     }
-
 
     @{
         var applicationSearchJson = TempData["ApplicationSearch"] as string;
         var applicationSearch = string.IsNullOrEmpty(applicationSearchJson) ? new ApplicationSearch() : JsonConvert.DeserializeObject<ApplicationSearch>(applicationSearchJson);
-        var selectedStatus = applicationSearch.Status?.ToList() ?? new List<string>();
+        var selectedStatus = applicationSearch.SelectedStatuses?.ToList() ?? new List<string>();
         var selectedDateFrom = applicationSearch.DateRange?.DateFrom.Date.ToString("yyyy-MM-dd");
         var currentMonthLabel = "Current month to date";
         var lastThreeMonthsLabel = "Last 3 months";
@@ -136,39 +117,61 @@
                                             </li>
                                         </ul>
                                     }
-                                    @{
-                                        var nonArchivedStatuses = selectedStatus.Where(s => s != "Archived").ToList();
-                                        var hasArchivedFilter = selectedStatus.Contains("Archived");
-                                    }
-                                    @if (nonArchivedStatuses.Count > 0)
+
+                                    @if(applicationSearch?.StatusFilterMode == "live")
                                     {
                                         <h3 class="govuk-heading-s govuk-!-margin-bottom-0">Status</h3>
-                                        foreach (var status in nonArchivedStatuses)
+                                        <ul class="moj-filter-tags">
+                                            <li>
+                                                <a class="moj-filter__tag"
+                                                   href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "StatusFilterMode", "live")"
+                                                   src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                    <span class="govuk-visually-hidden">Remove this filter</span>Live applications
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    }else if (applicationSearch?.StatusFilterMode == "archived")
+                                    {
+                                        <h3 class="govuk-heading-s govuk-!-margin-bottom-0">Status</h3>
+                                        <ul class="moj-filter-tags">
+                                            <li>
+                                                <a class="moj-filter__tag"
+                                                   href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "StatusFilterMode", "archived")"
+                                                   src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                    <span class="govuk-visually-hidden">Remove this filter</span>Archived applications
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    }else if(applicationSearch?.StatusFilterMode == "selected" && selectedStatus.Count > 0)
+                                    {
+                                        <h3 class="govuk-heading-s govuk-!-margin-bottom-0">Status</h3>
+                                        foreach (var status in selectedStatus)
                                         {
                                             <ul class="moj-filter-tags">
                                                 <li>
                                                     <a class="moj-filter__tag"
-                                                    href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "Status", status)"
-                                                    src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
-                                                        <span class="govuk-visually-hidden">Remove this filter</span>@statusFilters[status]
+                                                       href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "SelectedStatuses", status)"
+                                                       src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                        <span class="govuk-visually-hidden">Remove this filter</span>@ApplicationConstants.StatusFilters[status]
                                                     </a>
                                                 </li>
                                             </ul>
                                         }
                                     }
-
-                                    @if (hasArchivedFilter)
+                                    else if(applicationSearch?.StatusFilterMode == "selected" && selectedStatus.Count == 0)
                                     {
+                                        <h3 class="govuk-heading-s govuk-!-margin-bottom-0">Status</h3>
                                         <ul class="moj-filter-tags">
                                             <li>
                                                 <a class="moj-filter__tag"
-                                                href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "Status", "Archived")"
-                                                src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
-                                                    <span class="govuk-visually-hidden">Remove this filter</span>Archived
+                                                   href="@UrlHelper.RemoveQueryParamOccurrence(currentUrl, "StatusFilterMode", "selected")"
+                                                   src="\wwwroot\assets\images\icon-tag-remove-cross.svg">
+                                                    <span class="govuk-visually-hidden">Remove this filter</span>No statuses selected
                                                 </a>
                                             </li>
                                         </ul>
                                     }
+                                    
                                 </div>
                                 <div class="moj-filter__options">
                                     <div class="govuk-form-group">
@@ -240,36 +243,49 @@
                                             <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
                                                 <h1 class="govuk-fieldset__heading">Status</h1>
                                             </legend>
-                                            <div class="govuk-form-group">
-                                                @foreach (var status in statusFilters)
-                                                {
-                                                    <div class="govuk-checkboxes__item">
-                                                        <input class="govuk-checkboxes__input" id="Status_@status.Key"
-                                                               name="Status" type="checkbox" value="@status.Key"
-                                                               @(selectedStatus.Contains(status.Key) ? "checked" : "")>
-                                                        <label class="govuk-label govuk-checkboxes__label"
-                                                               for="Status_@status.Key">
-                                                            @status.Value
+                                            <div class="govuk-radios govuk-radios--small" data-module="govuk-radios">
+                                                <div class="govuk-radios__item">
+                                                    <input class="govuk-radios__input" id="StatusFilterMode-Live"
+                                                           name="StatusFilterMode" type="radio"
+                                                           value="live" 
+                                                           @(applicationSearch?.StatusFilterMode == "live" ? "checked" : "")/>
+                                                    <label class="govuk-label govuk-radios__label" for="StatusFilterMode-Live">
+                                                        Live applications
+                                                    </label>
+                                                </div>
+                                                <div class="govuk-radios__item">
+                                                    <input class="govuk-radios__input" id="StatusFilterMode-Archived"
+                                                           name="StatusFilterMode" type="radio"
+                                                           value="archived" 
+                                                           @(applicationSearch?.StatusFilterMode == "archived" ? "checked" : "")/>
+                                                    <label class="govuk-label govuk-radios__label" for="StatusFilterMode-Archived">
+                                                        Archived applications
+                                                    </label>
+                                                </div>
+                                                <div class="expando-toggle">
+                                                    <div class="govuk-radios__item">
+                                                        <input class="govuk-radios__input " id="StatusFilterMode-Selected"
+                                                            name="StatusFilterMode" type="radio"
+                                                            value="selected" 
+                                                            @(applicationSearch?.StatusFilterMode == "selected" ? "checked" : "")/>
+                                                        <label class="govuk-label govuk-radios__label" for="StatusFilterMode-Selected">
+                                                            Selected statuses
                                                         </label>
                                                     </div>
-                                                }
-                                            </div>
-                                        </fieldset>
-                                    </div>
-                                    <div class="govuk-form-group">
-                                        <fieldset class="govuk-fieldset">
-                                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
-                                                <h1 class="govuk-fieldset__heading">View archived applications</h1>
-                                            </legend>
-                                            <div class="govuk-form-group">
-                                                <div class="govuk-checkboxes__item">
-                                                    <input class="govuk-checkboxes__input" id="Status_Archived"
-                                                        name="Status" type="checkbox" value="Archived"
-                                                        @(selectedStatus.Contains("Archived") ? "checked" : "")>
-                                                    <label class="govuk-label govuk-checkboxes__label"
-                                                        for="Status_Archived">
-                                                        Archived
-                                                    </label>
+                                                    <div class="govuk-form-group govuk-!-padding-left-6 expando-select govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes" data-govuk-checkboxes-init="">
+                                                                @foreach (var status in ApplicationConstants.StatusFilters)
+                                                                {
+                                                                    <div class="govuk-checkboxes__item">
+                                                                        <input class="govuk-checkboxes__input" id="Status_@status.Key"
+                                                                            name="SelectedStatuses" type="checkbox" value="@status.Key"
+                                                                            @(selectedStatus.Contains(status.Key) ? "checked" : "")>
+                                                                        <label class="govuk-label govuk-checkboxes__label"
+                                                                            for="Status_@status.Key">
+                                                                            @status.Value
+                                                                        </label>
+                                                                    </div>
+                                                                }
+                                                    </div>
                                                 </div>
                                             </div>
                                         </fieldset>
@@ -338,7 +354,7 @@
                                                             else
                                                             @if (orgType == OrganisationCategory.Establishment)
                                                             {
-                                                                
+
                                                             }
                                                             <th class="govuk-table__header" scope="col">
                                                                 Date
@@ -356,8 +372,10 @@
                                                                 <td class="govuk-table__cell">@Html.ActionLink(person.Person.Reference, person.DetailView, "application", new { id = person.Person.Id }, new { @class = "govuk-link" })</td>
                                                                 <td class="govuk-table__cell">@(person.Person.ChildFirstName + " " + person.Person.ChildLastName)</td>
                                                                 <td class="govuk-table__cell">@(Convert.ToDateTime(person.Person.ChildDateOfBirth).ToString("d MMM yyyy"))</td>
-                                                                @if(orgType != OrganisationCategory.Establishment)
-                                                                {<td class="govuk-table__cell"> @person.Person.Establishment.Name </td>}
+                                                                @if (orgType != OrganisationCategory.Establishment)
+                                                                {
+                                                                    <td class="govuk-table__cell"> @person.Person.Establishment.Name </td>
+                                                                }
                                                                 <td class="govuk-table__cell">@person.Person.Created.ToString("d MMM yyyy")</td>
                                                                 <td class="govuk-table__cell">
                                                                     <strong class="govuk-tag @person.Person.Status.GetApplicationStatusColor(person.Person.Tier)">
@@ -368,7 +386,19 @@
                                                         }
                                                     </tbody>
                                                 </table>
-                                                var paginationModel = new PaginationPartialViewModel { CurrentPage = ViewBag.CurrentPage, TotalPages = ViewBag.TotalPages, RecordsPerPage = ViewBag.RecordsPerPage, TotalRecords = ViewBag.TotalRecords, ControllerName = "SearchResults", Status = ViewBag.Status, Keyword = selectedKeyword, DateFrom = selectedDateFrom };
+
+                                                var paginationModel = new PaginationPartialViewModel
+                                                {
+                                                    CurrentPage = ViewBag.CurrentPage,
+                                                    TotalPages = ViewBag.TotalPages,
+                                                    RecordsPerPage = ViewBag.RecordsPerPage,
+                                                    TotalRecords = ViewBag.TotalRecords,
+                                                    ControllerName = "SearchResults",
+                                                    SelectedStatuses = applicationSearch.SelectedStatuses,
+                                                    StatusFilterMode = applicationSearch.StatusFilterMode,
+                                                    Keyword = selectedKeyword,
+                                                    DateFrom = selectedDateFrom
+                                                };
                                                 @Html.Partial("_PaginationPartial", paginationModel)
                                             }
                                         }

@@ -79,11 +79,14 @@ public class BaseController : Controller
     public async Task<EligibilityPolicyAssignment> GetFreeSchoolMealsPolicy()
     {
         EligibilityPolicyAssignment policy;
+        string laRegion;
         var defaultPolicy = new EligibilityPolicyAssignment
         {
             CheckType = CheckEligibilityType.FreeSchoolMeals.ToString(),
             EligibilityCriteria = EligibilityCriteria.expanded // Default to standard if there's an error
         };
+
+        string defaultRegion = "undefined";
 
         try
         {
@@ -104,6 +107,7 @@ public class BaseController : Controller
 
             // Check if the policy is already cached in the session
             var cachedPolicy = HttpContext.Session.GetString("FreeSchoolMealsPolicy");
+            var cachedLaRegion = HttpContext.Session.GetString("LocalAuthorityRegion");
             if (string.IsNullOrEmpty(cachedPolicy) || cachedPolicy == "null")
             {
                 // If not cached, and a LA ID is provided retrieve from the Local Authority API
@@ -111,18 +115,22 @@ public class BaseController : Controller
                 {
                     var localAuthoritySettings = await _localAuthoritySettingsGateway.GetLocalAuthoritySettingsAsync(laID);
                     policy = localAuthoritySettings?.EligibilityPolicies?.FirstOrDefault(p => p.CheckType == CheckEligibilityType.FreeSchoolMeals.ToString());
+                    laRegion = localAuthoritySettings.Region;
                 }
                 else
                 {
                     policy = defaultPolicy;
+                    laRegion = defaultRegion;
                 }
                 // Cache the policy in the session for future requests
                 HttpContext.Session.SetString("FreeSchoolMealsPolicy", JsonConvert.SerializeObject(policy));
+                HttpContext.Session.SetString("LocalAuthorityRegion", laRegion);
             }
             else
             {
                 // If cached, deserialize it from the session
                 policy = JsonConvert.DeserializeObject<EligibilityPolicyAssignment>(cachedPolicy);
+                laRegion = cachedLaRegion;
             }
         }
         catch (Exception ex)
@@ -130,9 +138,11 @@ public class BaseController : Controller
             // Log the exception
             Console.WriteLine($"Error retrieving Free School Meals policy: {ex.Message}");
             policy = defaultPolicy;
+            laRegion = defaultRegion;
         }
         // Store the policy in ViewBag for easy use in views
         ViewBag.FreeSchoolMealsPolicy = policy;
+        ViewBag.LaRegion = laRegion;
 
         return policy;
     }
