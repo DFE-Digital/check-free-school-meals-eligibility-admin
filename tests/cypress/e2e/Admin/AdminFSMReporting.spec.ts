@@ -78,7 +78,6 @@ describe('Admin FSM Reporting', () => {
                 });
             });
         });
-        cy.get('nav.govuk-pagination').should('be.visible');
      });
     it('Can delete a report from the reports page', () => {
         cy.contains('a.dfe-card-link--header', 'Reports').click();

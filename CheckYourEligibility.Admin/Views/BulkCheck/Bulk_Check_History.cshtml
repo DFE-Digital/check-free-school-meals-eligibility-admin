@@ -11,9 +11,23 @@
 
     <div id="content" data-type="success" class="govuk-grid-row">
         <div class="govuk-grid-column-full">
+            @if (TempData["SuccessMessage"]?.ToString() != null)
+            {
+                <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+                    <div class="govuk-notification-banner__header">
+                        <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                            Success
+                        </h2>
+                    </div>
+                    <div class="govuk-notification-banner__content">
+                        <h3 class="govuk-notification-banner__heading">
+                            @TempData["SuccessMessage"]
+                        </h3>
+                    </div>
+                </div>
+            }
 
-
-            @if (TempData["SuccessMessage"] != null)
+            @if (TempData["ApplicationSuccess"] != null)
             {
                 var targeted = Convert.ToInt32(TempData["EligibleTargeted"] ?? 0);
                 var expanded = Convert.ToInt32(TempData["EligibleExpanded"] ?? 0);

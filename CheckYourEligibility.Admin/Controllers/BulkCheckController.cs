@@ -333,7 +333,7 @@ public class BulkCheckController : BaseController
             var summary = await _checkGateway.GetBulkCheckSummary(bulkCheckId);
             var response = await _checkGateway.CreateApplicationFromBulkCheck(bulkCheckId);
 
-            TempData["SuccessMessage"] = response?.Data
+            TempData["ApplicationSuccess"] = response?.Data
                 ?? "Applications created successfully.";
 
             TempData["FileName"] = summary.Filename;

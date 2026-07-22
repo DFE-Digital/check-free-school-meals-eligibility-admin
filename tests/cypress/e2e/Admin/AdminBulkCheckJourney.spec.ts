@@ -143,14 +143,13 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
       .first()
       .within(() => {
         cy.get("td").eq(5).should("contain.text", "Completed");
+   
+      cy.get("td")
+            .eq(6)
+            .within(() => {
+              cy.contains("a", "View results").should("exist");
+              cy.contains("a", "Download results").should("exist");
 
-        cy.get("td")
-          .eq(6)
-          .should("contain.text", "View results");
-
-        cy.get("td")
-          .eq(7)
-          .should("contain.text", "Download results");
       });
 
     });

@@ -184,22 +184,24 @@ it("will run a successful batch check", () => {
       "Batch checks history",
     );
 
-    cy.get("table tbody tr td:nth-child(7) a") // Get all delete links
-      .filter((_, el) => /delete/i.test(el.innerText))
-      .then(($links) => {
-        if ($links.length === 0) {
-          cy.log(
-            "No delete links found - probably In Progress or no completed checks.",
-          );
+    
+    cy.get("body").then(($body) => {
+        const deleteLinks = $body.find("a").filter((_, el) =>
+          el.innerText.trim().includes("Delete"),
+        );
+
+        if (deleteLinks.length === 0) {
+          cy.log("No delete links found");
           return;
         }
 
-        cy.wrap($links[0]).click();
+        cy.wrap(deleteLinks[0]).click();
 
         cy.get("h3.govuk-notification-banner__heading").should(
           "contain.text",
           "Batch check deleted successfully.",
         );
+
       });
   });
 
