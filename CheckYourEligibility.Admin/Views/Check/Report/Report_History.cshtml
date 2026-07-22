@@ -12,9 +12,6 @@
     <a class="govuk-button" href="@Url.Action("Create_Report", "EligibilityCheckReporting")">Generate report</a>
     <p>If the status of a report is 'in progress', refresh the page to see if generating the report has completed. </p>
     <table class="govuk-table govuk-table--small-text-until-tablet">
-        <caption class="govuk-table__caption govuk-table__caption--s govuk-!-margin-bottom-4">
-            Showing @Model.TotalNumberOfRecords reports generated in the last 7 days
-        </caption>
 
         <thead class="govuk-table__head">
             <tr class="govuk-table__row">
@@ -37,7 +34,7 @@
                     var item = row.Item;
                     var status = row.StatusBanner;
 
-                    <tr class="govuk-table__row">
+                    <tr class="govuk-table__row" data-report-id="@item.ReportID">
                         <td class="govuk-table__cell">
                             @item.ReportGeneratedDate.ToString("d MMM yyyy")
                         </td>
