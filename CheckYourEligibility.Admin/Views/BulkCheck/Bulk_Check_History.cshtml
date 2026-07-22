@@ -130,6 +130,8 @@
                                     break;
 
                                 case "Completed":
+                                    tagClass = "govuk-tag--yellow";
+                                    break;
                                 case "ApplicationsCreated":
                                     tagClass = "govuk-tag--green";
                                     break;
@@ -141,6 +143,9 @@
                             string? statusWording = null;
                             switch (check.Status)
                             {
+                                case "Completed":
+                                    statusWording = "Checks completed";
+                                    break;
                                 case "ApplicationCreationInProgress":
                                     statusWording = "Application creation in progress";
                                     break;
