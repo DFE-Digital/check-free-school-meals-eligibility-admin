@@ -1,54 +1,148 @@
-describe('Admin FSM Reporting', () => {
-    const today = new Date().toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-    });
+describe('Admin FSM Reporting', () => {   
+
+    const getReportIds = ($tbody: JQuery<HTMLElement>): string[] =>
+        Array.from($tbody[0].querySelectorAll<HTMLTableRowElement>('tr[data-report-id]'))
+            .map((row) => row.dataset.reportId)
+            .filter((reportId): reportId is string => Boolean(reportId));
+
+    const waitForReportToComplete = (
+        reportId: string,
+        attemptsRemaining = 40
+    ): Cypress.Chainable<JQuery<HTMLElement>> => {
+        return cy.get(`tr[data-report-id="${reportId}"]`).then(($row) => {
+            const status = $row.find('.govuk-tag').text().trim();
+
+            if (status === 'Complete') {
+                return cy.wrap($row);
+            }
+
+            if (status.includes('System error')) {
+                throw new Error(`Report ${reportId} failed to generate`);
+            }
+
+            if (attemptsRemaining === 0) {
+                throw new Error(`Report ${reportId} did not complete in time`);
+            }
+
+            return cy.wait(2000)
+                .then(() => cy.reload())
+                .then(() => waitForReportToComplete(reportId, attemptsRemaining - 1));
+        });
+    };
 
     beforeEach(() => {
         cy.checkSession('basic');
-        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
-        cy.wait(1);
+        cy.visit((Cypress.config().baseUrl ?? '') + '/home');
         cy.get('.govuk-caption-l').should('include.text', 'Manchester City Council');
     });
 
-    it('Can generate FSM report with new date range and check type options', () => {
-        
+    it('Can generate, download and delete an FSM report', () => {
+        let existingReportIds: string[] = [];
+        let generatedReportId = '';
+
         cy.contains('a.dfe-card-link--header', 'Reports').click();
         cy.get('.govuk-heading-l').should('include.text', 'Report history');
 
+        cy.get('.govuk-table tbody').then(($tbody) => {
+            existingReportIds = getReportIds($tbody);
+        });
+
         cy.contains('Generate report').click();
         cy.url().should('include', '/EligibilityCheckReporting/Create_Report');
+        cy.get('.govuk-heading-l').should('include.text', 'Generate a report');
+        cy.get('#StartDate\\.Day').should('not.exist');
+        cy.get('#StartDate\\.Month').should('not.exist');
+        cy.get('#StartDate\\.Year').should('not.exist');
+        cy.get('#EndDate\\.Day').should('not.exist');
+        cy.get('#EndDate\\.Month').should('not.exist');
+        cy.get('#EndDate\\.Year').should('not.exist');
 
-        cy.get("#StartDate\\.Day").should('not.exist');
-        cy.get("#StartDate\\.Month").should('not.exist');
-        cy.get("#StartDate\\.Year").should('not.exist');
-        cy.get("#EndDate\\.Day").should('not.exist');
-        cy.get("#EndDate\\.Month").should('not.exist');
-        cy.get("#EndDate\\.Year").should('not.exist');
+        cy.get('select[name="DateRange"]')
+            .should('be.visible')
+            .find('option')
+            .should('have.length', 1)
+            .and('contain.text', 'Last 30 days');
 
-        cy.get('select[name="DateRange"]').should('be.visible');
-        cy.get('select[name="DateRange"]').find('option').should('have.length', 1);
-        cy.get('select[name="DateRange"]').find('option').should('contain.text', 'Last 30 days');
+        cy.get('select[name="CheckType"]')
+            .should('be.visible')
+            .find('option')
+            .should('have.length', 3);
 
-        cy.get('select[name="CheckType"]').should('be.visible');
-        cy.get('select[name="CheckType"]').find('option').should('have.length', 3);
-        cy.get('select[name="CheckType"]').find('option').should('contain.text', 'All checks');
-        cy.get('select[name="CheckType"]').find('option').should('contain.text', 'Individual checks');
-        cy.get('select[name="CheckType"]').find('option').should('contain.text', 'Batch checks');
+        cy.get('select[name="CheckType"]').find('option')
+            .should('contain.text', 'All checks')
+            .and('contain.text', 'Individual checks')
+            .and('contain.text', 'Batch checks');
 
         cy.contains('Generate report').click();
 
-        cy.url({ timeout: 80000 }).should('include', '/EligibilityCheckReporting/Reports');
+        cy.url({ timeout: 80000 })
+            .should('include', '/EligibilityCheckReporting/Reports');
 
-        cy.get('.govuk-table').should('be.visible');
-        cy.get('.govuk-table tbody tr').should('have.length.greaterThan', 0);
+        cy.get('.govuk-table tbody')
+            .should(($tbody) => {
+                const newReportIds = getReportIds($tbody)
+                    .filter((reportId) => !existingReportIds.includes(reportId));
 
-        // The latest report should be at the top
-        cy.get('.govuk-table tbody tr:first-child').within(() => {
-            // Check that the first column has today's date
-            cy.get('td:first-child').should('contain.text', today);
+                expect(newReportIds, 'new report IDs').to.have.length(1);
+            })
+            .then(($tbody) => {
+                generatedReportId = getReportIds($tbody)
+                    .find((reportId) => !existingReportIds.includes(reportId))!;
+
+                expect(generatedReportId, 'generated report ID').not.to.be.empty;
+            });
+
+        cy.then(() => waitForReportToComplete(generatedReportId));
+
+        cy.intercept(
+            'GET',
+            '**/EligibilityCheckReporting/Download_Report?reportId=*'
+        ).as('downloadReport');
+
+        cy.then(() => {
+            cy.get(`tr[data-report-id="${generatedReportId}"]`).within(() => {
+                cy.contains('a', 'Download report').click();
+            });
         });
+
+        cy.wait('@downloadReport').then(({ response }) => {
+            expect(response?.statusCode).to.eq(200);
+            expect(response?.headers['content-type']).to.include('text/csv');
+
+            const contentDisposition =
+                response?.headers['content-disposition'] as string;
+
+            const filenameMatch =
+                contentDisposition.match(/filename="?([^";]+\.csv)"?/i);
+
+            expect(filenameMatch, 'download filename').not.to.be.null;
+
+            const filename = filenameMatch![1];
+
+            cy.readFile(`cypress/downloads/${filename}`, {
+                timeout: 20000
+            })
+                .should('not.be.empty')
+                .and('contain', 'Parent Surname');
+        });
+
+        cy.then(() => {
+            cy.get(`tr[data-report-id="${generatedReportId}"]`).within(() => {
+                cy.contains('a', 'Delete').click();
+            });
+        });
+
+        cy.url()
+            .should('include', '/EligibilityCheckReporting/Delete_Report_Confirmation');
+
+        cy.contains('button', 'Delete report').click();
+
+        cy.url({ timeout: 80000 })
+            .should('include', '/EligibilityCheckReporting/Reports');
+
+        cy.get('.govuk-table tbody')
+            .find(`tr[data-report-id="${generatedReportId}"]`)
+            .should('not.exist');
     });
 
     it('Can view historical reports on reports page', () => {
@@ -64,54 +158,21 @@ describe('Admin FSM Reporting', () => {
             cy.contains('th', 'Status').should('be.visible');
         });
 
-        cy.get('.govuk-table tbody tr').each(($row) => {
-            cy.wrap($row).within(() => {
-                cy.get('td').then(($cells) => {
-                    const statusCell = $cells[$cells.length - 2]; // Status is second to last
-                    const resultsCell = $cells[4]; // Number of results column
-                    const statusText = statusCell.textContent;
-
-                    if (statusText.includes('Complete')) {
-                        cy.contains('a', 'Download report').should('be.visible');
-                        cy.contains('a', 'Delete').should('be.visible');
-                    }     
+        cy.get('.govuk-table tbody').then(($tbody) => {
+            const rows = $tbody.find('tr[data-report-id]').toArray();
+        
+            rows.forEach((row) => {
+                cy.wrap(row).within(() => {
+                    cy.get('.govuk-tag').invoke('text').then((status) => {
+                        if (status.trim() === 'Complete') {
+                            cy.contains('a', 'Download report').should('be.visible');
+                            cy.contains('a', 'Delete').should('be.visible');
+                        }
+                    });
                 });
             });
         });
-     });
-    it('Can delete a report from the reports page', () => {
-        cy.contains('a.dfe-card-link--header', 'Reports').click();
-        cy.get('.govuk-heading-l').should('include.text', 'Report history');
-        
-        cy.get('.govuk-table tbody tr:first-child').within(() => {
-            cy.get('td').then(($cells) => {
-                const statusCell = $cells[$cells.length - 2]; // Status is second to last
-                const statusText = statusCell.textContent?.trim();
-                if (statusText?.includes('In progress')) {
-                    cy.wrap(null).then(() => {
-                        const checkStatusAndRefresh = () => {
-                            cy.get('.govuk-table tbody tr:first-child').within(() => {
-                                cy.get('td').then(($newCells) => {
-                                    const newStatusCell = $newCells[$newCells.length - 2];
-                                    const newStatusText = newStatusCell.textContent?.trim(); 
-                                    if (newStatusText?.includes('In progress')) {
-                                        cy.reload();
-                                        cy.wait(2000);
-                                        checkStatusAndRefresh();
-                                    }
-                                });
-                            });
-                        };
-                        checkStatusAndRefresh();
-                    });
-                }
-            });
-        });
-        cy.get('.govuk-table tbody tr').first().within(() => {
-            cy.contains('a', 'Delete').click();
-        });
-        cy.url().should('include', '/EligibilityCheckReporting/Delete_Report_Confirmation');
-        cy.contains('button', 'Delete report').click();
-        cy.url({ timeout: 80000 }).should('include', '/EligibilityCheckReporting/Reports');
+
+        cy.get('nav.govuk-pagination').should('be.visible');
     });
 });
