@@ -143,7 +143,7 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
       .first()
       .within(() => {
         cy.get("td").eq(5).should("contain.text", "Completed");
-   
+      });
       cy.get("td")
             .eq(6)
             .within(() => {
