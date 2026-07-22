@@ -4,14 +4,25 @@
     var currentPage = Model.PageNumber;
     var pageSize = Model.PageSize;
     var totalRecords = Model.TotalNumberOfRecords;
-
-    var totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+    var totalPages = Math.Max(1, (int)Math.Ceiling((double)totalRecords / pageSize));
 }
 
-@if (totalPages > 1)
-{
-    <nav class="govuk-pagination" aria-label="Pagination">
-
+<nav class="govuk-pagination" aria-label="Pagination">
+    @if (totalPages == 1)
+    {
+        <ul class="govuk-pagination__list">
+            <li class="govuk-pagination__item govuk-pagination__item--current">
+                <a class="govuk-link govuk-pagination__link"
+                   href="@Url.Action("Reports", "EligibilityCheckReporting", new { PageNumber = 1 })"
+                   aria-label="Page 1"
+                   aria-current="page">
+                    1
+                </a>
+            </li>
+        </ul>
+    }
+    else
+    {
         @if (currentPage > 1)
         {
             <div class="govuk-pagination__prev">
@@ -26,10 +37,10 @@
         }
 
         <ul class="govuk-pagination__list">
-
             <li class="govuk-pagination__item @(currentPage == 1 ? "govuk-pagination__item--current" : "")">
                 <a class="govuk-link govuk-pagination__link"
                    href="@Url.Action("Reports", "EligibilityCheckReporting", new { PageNumber = 1 })"
+                   aria-label="Page 1"
                    aria-current="@(currentPage == 1 ? "page" : null)">
                     1
                 </a>
@@ -42,11 +53,14 @@
                 </li>
             }
 
-            @for (var i = Math.Max(2, currentPage - 1); i <= Math.Min(totalPages - 1, currentPage + 1); i++)
+            @for (var i = Math.Max(2, currentPage - 1);
+                  i <= Math.Min(totalPages - 1, currentPage + 1);
+                  i++)
             {
                 <li class="govuk-pagination__item @(currentPage == i ? "govuk-pagination__item--current" : "")">
                     <a class="govuk-link govuk-pagination__link"
                        href="@Url.Action("Reports", "EligibilityCheckReporting", new { PageNumber = i })"
+                       aria-label="Page @i"
                        aria-current="@(currentPage == i ? "page" : null)">
                         @i
                     </a>
@@ -63,6 +77,7 @@
             <li class="govuk-pagination__item @(currentPage == totalPages ? "govuk-pagination__item--current" : "")">
                 <a class="govuk-link govuk-pagination__link"
                    href="@Url.Action("Reports", "EligibilityCheckReporting", new { PageNumber = totalPages })"
+                   aria-label="Page @totalPages"
                    aria-current="@(currentPage == totalPages ? "page" : null)">
                     @totalPages
                 </a>
@@ -81,11 +96,14 @@
                 </a>
             </div>
         }
-    </nav>
+    }
+</nav>
 
+@if (totalRecords > 1)
+{
     <p class="moj-pagination__results">
         Showing <b>@((currentPage - 1) * pageSize + 1)</b> to
-        <b>@(Math.Min(currentPage * pageSize, totalRecords))</b> of
+        <b>@Math.Min(currentPage * pageSize, totalRecords)</b> of
         <b>@totalRecords</b> records
     </p>
 }
