@@ -48,12 +48,28 @@
                 <p class="govuk-body">You can create applications for all eligible children or download the results.</p>
 
                 <div class="govuk-button-group">
-                    <button type="submit" class="govuk-button" data-module="govuk-button" onclick="window.location.href='submitted-completed-applications.html'">
-                        Create applications
-                    </button>
-                    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-                        Download results
-                    </button>
+
+
+
+                    <form asp-controller="BulkCheck" asp-action="Bulk_Check_Application" type="hidden" method="post">
+                        <input type="hidden" asp-for="bulkCheckId" value="@Model.bulkCheckId" />
+
+
+                        <button class="govuk-button"
+                                data-module="govuk-button"
+                                type="submit">
+                            Create applications
+                        </button>
+
+                    </form>
+                    <form asp-controller="BulkCheck" asp-action="Bulk_Check_Download" type="hidden">
+                        <input type="hidden" asp-for="bulkCheckId" value="@Model.bulkCheckId" />
+
+                        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
+                            Download results
+                        </button>
+                    </form>
+
                 </div>
             </div>
         </div>

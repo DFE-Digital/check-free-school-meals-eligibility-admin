@@ -16,6 +16,7 @@ public interface ICheckGateway
     Task<BulkCheckSummaryResponse> GetBulkCheckSummary(string bulkCheckId);
     Task<EstablishmentResponse> GetAcademiesAsync(int multiAcademyTrustId);
     Task<EstablishmentResponse> GetSchoolsAsync(int localAuthorityId);
+    Task<MessageResponse> CreateApplicationFromBulkCheck(string bulkCheckId);
 
     // single
     Task<CheckEligibilityResponse> PostCheck(CheckEligibilityRequest_Enhanced requestBody);

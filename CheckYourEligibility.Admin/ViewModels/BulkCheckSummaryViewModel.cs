@@ -12,6 +12,7 @@
         public int ErrorCount { get; set; }
         public DateTime? EligiblityEndDate { get; set; }
         public int? AcademicYear {  get; set; }
+        public string? bulkCheckId { get; set; }
 
     }
 }

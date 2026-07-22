@@ -80,11 +80,11 @@ public class CheckGateway : BaseGateway, ICheckGateway
         return null;
     }
     public async Task<EstablishmentResponse> GetSchoolsAsync(int localAuthorityId)
-    {       
-        string url = $"/local-authorities/{localAuthorityId}/establishments"; 
+    {
+        string url = $"/local-authorities/{localAuthorityId}/establishments";
         try
         {
-            var response = await ApiDataGetAsynch(url, new EstablishmentResponse());      
+            var response = await ApiDataGetAsynch(url, new EstablishmentResponse());
             return response;
         }
         catch (Exception ex)
@@ -132,7 +132,7 @@ public class CheckGateway : BaseGateway, ICheckGateway
         try
         {
             var result = await ApiDataGetAsynch(resultsUrl, new CheckEligibilityBulkResponse());
-      
+
             return result;
         }
         catch (Exception ex)
@@ -143,7 +143,7 @@ public class CheckGateway : BaseGateway, ICheckGateway
     }
 
 
-    public async Task<CheckEligibilityResponseBulk> PostBulkCheck<TBulk>( TBulk requestBody) where TBulk: CheckEligibilityRequestBulkBase
+    public async Task<CheckEligibilityResponseBulk> PostBulkCheck<TBulk>(TBulk requestBody) where TBulk : CheckEligibilityRequestBulkBase
     {
         try
         {
@@ -182,6 +182,20 @@ public class CheckGateway : BaseGateway, ICheckGateway
         catch (Exception ex)
         {
             _logger.LogError(ex, $"get failed. uri:-{_httpClient.BaseAddress}bulk-check");
+            throw;
+        }
+    }
+    public async Task<MessageResponse> CreateApplicationFromBulkCheck(string bulkCheckID)
+    {
+        try
+        {
+            
+            var result = await ApiDataPostAsynch($"/bulk-check/{bulkCheckID}/applications", new BulkCheckApplicationRequest() ,new MessageResponse());
+            return result;
+        }
+        catch (Exception ex) 
+        {
+            _logger.LogError(ex, $"Post failed. uri:-{_httpClient.BaseAddress}/bulk-check/{bulkCheckID}/applications");
             throw;
         }
     }
