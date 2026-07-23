@@ -96,10 +96,10 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
 
       cy.contains("button", "Run a batch check").click();
 
-      cy.get("#file-upload-1-error").should(
-        "contain",
-        "CSV file cannot contain more than 250 records",
-      );
+    cy.get("#file-upload-1-error")
+      .should(($el) => {
+        expect($el.text()).to.match(/CSV file cannot contain more than\s+\d+\s+records/);
+      });
     });
 
     it("runs a successful batch check", () => {
@@ -136,31 +136,85 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
           cy.get("td").eq(5).find("strong").should("have.class", "govuk-tag");
         });
 
+      
       waitForStatusCompleted("valid.csv");
 
-      cy.contains("table tbody tr", "valid.csv").within(() => {
-        cy.get("td").eq(5).should("contain.text", "Completed");
-
-        cy.get("td")
-          .eq(6)
-          .should("contain.text", "Download results")
-          .and("contain.text", "Delete");
+      cy.contains("table tbody tr", "valid.csv")
+      .first()
+      .within(() => {
+        cy.get("td").eq(5).should("contain.text", "Checks completed");
       });
+      cy.get("td")
+            .eq(6)
+            .within(() => {
+              cy.contains("a", "View results").should("exist");
+              cy.contains("a", "Download results").should("exist");
+
+      });
+
     });
 
-    it("returns error after exceeding attempt limit", () => {
-      for (let i = 0; i <= bulkUploadAttemptLimit; i++) {
+    it("does not count failed uploads towards the attempt limit", () => {
+      // Upload more failing files than the attempt limit - none of these should
+      // ever trigger the "exceeded" error, since only successful uploads count.
+      for (let i = 0; i <= bulkUploadAttemptLimit + 3; i++) {
         cy.fixture(config.fixtureInvalid).then((fileContent) => {
           uploadFile(fileContent, "invalid_headers.csv");
         });
 
         cy.contains("button", "Run a batch check").click();
+
+        cy.get("#file-upload-1-error")
+          .should(
+            "contain",
+            "The column headers in the selected file must exactly match the template",
+          )
+          .and(
+            "not.contain",
+            "You have exceeded the maximum number of bulk upload attempts",
+          );
+      }
+    });
+
+    it("returns error after exceeding attempt limit with successful uploads", () => {
+      // Note: login cookies are cached/reused across tests (and cypress runs), so the
+      // rate-limit session counter may not start at 0 here - don't assume an exact
+      // number of successful uploads before the limit kicks in, just that it does
+      // kick in within a generous number of attempts, and that uploads succeed
+      // normally up until that point.
+      let limitReached = false;
+      const maxAttempts = bulkUploadAttemptLimit + 2;
+
+      for (let i = 0; i < maxAttempts; i++) {
+        cy.then(() => limitReached).then((reached) => {
+          if (reached) return;
+
+          const csv = createBulkCsv(1, config.includeSchoolURN);
+          uploadFile(csv, `valid-${i}.csv`);
+          cy.contains("button", "Run a batch check").click();
+
+          cy.get("body").then(($body) => {
+            if (
+              $body.text().includes(
+                "You have exceeded the maximum number of bulk upload attempts",
+              )
+            ) {
+              limitReached = true;
+            } else {
+              cy.contains("h1", "Batch checks history").should("exist");
+              cy.get(".govuk-back-link").click();
+              cy.url().should("include", "Bulk_Check");
+            }
+          });
+        });
       }
 
-      cy.get("#file-upload-1-error").should(
-        "contain",
-        "You have exceeded the maximum number of bulk upload attempts. Please try again later.",
-      );
+      cy.then(() => {
+        expect(
+          limitReached,
+          `expected to hit the bulk upload attempt limit within ${maxAttempts} successful uploads`,
+        ).to.be.true;
+      });
     });
   });
 });

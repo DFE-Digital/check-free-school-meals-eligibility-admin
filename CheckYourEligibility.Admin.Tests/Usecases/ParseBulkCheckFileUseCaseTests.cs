@@ -10,6 +10,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using System.Globalization;
 using System.Text;
 using static CheckYourEligibility.Admin.Helpers.CsvBulkCheckValidatorHelper;
 
@@ -48,6 +49,15 @@ public class ParseBulkCheckFileUseCaseTests
             _serviceProviderMock.Object,
             _configurationMock.Object,
             _checkGatewayMock.Object);
+
+        var culture = new CultureInfo("en-GB");
+
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+
     }
 
     #endregion
@@ -60,9 +70,9 @@ public class ParseBulkCheckFileUseCaseTests
         SetupValidatorValid();
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
-John,Smith,1985-03-15,AB123456C,
-Jane,Doe,1990-06-20,CD987654D,");
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
+Smith,1985-03-15,AB123456C,
+Doe,1990-06-20,CD987654D,");
 
         Assert.That(result.ValidRequests.Count, Is.EqualTo(2));
         Assert.That(result.Errors, Is.Empty);
@@ -80,9 +90,9 @@ Jane,Doe,1990-06-20,CD987654D,");
         SetupValidatorValid();
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
-John,Smith,15/03/1985,AB123456C,
-Jane,Doe,20/10/1990,CD987654D,");
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
+Smith,15/03/1985,AB123456C,
+Doe,20/10/1990,CD987654D,");
 
         Assert.That(result.ValidRequests[0].DateOfBirth, Is.EqualTo("1985-03-15"));
         Assert.That(result.ValidRequests[1].DateOfBirth, Is.EqualTo("1990-10-20"));
@@ -94,8 +104,8 @@ Jane,Doe,20/10/1990,CD987654D,");
         SetupValidatorValid();
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
-John,Smith,1985-03-15,ab123456c,");
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
+Smith,1985-03-15,ab123456c,");
 
         Assert.That(result.ValidRequests[0].NationalInsuranceNumber, Is.EqualTo("AB123456C"));
     }
@@ -106,8 +116,8 @@ John,Smith,1985-03-15,ab123456c,");
         SetupValidatorValid();
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
-  John  ,  Smith  ,  1985-03-15  ,  AB123456C  ,");
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
+ Smith  ,  1985-03-15  ,  AB123456C  ,");
 
         var request = result.ValidRequests[0];
 
@@ -142,7 +152,7 @@ Smith,1985-03-15");
 First Name,Last Name,DOB,NI Number
 John,Smith,1985-03-15,AB123456C,");
 
-        Assert.That(result.ErrorMessage, Does.Contain("Missing required header"));
+        Assert.That(result.ErrorMessage, Does.Contain("The column headers in the selected file must exactly match the template"));
     }
 
     [Test]
@@ -168,7 +178,7 @@ John,Smith,1985-03-15,AB123456C,");
         );
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
 John,Smith,invalid-date,BADNI,");
 
         Assert.That(result.ValidRequests, Is.Empty);
@@ -192,7 +202,7 @@ John,Smith,invalid-date,BADNI,");
             .ReturnsAsync(valid);
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
 John,Smith,1985-03-15,AB123456C,
 Jane,Doe,bad-date,BADNI,
 Bob,Jones,1988-01-10,EF654321F,");
@@ -210,7 +220,7 @@ Bob,Jones,1988-01-10,EF654321F,");
         );
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
 John,Smith,1985-03-15,AB123456C,");
 
         Assert.That(result.Errors.Count, Is.EqualTo(1));
@@ -229,10 +239,10 @@ John,Smith,1985-03-15,AB123456C,");
         SetupValidatorValid();
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
-John,Smith,1985-03-15,AB123456C,
-Jane,Doe,1990-06-20,CD987654D,
-Bob,Jones,1988-01-10,EF654321F,");
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
+Smith,1985-03-15,AB123456C,
+Doe,1990-06-20,CD987654D,
+Jones,1988-01-10,EF654321F,");
 
         Assert.That(result.ErrorMessage, Does.Contain("more than 2 records"));
     }
@@ -257,7 +267,7 @@ Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insuranc
         );
 
         var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number
+Parent Last Name,Parent Date of Birth,Parent National Insurance number
 ,,,,");
 
         Assert.That(result.Errors.Count, Is.EqualTo(1));

@@ -1,21 +1,26 @@
 ﻿@model CheckYourEligibility.Admin.ViewModels.BulkCheckSummaryViewModel;
 @{
+    ViewData["Title"] = $"Batch check results for {Model.FileName} on {Model.SubmittedDate.ToString("dd MMMM yyyy")}";
+    var fileName = string.IsNullOrWhiteSpace(Model.FileName) ? "the selected batch check" : Model.FileName;
+    var submittedDate = Model.SubmittedDate == default ? DateTime.UtcNow : Model.SubmittedDate;
+    var eligibilityEndDate = Model.EligiblityEndDate?.ToString("dd MMMM yyyy");
 }
 <div class="govuk-width-container">
+    <a class="govuk-back-link" href="@Url.Action("Bulk_Check_History", "BulkCheck")">Back</a>
     <main class="govuk-main-wrapper" id="main-content">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
             </div>
             <div class="govuk-grid-column-full">
-                <h1 class="govuk-heading-l">Batch check results for Greenwoodprim25.xml on 29 May 2026</h1>
+                <h1 class="govuk-heading-l">Batch check results for @fileName on @submittedDate.ToString("dd MMMM yyyy")</h1>
                 <p class="govuk-body">
-                    Checks confirm child eligibility for the academic year 2026/27.
+                    Checks confirm child eligibility for the academic year @Model.AcademicYear to @(Model.AcademicYear + 1).
 
                     <table class="govuk-table govuk-table--small-text-until-tablet">
                         <thead class="govuk-table__head">
                             <tr class="govuk-table__row">
-                                <th scope="col" class="govuk-table__header">Eligible<br> targeted</th>
-                                <th scope="col" class="govuk-table__header">Eligible <br> expanded</th>
+                                <th scope="col" class="govuk-table__header">Eligible<br>targeted</th>
+                                <th scope="col" class="govuk-table__header">Eligible<br>expanded</th>
                                 <th scope="col" class="govuk-table__header">Not eligible <br> at time of check</th>
                                 <th scope="col" class="govuk-table__header">Information <br>does not match</th>
                                 <th scope="col" class="govuk-table__header">System error <br> try again</th>
@@ -34,8 +39,8 @@
                                 <td class="govuk-table__cell">@Model.NotEligibleTotalCount</td>
                                 <td class="govuk-table__cell">@Model.NotFoundCount</td>
                                 <td class="govuk-table__cell">@Model.ErrorCount</td>
-                               @*  <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--yellow">Checks completed</strong></td> *@
-                                <td class="govuk-table__cell">@Model.EligiblityEndDate</td>                        
+                                <td class="govuk-table__cell"><strong class="govuk-tag govuk-tag--yellow">Checks completed</strong></td>
+                                <td class="govuk-table__cell">@eligibilityEndDate</td>
                             </tr>
                         </tbody>
                     </table>
@@ -43,12 +48,28 @@
                 <p class="govuk-body">You can create applications for all eligible children or download the results.</p>
 
                 <div class="govuk-button-group">
-                    <button type="submit" class="govuk-button" data-module="govuk-button" onclick="window.location.href='submitted-completed-applications.html'">
-                        Create applications
-                    </button>
-                    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-                        Download results
-                    </button>
+
+
+
+                    <form asp-controller="BulkCheck" asp-action="Bulk_Check_Application" type="hidden" method="post">
+                        <input type="hidden" asp-for="bulkCheckId" value="@Model.bulkCheckId" />
+
+
+                        <button class="govuk-button"
+                                data-module="govuk-button"
+                                type="submit">
+                            Create applications
+                        </button>
+
+                    </form>
+                    <form asp-controller="BulkCheck" asp-action="Bulk_Check_Download" type="hidden">
+                        <input type="hidden" asp-for="bulkCheckId" value="@Model.bulkCheckId" />
+
+                        <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit">
+                            Download results
+                        </button>
+                    </form>
+
                 </div>
             </div>
         </div>

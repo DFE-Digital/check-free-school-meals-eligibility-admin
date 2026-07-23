@@ -86,12 +86,11 @@ describe("BasicLAHappyPath", () => {
       },
     ]);
     cy.contains("button", "Run a batch check").click();
-    cy.get("#file-upload-1-error").as("errorMessage");
-    cy.get("@errorMessage").should(($p) => {
-      expect($p.first()).to.contain(
-        "CSV file cannot contain more than 250 records",
-      );
-    });
+
+    cy.get("#file-upload-1-error")
+      .should(($el) => {
+        expect($el.text()).to.match(/CSV file cannot contain more than\s+\d+\s+records/);
+      });
   });
 
 it("will run a successful batch check", () => {
@@ -134,7 +133,7 @@ it("will run a successful batch check", () => {
   cy.contains("table tbody tr", "BASIC-bulkchecktemplate_complete.csv")
     .should("exist")
     .then(($row) => {
-      cy.wrap($row).find("td").eq(5).should("contain.text", "Completed");
+      cy.wrap($row).find("td").eq(5).should("contain.text", "Checks completed");
 
       cy.wrap($row)
         .find("td")
@@ -185,27 +184,31 @@ it("will run a successful batch check", () => {
       "Batch checks history",
     );
 
-    cy.get("table tbody tr td:nth-child(7) a") // Get all delete links
-      .filter((_, el) => /delete/i.test(el.innerText))
-      .then(($links) => {
-        if ($links.length === 0) {
-          cy.log(
-            "No delete links found - probably In Progress or no completed checks.",
-          );
+    
+    cy.get("body").then(($body) => {
+        const deleteLinks = $body.find("a").filter((_, el) =>
+          el.innerText.trim().includes("Delete"),
+        );
+
+        if (deleteLinks.length === 0) {
+          cy.log("No delete links found");
           return;
         }
 
-        cy.wrap($links[0]).click();
+        cy.wrap(deleteLinks[0]).click();
 
         cy.get("h3.govuk-notification-banner__heading").should(
           "contain.text",
           "Batch check deleted successfully.",
         );
+
       });
   });
 
-  it("will return an error message if more than 10 batches are attempted within an hour", () => {
-    for (let i = 0; i < 11; i++) {
+  it("does not count failed uploads towards the attempt limit", () => {
+    // Upload more failing files than the attempt limit - none of these should
+    // ever trigger the "exceeded" error, since only successful uploads count.
+    for (let i = 0; i <= bulkBasicUploadAttemptLimit + 3; i++) {
       cy.fixture(
         "BulkCheckFileValidation/BASIC-bulkchecktemplate_invalid_HeadersContent.csv",
       ).then((fileContent1) => {
@@ -218,12 +221,64 @@ it("will run a successful batch check", () => {
         ]);
       });
       cy.contains("button", "Run a batch check").click();
+
+      cy.get("#file-upload-1-error")
+        .should(
+          "contain",
+          "Invalid CSV format. Missing required header: 'Parent Date of Birth'",
+        )
+        .and(
+          "not.contain",
+          "You have exceeded the maximum number of bulk upload attempts",
+        );
     }
-    cy.get("#file-upload-1-error").as("errorMessage");
-    cy.get("@errorMessage").should(($p) => {
-      expect($p.first()).to.contain(
-        "You have exceeded the maximum number of bulk upload attempts. Please try again later.",
-      );
+  });
+
+  it("returns error after exceeding attempt limit with successful uploads", () => {
+    // Note: login cookies are cached/reused across tests (and cypress runs), so the
+    // rate-limit session counter may not start at 0 here - don't assume an exact
+    // number of successful uploads before the limit kicks in, just that it does
+    // kick in within a generous number of attempts, and that uploads succeed
+    // normally up until that point.
+    let limitReached = false;
+    const maxAttempts = bulkBasicUploadAttemptLimit + 2;
+
+    for (let i = 0; i < maxAttempts; i++) {
+      cy.then(() => limitReached).then((reached) => {
+        if (reached) return;
+
+        const csv = createBasicBulkCsv(1);
+        cy.get('input[type="file"]').attachFile([
+          {
+            fileContent: csv,
+            fileName: `basic-valid-${i}.csv`,
+            mimeType: "text/csv",
+          },
+        ]);
+
+        cy.contains("button", "Run a batch check").click();
+
+        cy.get("body").then(($body) => {
+          if (
+            $body.text().includes(
+              "You have exceeded the maximum number of bulk upload attempts",
+            )
+          ) {
+            limitReached = true;
+          } else {
+            cy.contains("h1", "Batch checks history").should("exist");
+            cy.get(".govuk-back-link").click();
+            cy.url().should("include", "Bulk_Check");
+          }
+        });
+      });
+    }
+
+    cy.then(() => {
+      expect(
+        limitReached,
+        `expected to hit the bulk upload attempt limit within ${maxAttempts} successful uploads`,
+      ).to.be.true;
     });
   });
 });

@@ -13,8 +13,10 @@ public interface ICheckGateway
     Task<CheckEligiblityBulkDeleteResponse> DeleteBulkChecks(string bulkCheckDeleteUrl);
     Task<IEnumerable<TBulkExport>> LoadBulkCheckResults<TBulkExport>(string bulkCheckId) where TBulkExport : IBulkExport;
     Task<CheckEligibilityResponseBulk> PostBulkCheck<TBulk>(TBulk requestBody) where TBulk : CheckEligibilityRequestBulkBase;
+    Task<BulkCheckSummaryResponse> GetBulkCheckSummary(string bulkCheckId);
     Task<EstablishmentResponse> GetAcademiesAsync(int multiAcademyTrustId);
     Task<EstablishmentResponse> GetSchoolsAsync(int localAuthorityId);
+    Task<MessageResponse> CreateApplicationFromBulkCheck(string bulkCheckId);
 
     // single
     Task<CheckEligibilityResponse> PostCheck(CheckEligibilityRequest_Enhanced requestBody);

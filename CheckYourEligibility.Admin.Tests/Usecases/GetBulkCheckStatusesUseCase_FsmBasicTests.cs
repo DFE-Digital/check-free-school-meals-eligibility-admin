@@ -172,10 +172,10 @@ public class GetBulkCheckStatusesUseCase_FsmBasicTests
 
         // Assert
         var resultList = result.ToList();
-        Assert.That(resultList[0].Status, Is.EqualTo("Completed"));
-        Assert.That(resultList[1].Status, Is.EqualTo("In progress"));
-        Assert.That(resultList[2].Status, Is.EqualTo("Not started"));
-        Assert.That(resultList[3].Status, Is.EqualTo("Failed"));
+        Assert.That(resultList[3].Status, Is.EqualTo("Completed"));
+        Assert.That(resultList[2].Status, Is.EqualTo("In progress"));
+        Assert.That(resultList[1].Status, Is.EqualTo("Not started"));
+        Assert.That(resultList[0].Status, Is.EqualTo("Failed"));
     }
 
     [Test]

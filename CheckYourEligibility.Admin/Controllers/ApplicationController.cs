@@ -41,16 +41,12 @@ public class ApplicationController : BaseController
     private async Task<IActionResult> GetResults(ApplicationRequestSearch? applicationSearch, string detailView,
         bool showSelector, bool showSchool, bool showParentDob)
     {
-        var response = await _adminGateway.PostApplicationSearch(applicationSearch);
-        response ??= new ApplicationSearchResponse { Data = new List<ApplicationResponse>(), Meta = new ApplicationSearchResponseMeta() };
-        if (response.Data == null || (!response.Data.Any() && detailView == "ApplicationDetail"))
-        {
-            TempData["Message"] = "There are no records matching your search.";
-            return RedirectToAction("Search");
-        }
-
         var criteria = JsonConvert.SerializeObject(applicationSearch);
         TempData["SearchCriteria"] = criteria;
+        
+        var response = await _adminGateway.PostApplicationSearch(applicationSearch);
+        response ??= new ApplicationSearchResponse { Data = new List<ApplicationResponse>(), Meta = new ApplicationSearchResponseMeta() };
+
         ViewBag.CurrentPage = applicationSearch.Meta.PageNumber;
         ViewBag.TotalPages = response.Meta.TotalPages;
         ViewBag.TotalRecords = response.Meta.TotalRecords;
@@ -73,6 +69,9 @@ public class ApplicationController : BaseController
         string detailView, bool showSelector, bool showSchool, bool showParentDob, SearchAllRecordsViewModel viewModel)
     {
         var response = await _adminGateway.PostApplicationSearch(applicationSearch);
+        var criteria = JsonConvert.SerializeObject(applicationSearch);
+        TempData["SearchCriteria"] = criteria;
+
         response ??= new ApplicationSearchResponse { Data = new List<ApplicationResponse>() };
         if (response.Data == null || (!response.Data.Any() && detailView == "ApplicationDetail"))
         {
@@ -80,8 +79,6 @@ public class ApplicationController : BaseController
             return View(viewModel);
         }
 
-        var criteria = JsonConvert.SerializeObject(applicationSearch);
-        TempData["SearchCriteria"] = criteria;
         ViewBag.CurrentPage = applicationSearch.Meta.PageNumber;
         ViewBag.TotalPages = response.Meta.TotalPages;
         ViewBag.TotalRecords = response.Meta.TotalRecords;
@@ -180,12 +177,24 @@ public class ApplicationController : BaseController
             TempData["Errors"] = JsonConvert.SerializeObject(errors);
             return View(new SearchAllRecordsViewModel { ApplicationSearch = request });
         }
-
         var expanded = await IsExpandedFSMEnabled();
 
+        var statusesFilter = request.SelectedStatuses;
+        if (request.StatusFilterMode == "live")
+        {
+            statusesFilter = ApplicationConstants.StatusFilters.Keys.Where(x => x != "Archived").ToList();
+        }
+        else if (request.StatusFilterMode == "archived")
+        {
+            statusesFilter = ["Archived"];
+        }
+        else if (request.StatusFilterMode == "selected")
+        {
+            statusesFilter = request.SelectedStatuses != null && request.SelectedStatuses.Any() ? request.SelectedStatuses : ["none"];
+        }
         var applicationSearch = new ApplicationRequestSearch
         {
-            Meta = new ApplicationRequestSearchMeta()
+            Meta = new ApplicationRequestSearchMeta
             {
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize
@@ -201,7 +210,9 @@ public class ApplicationController : BaseController
                 Establishment = _Claims.Organisation.Category.Name == DfeSignInRoles.CategoryTypeSchool
                     ? Convert.ToInt32(_Claims.Organisation.Urn)
                     : null,
+
                 Keyword = request.Keyword,
+
                 DateRange = request.DateRange != null
                     ? new DateRange
                     {
@@ -209,7 +220,8 @@ public class ApplicationController : BaseController
                         DateTo = DateTime.Now
                     }
                     : null,
-                StatusDescriptions = request.Status.Any() ? request.Status : null // Apply filter only if statuses are selected
+
+                StatusDescriptions = statusesFilter
             }
         };
 
@@ -227,6 +239,7 @@ public class ApplicationController : BaseController
     }
 
 
+
     [HttpGet]
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public async Task<IActionResult> ApplicationDetail(string id)
@@ -240,10 +253,10 @@ public class ApplicationController : BaseController
 
         var expanded = await IsExpandedFSMEnabled();
 
-        string viewName = organisationType == OrganisationCategory.LocalAuthority
-                                            || organisationType == OrganisationCategory.MultiAcademyTrust
-                                            ? "ApplicationDetailLa" : "ApplicationDetail";
-        return View(viewName, GetViewData(response));
+        // "ApplicationDetailLa" contains the approve/decline decision form needed to action
+        // pending applications and must be used for all organisation types (including schools).
+        // The "ApplicationDetail" view has no decision form and should not be routed to here.
+        return View("ApplicationDetailLa", GetViewData(response));
     }
 
     [HttpGet]

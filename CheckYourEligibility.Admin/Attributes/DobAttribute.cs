@@ -10,18 +10,20 @@ public class DobAttribute : ValidationAttribute
     private readonly string _dayPropertyName;
     private readonly string _fieldName;
     private readonly bool _isRequired;
+    private readonly bool _applyMinimumAge;
     private readonly string _monthPropertyName;
     private readonly string _objectName;
     private readonly string _yearPropertyName;
 
     public DobAttribute(string fieldName, string objectName, string? childIndexPropertyName, string dayPropertyName,
         string monthPropertyName, string yearPropertyName, bool isRequired = true, bool applyAgeRange = false,
-        string? errorMessage = null) : base(errorMessage)
+        bool applyMinimumAge = true, string? errorMessage = null) : base(errorMessage)
     {
         _fieldName = fieldName;
         _objectName = objectName;
         _isRequired = isRequired;
         _applyAgeRange = applyAgeRange;
+        _applyMinimumAge = applyMinimumAge;
         _childIndexPropertyName = childIndexPropertyName;
         _dayPropertyName = dayPropertyName;
         _monthPropertyName = monthPropertyName;
@@ -168,11 +170,19 @@ public class DobAttribute : ValidationAttribute
                     var academicYearStart = new DateTime(currentAcademicYear, 9, 1);
                     var ageOnAcademicYearStart = CalculateAge(dob, academicYearStart);
 
-                    if (ageOnAcademicYearStart < 4 || ageOnAcademicYearStart > 19)
+                    var belowMinimumAge = _applyMinimumAge && ageOnAcademicYearStart < 4;
+                    var aboveMaximumAge = ageOnAcademicYearStart >= 19;
+
+                    if (belowMinimumAge || aboveMaximumAge)
                     {
                         TextInfo ti = CultureInfo.CurrentCulture.TextInfo;
+
+                        message = aboveMaximumAge
+                            ? $"{ti.ToTitleCase(_objectName)} {childIndex} must be under the age of 19 at the beginning of the academic year to be eligible"
+                            : $"{ti.ToTitleCase(_objectName)} {childIndex} must have been aged between 4 and 19 at the beginning of the academic year to be eligible";
+
                         return new ValidationResult(
-                            $"{ti.ToTitleCase(_objectName)} {childIndex} must have been aged between 4 and 19 at the beginning of the academic year to be eligible",
+                            message,
                             new[] { "DateOfBirth", "Day", "Month", "Year" });
                     }
                 }

@@ -33,6 +33,7 @@ namespace CheckYourEligibility.Admin.ViewModels
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
         public int TotalRecords { get; set; }
+        public bool Enhanced { get; set; }
     }
 
     public class BulkCheckFileSubmittedViewModel

@@ -1,3 +1,4 @@
+import { getValidChildDob } from '../../support/dateHelpers';
 
 describe('Keyword search validation', () => {
   const parentFirstName = 'Sinkler';
@@ -41,9 +42,13 @@ describe('Keyword search validation', () => {
     cy.url().should('include', '/Enter_Child_Details');
     cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
     cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-    cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-    cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
-    cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+
+    const childDob = getValidChildDob();
+
+    cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+    cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+    cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+
     cy.contains('button', 'Save and continue').click();
 
     //skip uploading evidence
@@ -164,28 +169,43 @@ describe('Keyword search validation', () => {
 
   it('Returns date filtered results when a radio is selected and filter can be removed', () => {
     cy.contains('Search all records').click();
-  
+
     cy.get("#DateRangeNow").click();
     cy.contains(".govuk-button", "Apply filters").click();
-  
+
     cy.contains(".moj-filter__tag", "Current month to date", { timeout: 8000 })
       .should('be.visible')
       .click();
-  
+
     cy.contains(".moj-filter__tag", "Current month to date").should('not.exist');
   });
 
-  it('Returns status filtered results when a Status is selected and filter can be removed', () => {
+  it('Returns filtered results when a Archived applications is selected and filter can be removed', () => {
     cy.contains('Search all records').click();
-  
-    cy.get("#Status_ReviewedEntitled").click();
+
+    cy.get("#StatusFilterMode-Archived").click();
     cy.contains(".govuk-button", "Apply filters").click();
-  
-    cy.contains(".moj-filter__tag", "Reviewed entitled", { timeout: 8000 })
+
+    cy.contains(".moj-filter__tag", "Archived applications", { timeout: 8000 })
       .should('be.visible')
       .click();
-  
-    cy.contains(".moj-filter__tag", "Reviewed entitled").should('not.exist');
+
+    cy.contains(".moj-filter__tag", "Archived applications").should('not.exist');
+  });
+
+  it('Returns filtered results when a Selected statuses is selected and filter can be removed', () => {
+    cy.contains('Search all records').click();
+
+    cy.get("#StatusFilterMode-Selected").click();
+    cy.wait(100);
+    cy.get("#Status_SentForReview").click();
+    cy.contains(".govuk-button", "Apply filters").click();
+
+    cy.contains(".moj-filter__tag", "Sent for review", { timeout: 8000 })
+      .should('be.visible')
+      .click();
+
+    cy.contains(".moj-filter__tag", "Sent for review").should('not.exist');
   });
 
   it('Returns the record when First and Last name of Parent are searched', () => {

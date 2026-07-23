@@ -1,3 +1,4 @@
+import { getValidChildDob, getInvalidChildDob } from '../../support/dateHelpers';
 describe('Full journey of creating an application through school portal through to approving in LA portal', () => {
     const parentFirstName = 'Tim';
     const parentLastName = Cypress.env('lastName');
@@ -6,8 +7,7 @@ describe('Full journey of creating an application through school portal through 
     const childFirstName = 'Timmy';
     const childLastName = 'Smith';
 
-    it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {
-        let referenceNumber: string;
+    it('Will allow a school user to create an application that may not be eligible and send it for appeal', () => {       
 
         cy.checkSession('school');
         cy.visit((Cypress.config().baseUrl ?? "") + "/home");
@@ -39,9 +39,13 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+
+        const childDob = getValidChildDob();
+
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+
         cy.contains('button', 'Add another child').click();
         cy.contains('button', 'Remove').click();
         cy.contains('button', 'Save and continue').click();
@@ -100,7 +104,7 @@ describe('Full journey of creating an application through school portal through 
         //Go to the last page of results
         cy.get('.govuk-pagination__list').find('a[href*="PageNumber"]').not('[rel="next"]').last().click();
         cy.get<string>('@referenceNumber').then((ref) => {
-            cy.scanPagesForNewValue(ref);
+            cy.scanPagesForNewValue(ref, 10);
         });
 
         cy.contains('Approve for expanded free school meals').parent().find('input[type="radio"]').check();
@@ -185,9 +189,13 @@ describe('Full journey of creating an application through school portal through 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
         cy.get('[id="ChildList[0].LastName"]').type(childLastName);
-        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type('01');
-        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type('2007');
+
+        const childDob = getValidChildDob();
+
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+
         cy.contains('button', 'Save and continue').click();
 
         //Check answers page
@@ -202,7 +210,7 @@ describe('Full journey of creating an application through school portal through 
                     .replace(/\u00A0/g, ' ')
                     .replace(/\s+/g, ' ')
                     .trim();
-                expect(clean).to.eq('nn123456c');
+                    expect(clean).to.eq('NN123456C');
             });
         cy.CheckValuesInSummaryCard('Parent or guardian details', 'Email address', parentEmailAddress);
         cy.CheckValuesInSummaryCard('Child 1 details', "Name", childFirstName + " " + childLastName);
@@ -210,5 +218,62 @@ describe('Full journey of creating an application through school portal through 
 
         //Applications Registered confirmation page
         cy.url().should('include', '/Check/ApplicationsRegistered');
+    });  
+
+    it('Will prevent a child aged 19 at the beginning of the academic year from continuing', () => {
+
+        cy.checkSession('school');
+        cy.visit((Cypress.config().baseUrl ?? "") + "/home");
+        cy.wait(1);
+        cy.get('.govuk-caption-l').should('include.text', 'The Telford Park School');
+    
+        // Add parent details
+        cy.contains('Run a check for one parent or guardian').click();
+        cy.get('#consent').check();
+        cy.get('#submitButton').click();
+    
+        cy.url().should('include', '/Check/Enter_Details');
+    
+        cy.get('#FirstName').type(parentFirstName);
+        cy.get('#LastName').type(parentLastName);
+        cy.get('#EmailAddress').type(parentEmailAddress);
+    
+        cy.get('[id="DateOfBirth.Day"]').type('01');
+        cy.get('[id="DateOfBirth.Month"]').type('01');
+        cy.get('[id="DateOfBirth.Year"]').type('1990');
+    
+        cy.get('#NationalInsuranceNumber').type("nn123456c");
+    
+        cy.contains('button', 'Perform check').click();
+    
+        // Loader page
+        cy.url().should('include', 'Check/Loader');
+    
+        // Eligible outcome page
+        cy.get('.govuk-notification-banner__heading', { timeout: 80000 })
+            .should('include.text', 'are eligible for free school meals.');
+    
+        cy.contains('a.govuk-button', "Continue to add child details").click();
+    
+        // Enter child details
+        cy.url().should('include', '/Enter_Child_Details');
+    
+        cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
+        cy.get('[id="ChildList[0].LastName"]').type(childLastName);
+    
+        // Exactly 19 at academic year start - should fail
+        const childDob = getInvalidChildDob();
+
+        cy.get('[id="ChildList[0].DateOfBirth.Day"]').type(childDob.day);
+        cy.get('[id="ChildList[0].DateOfBirth.Month"]').type(childDob.month);
+        cy.get('[id="ChildList[0].DateOfBirth.Year"]').type(childDob.year);
+    
+        cy.contains('button', 'Save and continue').click();
+    
+        cy.url().should('include', '/Enter_Child_Details');
+    
+        cy.contains(
+            'Child 1 must be under the age of 19 at the beginning of the academic year to be eligible'
+        ).should('exist');
     });
 });

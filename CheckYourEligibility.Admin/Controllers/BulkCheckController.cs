@@ -5,6 +5,7 @@ using CheckYourEligibility.Admin.Domain.Constants;
 using CheckYourEligibility.Admin.Domain.Constants.BulkCheck;
 using CheckYourEligibility.Admin.Domain.DfeSignIn;
 using CheckYourEligibility.Admin.Domain.Enums;
+using CheckYourEligibility.Admin.Gateways;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Models;
@@ -14,6 +15,7 @@ using CsvHelper;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 using static CheckYourEligibility.Admin.Domain.Constants.DfeSignInRoles;
 using static CheckYourEligibility.Admin.Helpers.CsvBulkCheckValidatorHelper;
@@ -133,31 +135,24 @@ public class BulkCheckController : BaseController
             return RedirectToAction("Bulk_Check");
         }
 
-        // Rate limiting
+        // Rate limiting - only successful uploads count towards the limit; failed/errored
+        // uploads (validation issues, parse errors, submission failures) are not counted.
         var timeNow = DateTime.UtcNow;
         if (!string.IsNullOrEmpty(HttpContext.Session.GetString("FirstSubmissionTimeStamp")))
         {
             var firstSubmissionTimeStampString = HttpContext.Session.GetString("FirstSubmissionTimeStamp");
             DateTime.TryParse(firstSubmissionTimeStampString, out var firstSubmissionTimeStamp);
             var timein1Hour = firstSubmissionTimeStamp.AddHours(1);
-            if (timeNow >= timein1Hour) HttpContext.Session.Remove("BulkSubmissions");
+            if (timeNow >= timein1Hour)
+            {
+                HttpContext.Session.Remove("BulkSubmissions");
+                HttpContext.Session.Remove("FirstSubmissionTimeStamp");
+            }
         }
 
-        var sessionCount = 0;
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("BulkSubmissions")))
-        {
-            HttpContext.Session.SetInt32("BulkSubmissions", 0);
-            HttpContext.Session.SetString("FirstSubmissionTimeStamp", DateTime.UtcNow.ToString());
-        }
-        else
-        {
-            sessionCount = HttpContext.Session.GetInt32("BulkSubmissions") ?? 0;
-        }
+        var sessionCount = HttpContext.Session.GetInt32("BulkSubmissions") ?? 0;
 
-        sessionCount++;
-        HttpContext.Session.SetInt32("BulkSubmissions", sessionCount);
-
-        if (sessionCount > int.Parse(_config["BulkUploadAttemptLimit"] ?? "5"))
+        if (sessionCount >= int.Parse(_config["BulkUploadAttemptLimit"] ?? "5"))
         {
             TempData["ErrorMessage"] = "You have exceeded the maximum number of bulk upload attempts. Please try again later.";
             return RedirectToAction("Bulk_Check");
@@ -270,7 +265,7 @@ public class BulkCheckController : BaseController
     // GET: Batch checks history with table
     public async Task<IActionResult> Bulk_Check_History(int pageNumber = 1, int pageSize = 10)
     {
-
+        bool isEnhanced = _Claims?.Roles?.FirstOrDefault()?.Code != null ? _Claims.Roles[0].Code != DfeSignInRoles.RoleCodeBasic : false;
         try
         {
             if (_organisation.id == 0)
@@ -280,7 +275,7 @@ public class BulkCheckController : BaseController
             }
 
             var allChecks = await _getBulkCheckStatusesUseCase.Execute(_organisation.id);
-
+            
             // Pagination
             var totalRecords = allChecks.Count();
             var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
@@ -303,7 +298,9 @@ public class BulkCheckController : BaseController
                 }).ToList(),
                 CurrentPage = pageNumber,
                 TotalPages = totalPages,
-                TotalRecords = totalRecords
+                TotalRecords = totalRecords,
+                Enhanced = isEnhanced
+
             };
 
             return View(viewModel);
@@ -314,7 +311,44 @@ public class BulkCheckController : BaseController
             return View(new BulkCheckViewModel());
         }
     }
+    [HttpPost]
+    public async Task<IActionResult> Bulk_Check_Application(string bulkCheckId)
+    {
 
+        if (string.IsNullOrWhiteSpace(bulkCheckId))
+        {
+            TempData["ErrorMessage"] = "Bulk check ID is required.";
+            return RedirectToAction(nameof(Bulk_Check_History));
+        }
+
+        try
+        {
+            var summary = await _checkGateway.GetBulkCheckSummary(bulkCheckId);
+            var response = await _checkGateway.CreateApplicationFromBulkCheck(bulkCheckId);
+
+            TempData["ApplicationSuccess"] = response?.Data
+                ?? "Applications created successfully.";
+
+            TempData["FileName"] = summary.Filename;
+            TempData["SubmittedDate"] = summary.SubmittedDate;
+            TempData["EligibleTargeted"] = summary.Outcomes.ContainsKey("eligible-targeted") ? summary.Outcomes["eligible-targeted"] : 0;
+            TempData["EligibleExpanded"] = summary.Outcomes.ContainsKey("eligible-expanded") ? summary.Outcomes["eligible-expanded"] : 0;
+
+            return RedirectToAction(nameof(Bulk_Check_History));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to create applications from bulk check {BulkCheckId}",
+                bulkCheckId);
+
+            TempData["ErrorMessage"] =
+                "Unable to create applications from the batch check.";
+
+            return RedirectToAction(nameof(Bulk_Check_History));
+        }
+
+    }
     // GET: View results for a specific bulk check
     public async Task<IActionResult> Bulk_Check_View_Results(string bulkCheckId)
     {
@@ -344,6 +378,35 @@ public class BulkCheckController : BaseController
         {
             var safeBulkCheckId = bulkCheckId?.Replace("\r", "").Replace("\n", "");
             _logger.LogError(ex, "Error viewing bulk check results for ID: {BulkCheckId}", safeBulkCheckId);
+            TempData["ErrorMessage"] = "Error loading results.";
+            return RedirectToAction("Bulk_Check_History");
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Bulk_Check_Summary(string bulkCheckId)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(bulkCheckId))
+            {
+                return RedirectToAction("Bulk_Check_History");
+            }
+
+            var summary = await _checkGateway.GetBulkCheckSummary(bulkCheckId);
+
+            if (summary == null)
+            {
+                TempData["ErrorMessage"] = "No results found for this bulk check.";
+                return RedirectToAction("Bulk_Check_History");
+            }
+            var viewModel = BuildBulkCheckSummaryViewModel(summary, bulkCheckId);
+            return View("Summary", viewModel);
+        }
+        catch (Exception ex)
+        {
+            var safeBulkCheckId = bulkCheckId?.Replace("\r", "").Replace("\n", "");
+            _logger.LogError(ex, "Error loading bulk check summary for ID: {BulkCheckId}", safeBulkCheckId);
             TempData["ErrorMessage"] = "Error loading results.";
             return RedirectToAction("Bulk_Check_History");
         }
@@ -428,7 +491,7 @@ public class BulkCheckController : BaseController
 
     private void WriteBulkExportRecords(CsvWriter csv,IEnumerable results, bool isEnhanced,EligibilityCriteria eligibilityCriteria)
     {
-       
+
         // Select correct map
         var mapType = GetCsvMapType(isEnhanced, eligibilityCriteria);
 
@@ -450,6 +513,50 @@ public class BulkCheckController : BaseController
             : typeof(BulkExportBaseCsvMap);
     }
 
+    private void RecordSuccessfulBulkUploadAttempt()
+    {
+        var newCount = (HttpContext.Session.GetInt32("BulkSubmissions") ?? 0) + 1;
+        HttpContext.Session.SetInt32("BulkSubmissions", newCount);
+
+        if (newCount == 1)
+        {
+            HttpContext.Session.SetString("FirstSubmissionTimeStamp", DateTime.UtcNow.ToString());
+        }
+    }
+
+    private BulkCheckSummaryViewModel BuildBulkCheckSummaryViewModel(BulkCheckSummaryResponse results, string bulkCheckId)
+    {
+        var eligibleCount = results.Outcomes.ContainsKey("eligible") ? results.Outcomes["eligible"] : 0;
+        var eligibleTargetedCount = results.Outcomes.ContainsKey("eligible-targeted") ? results.Outcomes["eligible-targeted"] : 0;
+        var eligibleExpandedCount = results.Outcomes.ContainsKey("eligible-expanded") ? results.Outcomes["eligible-expanded"] : 0;
+        var notEligibleCount = results.Outcomes.ContainsKey("notEligible") ? results.Outcomes["notEligible"] : 0;
+        var notFoundCount = (results.Outcomes.ContainsKey("notFound") ? results.Outcomes["notFound"] : 0) +
+        (results.Outcomes.ContainsKey("parentNotFound") ? results.Outcomes["parentNotFound"] : 0);
+        ;
+        var errorCount = (results.Outcomes.ContainsKey("error") ? results.Outcomes["error"] : 0);
+
+        var eligibilityEndDate = results.SubmittedDate <= new DateTime(results.SubmittedDate.Year, 5, 31)
+            ? new DateTime(results.SubmittedDate.Year, 7, 31)
+            : new DateTime(results.SubmittedDate.Year + 1, 7, 31);
+
+        var currentAcademicYear = results.SubmittedDate.Month >= 5 ? results.SubmittedDate.Year : results.SubmittedDate.Year - 1;
+        TempData["EligibleTargeted"] = eligibleTargetedCount;
+        TempData["EligibleExpanded"] = eligibleExpandedCount;
+        return new BulkCheckSummaryViewModel
+        {
+            FileName = results.Filename,
+            SubmittedDate = results.SubmittedDate,
+            EligibleCount = eligibleCount,
+            EligibleTargetedCount = eligibleTargetedCount,
+            EligibleExpandedCount = eligibleExpandedCount,
+            NotEligibleTotalCount = notEligibleCount,
+            NotFoundCount = notFoundCount,
+            ErrorCount = errorCount,
+            EligiblityEndDate = eligibilityEndDate,
+            AcademicYear = currentAcademicYear,
+            bulkCheckId = bulkCheckId
+        };
+    }
     private IActionResult ValidateParseResult<T>(BulkCheckCsvResult<T> parseResult, string filename) where T : CheckEligibilityRequestDataBase
     {
         if (!string.IsNullOrEmpty(parseResult.ErrorMessage))
@@ -496,6 +603,7 @@ public class BulkCheckController : BaseController
             if (response?.Links?.Get_BulkCheck_Status != null)
             {
                 HttpContext.Session.SetString("BulkCheckUrl", response.Links.Get_BulkCheck_Status);
+                RecordSuccessfulBulkUploadAttempt();
 
                 var fileSubmittedViewModel = new BulkCheckFileSubmittedViewModel
                 {

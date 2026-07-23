@@ -112,5 +112,10 @@ public class HomeController : BaseController
 
     public IActionResult Rechecks() => View("Guidance_steps/Rechecks");
 
-    public IActionResult Expansion() => View("Guidance_steps/Expansion");
+    public async Task<IActionResult> Expansion()
+    {
+        await IsExpandedFSMEnabled();
+
+        return View("Guidance_steps/Expansion");
+    }
 }

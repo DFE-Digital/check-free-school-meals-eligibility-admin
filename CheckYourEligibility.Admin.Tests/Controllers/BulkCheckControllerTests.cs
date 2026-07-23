@@ -630,6 +630,181 @@ public class BulkCheckControllerTests
 
     #endregion
 
+    #region Rate Limiting Tests
+
+    [Test]
+    public async Task Bulk_Check_Post_WithInvalidFile_DoesNotCountTowardsAttemptLimit()
+    {
+        // Arrange
+        _configurationMock.Setup(c => c["BulkUploadAttemptLimit"]).Returns("2");
+
+        var csvContent = "Last Name,Date of Birth,National Insurance number\nSmith,invalid-date,BADNI";
+        var parseResult = new BulkCheckCsvResult<CheckEligibilityRequestDataBase>
+        {
+            ValidRequests = new List<CheckEligibilityRequestDataBase>(),
+            Errors = new List<CsvRowError>
+            {
+                new CsvRowError { LineNumber = 2, Message = ValidationMessages.DOB }
+            }
+        };
+        var viewModel = new BulkCheckUploadViewModel
+        {
+            isSchool = false,
+            isEnhanced = false,
+            GuidanceItems = BulkCheckConstants.GuidanceItemsBasic
+        };
+
+        _parseBulkCheckFileUseCaseMock
+            .Setup(x => x.Execute(
+                It.IsAny<Stream>(),
+                It.IsAny<Func<IReaderRow, int, string?, CheckEligibilityRequestDataBase>>(),
+                It.IsAny<string[]>(),
+                It.IsAny<int>(),
+                It.IsAny<OrganisationCategory>(),
+                It.IsAny<string?>()))
+            .ReturnsAsync(parseResult);
+
+        // Act - upload more failing files than the (very low) attempt limit
+        for (var i = 0; i < 5; i++)
+        {
+            var mockFile = CreateMockFormFile("test.csv", csvContent);
+            var result = await _controller.Bulk_Check(mockFile, viewModel);
+
+            // Assert - every attempt still shows the data-issue view, never the rate limit error
+            Assert.That(result, Is.InstanceOf<ViewResult>());
+            Assert.That((result as ViewResult)!.ViewName, Is.EqualTo("Error_Data_Issue"));
+        }
+    }
+
+    [Test]
+    public async Task Bulk_Check_Post_WithFailedSubmission_DoesNotCountTowardsAttemptLimit()
+    {
+        // Arrange
+        _configurationMock.Setup(c => c["BulkUploadAttemptLimit"]).Returns("2");
+
+        var csvContent = "Last Name,Date of Birth,National Insurance number\nSmith,1985-03-15,AB123456C";
+        var parseResult = new BulkCheckCsvResult<CheckEligibilityRequestDataBase>
+        {
+            ValidRequests = new List<CheckEligibilityRequestDataBase>
+            {
+                new CheckEligibilityRequestDataBase
+                {
+                    LastName = "Smith",
+                    DateOfBirth = "1985-03-15",
+                    NationalInsuranceNumber = "AB123456C"
+                }
+            },
+            Errors = new List<CsvRowError>()
+        };
+        var viewModel = new BulkCheckUploadViewModel
+        {
+            isSchool = false,
+            isEnhanced = false,
+            GuidanceItems = BulkCheckConstants.GuidanceItemsBasic
+        };
+
+        _parseBulkCheckFileUseCaseMock
+            .Setup(x => x.Execute(
+                It.IsAny<Stream>(),
+                It.IsAny<Func<IReaderRow, int, string?, CheckEligibilityRequestDataBase>>(),
+                It.IsAny<string[]>(),
+                It.IsAny<int>(),
+                It.IsAny<OrganisationCategory>(),
+                It.IsAny<string?>()))
+            .ReturnsAsync(parseResult);
+
+        // Gateway call fails to return a valid response (no status link)
+        _checkGatewayMock
+            .Setup(x => x.PostBulkCheck(It.IsAny<CheckEligibilityRequestBulk>()))
+            .ReturnsAsync(new CheckEligibilityResponseBulk());
+
+        // Act - submission fails more times than the (very low) attempt limit
+        for (var i = 0; i < 5; i++)
+        {
+            var mockFile = CreateMockFormFile("test.csv", csvContent);
+            var result = await _controller.Bulk_Check(mockFile, viewModel);
+
+            // Assert - every attempt reports the submission failure, never the rate limit error
+            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.That(_controller.TempData["ErrorMessage"], Is.EqualTo("Failed to submit bulk check. Please try again."));
+        }
+    }
+
+    [Test]
+    public async Task Bulk_Check_Post_WhenSuccessfulAttemptLimitReached_BlocksFurtherUploads()
+    {
+        // Arrange
+        _configurationMock.Setup(c => c["BulkUploadAttemptLimit"]).Returns("2");
+
+        var csvContent = "Last Name,Date of Birth,National Insurance number\nSmith,1985-03-15,AB123456C";
+        var parseResult = new BulkCheckCsvResult<CheckEligibilityRequestDataBase>
+        {
+            ValidRequests = new List<CheckEligibilityRequestDataBase>
+            {
+                new CheckEligibilityRequestDataBase
+                {
+                    LastName = "Smith",
+                    DateOfBirth = "1985-03-15",
+                    NationalInsuranceNumber = "AB123456C"
+                }
+            },
+            Errors = new List<CsvRowError>()
+        };
+        var viewModel = new BulkCheckUploadViewModel
+        {
+            isSchool = false,
+            isEnhanced = false,
+            GuidanceItems = BulkCheckConstants.GuidanceItemsBasic
+        };
+
+        _parseBulkCheckFileUseCaseMock
+            .Setup(x => x.Execute(
+                It.IsAny<Stream>(),
+                It.IsAny<Func<IReaderRow, int, string?, CheckEligibilityRequestDataBase>>(),
+                It.IsAny<string[]>(),
+                It.IsAny<int>(),
+                It.IsAny<OrganisationCategory>(),
+                It.IsAny<string?>()))
+            .ReturnsAsync(parseResult);
+
+        _checkGatewayMock
+            .Setup(x => x.PostBulkCheck(It.IsAny<CheckEligibilityRequestBulk>()))
+            .ReturnsAsync(new CheckEligibilityResponseBulk
+            {
+                Data = new StatusValue { Status = "queuedForProcessing" },
+                Links = new CheckEligibilityResponseBulkLinks
+                {
+                    Get_BulkCheck_Status = "/bulk-check/new-guid/status"
+                }
+            });
+
+        // Act - two successful uploads (matching the configured limit) should both succeed
+        for (var i = 0; i < 2; i++)
+        {
+            var mockFile = CreateMockFormFile("test.csv", csvContent);
+            var result = await _controller.Bulk_Check(mockFile, viewModel);
+
+            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.That((result as RedirectToActionResult)!.ActionName, Is.EqualTo("Bulk_Check_History"));
+        }
+
+        // A third successful upload should be blocked by the attempt limit
+        var thirdMockFile = CreateMockFormFile("test.csv", csvContent);
+        var thirdResult = await _controller.Bulk_Check(thirdMockFile, viewModel);
+
+        Assert.That(thirdResult, Is.InstanceOf<RedirectToActionResult>());
+        Assert.That((thirdResult as RedirectToActionResult)!.ActionName, Is.EqualTo("Bulk_Check"));
+        Assert.That(
+            _controller.TempData["ErrorMessage"],
+            Is.EqualTo("You have exceeded the maximum number of bulk upload attempts. Please try again later."));
+
+        _checkGatewayMock.Verify(
+            x => x.PostBulkCheck(It.IsAny<CheckEligibilityRequestBulk>()),
+            Times.Exactly(2));
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private IFormFile CreateMockFormFile(string fileName, string content)

@@ -29,6 +29,7 @@ internal class CheckGatewayTests
         _loggerFactoryMock = new Mock<ILoggerFactory>();
         _loggerMock = new Mock<ILogger>();
         _loggerFactoryMock.Setup(x => x.CreateLogger(It.IsAny<string>())).Returns(_loggerMock.Object);
+        _mapperMock = new Mock<IMapper>();
 
         _configMock = new Mock<IConfiguration>();
         _configMock.Setup(x => x["Api:AuthorisationUsername"]).Returns("SomeValue");

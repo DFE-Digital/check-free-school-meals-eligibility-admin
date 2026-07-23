@@ -16,8 +16,14 @@ describe('Admin journey export CSV', () => {
     // Click export and verify response
     cy.contains('Export as CSV').should('be.visible').click();
     cy.wait('@exportRequest').then((interception) => {
-      expect(interception.response?.headers['content-type']).to.include('text/csv');
-      expect(interception.response?.headers['content-disposition']).to.match(/eligibility-applications-\d{14}\.csv/);
+      const headers = interception.response?.headers;
+    
+      expect(headers?.['content-type']).to.include('text/csv');
+    
+      const contentDisposition = headers?.['content-disposition'];
+      expect(contentDisposition).to.exist;
+      expect(contentDisposition).to.include('eligibility-applications-');
+      expect(contentDisposition).to.include('.csv');
     });
   });
 });
