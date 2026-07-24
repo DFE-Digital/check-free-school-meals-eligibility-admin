@@ -1,13 +1,9 @@
-﻿using CheckYourEligibility.Admin.Boundary.Responses;
-using CheckYourEligibility.Admin.Domain.Enums;
-using System.Globalization;
-using System.Text;
+﻿using CheckYourEligibility.Admin.Domain.Enums;
 
 namespace CheckYourEligibility.Admin.Models;
 
 public static class Extensions
 {
-
     public static string GetFsmStatusDescriptionBulkCheck(this string status, string tier = null)
     {
         Enum.TryParse(status, out CheckEligibilityStatus statusEnum);
@@ -74,41 +70,21 @@ public static class Extensions
                 return "";
         }
     }
-
 }
+
 public static class DateTimeExtensions
 {
     public static TimeZoneInfo TimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timezone);
 
     private const string timezone = "GMT Standard Time";
 
-    public static DateTimeOffset GetDateTimeOffsetFromString(string datetime)
-    {
-        DateTime raw = DateTime.ParseExact(datetime, "yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None);
-
-        DateTimeOffset offset = new DateTimeOffset(raw, TimeZoneInfo.BaseUtcOffset);
-        var rules = TimeZoneInfo.GetAdjustmentRules();
-        if (TimeZoneInfo.IsDaylightSavingTime(raw))
-        {
-            offset = new DateTimeOffset(raw.AddHours(-1), rules.First().DaylightDelta);
-        }
-        return offset;
-    }
     public static DateTime GetLocalTime(DateTime time)
     {
         return TimeZoneInfo.ConvertTimeFromUtc(time, TimeZoneInfo);
     }
 
-    public static DateTime GetUTCTime(DateTime time)
-    {
-        if (time.Kind != DateTimeKind.Utc)
-        {
-            time = TimeZoneInfo.ConvertTimeToUtc(time);
-        }
-        return time;
-    }
     public static string ToLocalString12HourFormatReadable(this DateTime datetime)
     {
-        return GetLocalTime(datetime).ToString("dd MMM yyyy hh:mmtt").Replace("AM", "am").Replace("PM", "pm");
+        return GetLocalTime(datetime).ToString("dd MMM yyyy h:mmtt").Replace("AM", "am").Replace("PM", "pm");
     }
 }
