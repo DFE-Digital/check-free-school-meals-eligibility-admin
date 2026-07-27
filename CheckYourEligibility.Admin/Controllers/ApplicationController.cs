@@ -757,9 +757,17 @@ public class ApplicationController : BaseController
         var checkAccess = await ConfirmCheckAccess(id);
         if (checkAccess != null) return checkAccess;
 
-        await _adminGateway.PatchApplicationStatus(id, ApplicationStatus.Archived);
+        try
+        {
+            await _adminGateway.PatchApplicationStatus(id, ApplicationStatus.Archived);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to archive application {id.Replace(Environment.NewLine, "")}");
+            TempData["ErrorMessage"] = "Sorry, there was a problem archiving this record. " + ex.Message;
+            return RedirectToAction("ApplicationDetail", new { id });
+        }
 
-        var response = await _adminGateway.GetApplication(id);
         return RedirectToAction("ApplicationArchived", new { id });
     }
 
@@ -768,13 +776,19 @@ public class ApplicationController : BaseController
         var checkAccess = await ConfirmCheckAccess(id);
         if (checkAccess != null) return checkAccess;
 
-        var currentApplication = await _adminGateway.GetApplication(id);
-        if (currentApplication.Data.Status == ApplicationStatus.Archived)
+        try
         {
-            await _adminGateway.RestoreApplicationStatus(id);
-
-            var response = await _adminGateway.GetApplication(id);
-            TempData["restored"] = true;
+            var currentApplication = await _adminGateway.GetApplication(id);
+            if (currentApplication.Data.Status == ApplicationStatus.Archived)
+            {
+                await _adminGateway.RestoreApplicationStatus(id);
+                TempData["restored"] = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to restore application {id.Replace(Environment.NewLine, "")}");
+            TempData["ErrorMessage"] = "Sorry, there was a problem restoring this record. " + ex.Message;
         }
 
         return RedirectToAction("ApplicationDetail", new { id });
