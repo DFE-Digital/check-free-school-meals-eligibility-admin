@@ -40,6 +40,14 @@ public class GetCheckStatusUseCase : IGetCheckStatusUseCase
             throw new Exception("Null response received from GetStatus.");
         }
 
+        if (response.Links != null)
+        {
+            if (response.Links.Get_EligibilityCheck != null)
+            {
+                check.Data.CorrelationID = response.Links.Get_EligibilityCheck.Replace("/check/", "");
+            }
+        }
+
         _logger.LogInformation($"Received status: {check.Data.Status}");
         session.SetString("CheckResult", check.Data.Status);
 

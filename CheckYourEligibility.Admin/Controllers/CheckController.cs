@@ -153,7 +153,6 @@ public class CheckController : BaseController
         var responseJson = TempData["Response"] as string;
         try
         {
-
             // Cache the organisation type for use in the view
             OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
             TempData["organisationType"] = organisationType;
@@ -206,6 +205,8 @@ public class CheckController : BaseController
                 case "parentNotFound":
                     return View("Outcome/Not_Found");
                 default:
+                    ViewData["CorellationID"] = outcome.CorrelationID;
+                    ViewData["ErrorCode"] = outcome.ErrorCode;
                     return View("Outcome/Technical_Error");
             }
         }

@@ -821,6 +821,31 @@ public class CheckControllerTests : TestBase
         _getCheckStatusUseCaseMock.Verify(x => x.Execute(responseJson, _sessionMock.Object), Times.Once);
     }
 
+    public async Task Given_Loader_When_Status_TechnicalError_Should_ReturnErrorCode()
+    {
+        // Arrange
+        var response = new CheckEligibilityResponse
+        {
+            Data = new StatusValue { Status = "error", ErrorCode = "TE21" }
+        };
+        var responseJson = JsonConvert.SerializeObject(response);
+        _sut.TempData["Response"] = responseJson;
+
+        _getCheckStatusUseCaseMock
+            .Setup(x => x.Execute(responseJson, _sessionMock.Object))
+            .ReturnsAsync(response.Data);
+
+        var ParentMock = _fixture.Create<ParentGuardian>();
+        _tempData["Response"] = null;
+
+        // Act
+        var result = await _sut.Loader(ParentMock);
+
+        // Assert
+        var viewResult = result as ViewResult;
+        viewResult.ViewData["ErrorCode"].Should().Be(response.Data.ErrorCode);
+    }
+
     [Test]
     public async Task Given_Poll_Status_When_Response_Is_Null_Returns_Error_Status()
     {
