@@ -1,11 +1,8 @@
 import { getValidChildDob, getInvalidChildDob } from '../../support/dateHelpers';
 describe('Test that approved accented characters are accepted in name input fields', () => {
-    const parentFirstName = 'Tim';
     const parentLastName = Cypress.env('lastName');
     const parentEmailAddress = 'TimJones@Example.com';
     const NIN = 'PN668767B'
-    const childFirstName = 'Timmy';
-    const childLastName = 'Smith';
 
     it('Parent first and last names on Enter_Details should accept approved accented characters', () => {
         //Setup - Get to Enter_Details page to perform test
@@ -19,35 +16,41 @@ describe('Test that approved accented characters are accepted in name input fiel
         cy.get('#submitButton').click();
 
         cy.url().should('include', '/Check/Enter_Details');
-        //First and Last name fields should accept
-        // [("OBrien", "plain letters")]
-        // [("O'Brien", "straight apostrophe (U+0027)")]
-        // [("O\u2019Brien", "right curly apostrophe (U+2019)")]
-        // [("O\u2018Brien", "left curly apostrophe (U+2018)")]
-        // [("Smith-Jones", "hyphen")]
-        // [("St. Claire", "period and space")]
-        // [("van den Berg", "spaces")]
-        // [("ÁáÉéÍíÓóÚúÝýĆćĹĺŃńŔŕŚśŹź", "acute")]
-        // [("ÀàÈèÌìÒòÙùẀẁỲỳ", "grave")]
-        // [("ÂâÊêÎîÔôÛûĈĉĜĝĤĥĴĵŜŝŴŵŶŷ", "circumflex")]
-        // [("ÃãÑñÕõĨĩŨũẼẽỸỹ", "tilde")]
-        // [("ÄäËëÏïÖöÜüŸÿ", "umlaut or diaeresis")]
-        // [("ÇçĢģĶķĻļŅņŖŗŞşŢţ", "cedilla")]
-        // [("ÅåŮů", "ring")]
-        // [("ĀāĒēĪīŌōŪūȲȳ", "macron")]
-        // [("ĂăĔĕĞğĬĭŎŏŬŭ", "breve")]
-        // [("ĊċĖėĠġİẊẋŻż", "dot above")]
-        // [("ĄąĘęĮįŲų", "ogonek")]
-        // [("ŐőŰű", "double acute")]
-        cy.get('#FirstName').type('OBrienO\'BrienO\u2019BrienO\u2018BrienSmith-JonesSt. Clairevan den BergÁáÉéÍíÓóÚúÝýĆćĹĺŃńŔŕŚśŹźÀàÈèÌìÒòÙùẀẁỲỳÀàÈèÌìÒòÙùẀẁỲỳÃãÑñÕõĨĩŨũẼẽỸỹÄäËëÏïÖöÜüŸÿÇçĢģĶķĻļŅņŖŗŞşŢţÅåŮůĀāĒēĪīŌōŪūȲȳĂăĔĕĞğĬĭŎŏŬŭĊċĖėĠġİẊẋŻżĄąĘęĮįŲųŐőŰű');
-        cy.get('#LastName').type('OBrienO\'BrienO\u2019BrienO\u2018BrienSmith-JonesSt. Clairevan den BergÁáÉéÍíÓóÚúÝýĆćĹĺŃńŔŕŚśŹźÀàÈèÌìÒòÙùẀẁỲỳÀàÈèÌìÒòÙùẀẁỲỳÃãÑñÕõĨĩŨũẼẽỸỹÄäËëÏïÖöÜüŸÿÇçĢģĶķĻļŅņŖŗŞşŢţÅåŮůĀāĒēĪīŌōŪūȲȳĂăĔĕĞğĬĭŎŏŬŭĊċĖėĠġİẊẋŻżĄąĘęĮįŲųŐőŰű');
+
+        let approvedChars = "OBrien" + //plain letters
+            "O'Brien" + //straight apostrophe (U+0027)
+            "O\u2019Brien" + //right curly apostrophe (U+2019)
+            "O\u2018Brien" + //left curly apostrophe (U+2018)
+            "Smith-Jones" + //hyphen
+            "St. Claire" + //period and space
+            "van den Berg" + //spaces
+            "ÁáÉéÍíÓóÚúÝýĆćĹĺŃńŔŕŚśŹź" + //acute
+            "ÀàÈèÌìÒòÙùẀẁỲỳ" + //grave
+            "ÂâÊêÎîÔôÛûĈĉĜĝĤĥĴĵŜŝŴŵŶŷ" + //circumflex
+            "ÃãÑñÕõĨĩŨũẼẽỸỹ" + //tilde
+            "ÄäËëÏïÖöÜüŸÿ" + //umlaut or diaeresis
+            "ÇçĢģĶķĻļŅņŖŗŞşŢţ" + //cedilla
+            "ÅåŮů" + //ring
+            "ĀāĒēĪīŌōŪūȲȳ" + //macron
+            "ĂăĔĕĞğĬĭŎŏŬŭ" + //breve
+            "ĊċĖėĠġİẊẋŻż" + //dot above
+            "ĄąĘęĮįŲų" + //ogonek
+            "ŐőŰű"; //double acute
+
+        // Test the validation for First name and Last name accept the DWP predefined list of approved characters 
+        cy.get('#FirstName').type(approvedChars);
+        cy.get('#LastName').type(approvedChars);
         cy.contains('button', 'Perform check').click();
         cy.get('#error-summary')
             .should('not.contain.text', 'First Name field contains an invalid character')
             .and('not.contain.text', 'Last Name field contains an invalid character');
+        //Verify that we did successfully submit the form because we received validation errors for the two unfilled inputs
+        cy.get('#error-summary')
+            .should('contain.text', 'Enter a date of birth')
+            .and('contain.text', 'Enter a National Insurance number');
 
         //Continue to Add_Child_Details to check the Child Name validation with valid Parent Details
-        cy.get('#FirstName').clear().type(parentFirstName);
+        //Replace Last name as we need to use 'Tester' for the check to proceed.
         cy.get('#LastName').clear().type(parentLastName);
         cy.get('#EmailAddress').type(parentEmailAddress);
         cy.get('[id="DateOfBirth.Day"]').type('01');
@@ -65,8 +68,8 @@ describe('Test that approved accented characters are accepted in name input fiel
 
         //Enter child details
         cy.url().should('include', '/Enter_Child_Details');
-        cy.get('[id="ChildList[0].FirstName"]').type('OBrienO\'BrienO\u2019BrienO\u2018BrienSmith-JonesSt. Clairevan den BergÁáÉéÍíÓóÚúÝýĆćĹĺŃńŔŕŚśŹźÀàÈèÌìÒòÙùẀẁỲỳÀàÈèÌìÒòÙùẀẁỲỳÃãÑñÕõĨĩŨũẼẽỸỹÄäËëÏïÖöÜüŸÿÇçĢģĶķĻļŅņŖŗŞşŢţÅåŮůĀāĒēĪīŌōŪūȲȳĂăĔĕĞğĬĭŎŏŬŭĊċĖėĠġİẊẋŻżĄąĘęĮįŲųŐőŰű');
-        cy.get('[id="ChildList[0].LastName"]').type('OBrienO\'BrienO\u2019BrienO\u2018BrienSmith-JonesSt. Clairevan den BergÁáÉéÍíÓóÚúÝýĆćĹĺŃńŔŕŚśŹźÀàÈèÌìÒòÙùẀẁỲỳÀàÈèÌìÒòÙùẀẁỲỳÃãÑñÕõĨĩŨũẼẽỸỹÄäËëÏïÖöÜüŸÿÇçĢģĶķĻļŅņŖŗŞşŢţÅåŮůĀāĒēĪīŌōŪūȲȳĂăĔĕĞğĬĭŎŏŬŭĊċĖėĠġİẊẋŻżĄąĘęĮįŲųŐőŰű');
+        cy.get('[id="ChildList[0].FirstName"]').type(approvedChars);
+        cy.get('[id="ChildList[0].LastName"]').type(approvedChars);
 
         const childDob = getValidChildDob();
 
@@ -88,6 +91,7 @@ describe('Test that approved accented characters are accepted in name input fiel
 
         //Check answers page
         cy.get('.govuk-heading-l').should('include.text', 'Check your answers before submitting');
-        cy.CheckValuesInSummaryCard('Child 1 details', "Name", 'OBrienO\'BrienO\u2019BrienO\u2018BrienSmith-JonesSt. Clairevan den BergÁáÉéÍíÓóÚúÝýĆćĹĺŃńŔŕŚśŹźÀàÈèÌìÒòÙùẀẁỲỳÀàÈèÌìÒòÙùẀẁỲỳÃãÑñÕõĨĩŨũẼẽỸỹÄäËëÏïÖöÜüŸÿÇçĢģĶķĻļŅņŖŗŞşŢţÅåŮůĀāĒēĪīŌōŪūȲȳĂăĔĕĞğĬĭŎŏŬŭĊċĖėĠġİẊẋŻżĄąĘęĮįŲųŐőŰű' + " " + 'OBrienO\'BrienO\u2019BrienO\u2018BrienSmith-JonesSt. Clairevan den BergÁáÉéÍíÓóÚúÝýĆćĹĺŃńŔŕŚśŹźÀàÈèÌìÒòÙùẀẁỲỳÀàÈèÌìÒòÙùẀẁỲỳÃãÑñÕõĨĩŨũẼẽỸỹÄäËëÏïÖöÜüŸÿÇçĢģĶķĻļŅņŖŗŞşŢţÅåŮůĀāĒēĪīŌōŪūȲȳĂăĔĕĞğĬĭŎŏŬŭĊċĖėĠġİẊẋŻżĄąĘęĮįŲųŐőŰű');
+        cy.CheckValuesInSummaryCard('Parent or guardian details', 'Name', approvedChars);
+        cy.CheckValuesInSummaryCard('Child 1', 'Name', approvedChars);
     });
 });
