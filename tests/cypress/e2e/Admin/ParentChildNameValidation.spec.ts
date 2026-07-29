@@ -1,4 +1,4 @@
-import { getValidChildDob, getInvalidChildDob } from '../../support/dateHelpers';
+import { getValidChildDob } from '../../support/dateHelpers';
 describe('Test that approved accented characters are accepted in name input fields', () => {
     const parentLastName = Cypress.env('lastName');
     const parentEmailAddress = 'TimJones@Example.com';
