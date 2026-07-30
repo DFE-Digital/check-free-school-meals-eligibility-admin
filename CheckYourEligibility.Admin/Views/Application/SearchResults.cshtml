@@ -188,7 +188,7 @@
                                             </p>
                                             <input id="Keyword"
                                                    class="govuk-input @(ViewData.ModelState["Keyword"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                                   type="text" name="Keyword" value="@applicationSearch?.Keyword">
+                                                   type="text" name="Keyword" aria-label="Keyword search" value="@applicationSearch?.Keyword">
                                         </fieldset>
                                     </div>
                                     <div class="govuk-form-group">
