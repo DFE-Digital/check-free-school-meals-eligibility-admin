@@ -33,11 +33,12 @@ const expectedOrganisation: Record<string, string> = {
 };
 
 Cypress.Commands.add('checkSession', (userType: string) => {
-  return cy.login(userType);
+  cy.login(userType);
+  cy.visit((Cypress.config().baseUrl ?? '') + '/home');
 });
 
-Cypress.Commands.add('login', (userType) => {
-  return cy.session(
+Cypress.Commands.add('login', (userType: string) => {
+  cy.session(  
     ['role', userType],
     () => {
       if (userType === 'school') {
