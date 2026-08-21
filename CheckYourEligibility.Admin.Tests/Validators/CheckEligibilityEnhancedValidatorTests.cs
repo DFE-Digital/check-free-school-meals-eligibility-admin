@@ -34,7 +34,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 LastName = "Test",
                 FirstName = "Test",
                 DateOfBirth = "1985-04-23",
-                Sequence = 1,
+                Order = 1,
 
                 ChildFirstName = "Emily",
                 ChildLastName = "Test",
@@ -58,7 +58,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 LastName = "Test",
                 FirstName = "Test",
                 DateOfBirth = "1985-04-23",
-                Sequence = 1,
+                Order = 1,
 
                 ChildFirstName = "Emily",
                 ChildLastName = "Test",
@@ -86,7 +86,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 LastName = "Test",
                 FirstName = "Test",
                 DateOfBirth = "1985-04-23",
-                Sequence = 1,
+                Order = 1,
 
                 ChildFirstName = "Emily",
                 ChildLastName = "Test",
@@ -115,7 +115,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 FirstName = "Test",
                 LastName = "Test",
                 DateOfBirth = "1985-04-23",
-                Sequence = 1,
+                Order = 1,
 
                 ChildFirstName = "Emily",
                 ChildLastName = "Test",
@@ -142,7 +142,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 FirstName = "Test",
                 LastName = "Test",
                 DateOfBirth = "1985-04-23",
-                Sequence = 1,
+                Order = 1,
 
                 ChildFirstName = "Emily",
                 ChildLastName = "Test",
