@@ -130,7 +130,7 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
             .invoke("text")
             .should("match", /\.csv$/i);
           cy.get("td").eq(1).should("have.text", "10");
-          cy.get("td").eq(2).should("have.text", "Smith");
+          cy.get("td").eq(2).should("have.text", "SMITH");
           cy.get("td").eq(3).should("contain.text", today);
           cy.get("td").eq(4).invoke("text").should("not.be.empty");
           cy.get("td").eq(5).find("strong").should("have.class", "govuk-tag");
