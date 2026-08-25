@@ -20,6 +20,7 @@ namespace CheckYourEligibility.Admin.Tests.Usecases;
 public class ParseBulkCheckFileUseCaseTests
 {
     private Mock<IValidator<CheckEligibilityRequestDataBase>> _validatorMock = null!;
+    private Mock<IValidator<CheckEligibilityRequestData_Enhanced>> _enhancedValidatorMock = null!;
     private Mock<IServiceProvider> _serviceProviderMock = null!;
     private Mock<IConfiguration> _configurationMock = null!;
     private Mock<ICheckGateway> _checkGatewayMock = null!;
@@ -31,6 +32,7 @@ public class ParseBulkCheckFileUseCaseTests
     public void Setup()
     {
         _validatorMock = new();
+        _enhancedValidatorMock = new();
         _serviceProviderMock = new();
         _configurationMock = new();
         _checkGatewayMock = new();
@@ -40,6 +42,10 @@ public class ParseBulkCheckFileUseCaseTests
         _serviceProviderMock
             .Setup(sp => sp.GetService(typeof(IValidator<CheckEligibilityRequestDataBase>)))
             .Returns(_validatorMock.Object);
+
+        _serviceProviderMock
+            .Setup(sp => sp.GetService(typeof(IValidator<CheckEligibilityRequestData_Enhanced>)))
+            .Returns(_enhancedValidatorMock.Object);
 
         _checkGatewayMock
             .Setup(c => c.GetSchoolsAsync(It.IsAny<int>()))
@@ -124,6 +130,84 @@ Parent Last Name,Parent Date of Birth,Parent National Insurance number
         Assert.That(request.LastName, Is.EqualTo("Smith"));
         Assert.That(request.DateOfBirth, Is.EqualTo("1985-03-15"));
         Assert.That(request.NationalInsuranceNumber, Is.EqualTo("AB123456C"));
+    }
+
+    #endregion
+
+    #region Enhanced File Tests
+
+    [Test]
+    public async Task ExecuteEnhancedLA_WithEmail_TrimsAndMapsEmailAddress()
+    {
+        SetupValidatorValid();
+
+        var result = await ExecuteEnhanced(@"
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address
+John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,  Parent@Example.COM  ");
+
+        Assert.That(result.Errors, Is.Empty);
+        Assert.That(result.ValidRequests, Has.Count.EqualTo(1));
+        Assert.That(result.ValidRequests[0].EmailAddress, Is.EqualTo("Parent@Example.COM"));
+        Assert.That(result.ValidRequests[0].ChildSchoolUrn, Is.EqualTo("123456"));
+    }
+
+    [Test]
+    public async Task ExecuteEnhancedSchool_WithEmail_TrimsAndMapsEmailAddress()
+    {
+        SetupValidatorValid();
+
+        var result = await ExecuteEnhanced(@"
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address
+John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,  Parent@Example.COM  ",
+            isSchool: true);
+
+        Assert.That(result.Errors, Is.Empty);
+        Assert.That(result.ValidRequests, Has.Count.EqualTo(1));
+        Assert.That(result.ValidRequests[0].EmailAddress, Is.EqualTo("Parent@Example.COM"));
+        Assert.That(result.ValidRequests[0].ChildSchoolUrn, Is.EqualTo("123456"));
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task ExecuteEnhanced_WithBlankEmail_MapsEmailAddressToNull(bool isSchool)
+    {
+        SetupValidatorValid();
+
+        var csv = isSchool
+            ? @"
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address
+John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,"
+            : @"
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address
+John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,";
+
+        var result = await ExecuteEnhanced(csv, isSchool);
+
+        Assert.That(result.Errors, Is.Empty);
+        Assert.That(result.ValidRequests, Has.Count.EqualTo(1));
+        Assert.That(result.ValidRequests[0].EmailAddress, Is.Null);
+    }
+
+    [TestCase(false)]
+    [TestCase(true)]
+    public async Task ExecuteEnhanced_WithoutEmailHeader_ReturnsHeaderError(bool isSchool)
+    {
+        SetupValidatorValid();
+
+        var csv = isSchool
+            ? @"
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth
+John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10"
+            : @"
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn
+John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456";
+
+        var result = await ExecuteEnhanced(csv, isSchool);
+
+        Assert.That(
+            result.ErrorMessage,
+            Does.Contain("The column headers in the selected file must exactly match the template"));
+        Assert.That(result.ValidRequests, Is.Empty);
     }
 
     #endregion
@@ -296,6 +380,12 @@ Parent Last Name,Parent Date of Birth,Parent National Insurance number
                 It.IsAny<ValidationContext<CheckEligibilityRequestDataBase>>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
+
+        _enhancedValidatorMock
+            .Setup(v => v.ValidateAsync(
+                It.IsAny<ValidationContext<CheckEligibilityRequestData_Enhanced>>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
     }
 
     private void SetupValidatorFailures(params ValidationFailure[] failures)
@@ -319,6 +409,27 @@ Parent Last Name,Parent Date of Birth,Parent National Insurance number
 
     private Stream CreateStreamFromString(string content)
         => new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+    private async Task<BulkCheckCsvResult<CheckEligibilityRequestData_Enhanced>> ExecuteEnhanced(
+        string csv,
+        bool isSchool = false)
+    {
+        var stream = CreateStreamFromString(csv);
+
+        return await _useCase.Execute<CheckEligibilityRequestData_Enhanced>(
+            stream,
+            isSchool
+                ? CsvBulkCheckValidatorHelper.CreateEnhancedSchoolRequestItem
+                : CsvBulkCheckValidatorHelper.CreateEnhancedRequestItem,
+            isSchool
+                ? BulkCheckConstants.enhancedSchoolHeaders
+                : BulkCheckConstants.enhancedHeaders,
+            123456,
+            isSchool
+                ? OrganisationCategory.Establishment
+                : OrganisationCategory.LocalAuthority,
+            schoolUrn: isSchool ? "123456" : null);
+    }
 
     #endregion
 }

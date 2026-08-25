@@ -15,4 +15,5 @@ public static class ValidationMessages
     public const string ChildDOB = "Child Date of birth is required:- (yyyy-mm-dd)";
     public const string InvalidSchoolUrnForLA = "School URN must be for a school in your local authority area";
     public const string InvalidSchoolUrnForMAT = "School URN must be for a school in your MAT";
+    public const string InvalidEmailAddress = "Invalid email address";
 }
