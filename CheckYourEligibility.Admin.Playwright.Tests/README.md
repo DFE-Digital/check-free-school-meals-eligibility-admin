@@ -68,11 +68,14 @@ Keep both processes running.
 
 ## Run the test
 
-From the FSM Admin repository:
+The test is marked explicit because it requires local services and credentials. Run it directly from the FSM Admin repository:
 
 ```powershell
 dotnet test `
-    .\CheckYourEligibility.Admin.Playwright.Tests\CheckYourEligibility.Admin.Playwright.Tests.csproj
+    .\CheckYourEligibility.Admin.Playwright.Tests\CheckYourEligibility.Admin.Playwright.Tests.csproj `
+    --filter "FullyQualifiedName~ApplicationArchiveTests"
 ```
+
+Ordinary solution test runs will discover but skip this local-only POC.
 
 The test creates a uniquely identifiable synthetic application for The Telford Park School, archives it through the browser, verifies the confirmation page, and deletes it through the API.

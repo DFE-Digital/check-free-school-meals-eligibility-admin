@@ -7,6 +7,7 @@ using Microsoft.Playwright.NUnit;
 namespace CheckYourEligibility.Admin.Playwright.Tests;
 
 [TestFixture]
+[Explicit("Requires local Admin, API and DfE test credentials.")]
 [NonParallelizable]
 public class ApplicationArchiveTests : PageTest
 {
