@@ -9,7 +9,7 @@ public class CheckEligibilityRequestDataBase : IEligibilityServiceType
     public string? NationalInsuranceNumber { get; set; }
     public string LastName { get; set; } = string.Empty;
     public string DateOfBirth { get; set; } = string.Empty;
-    public int? Sequence { get; set; }
+    public int? Order { get; set; }
 }
 public class CheckEligibilityRequestBulkBase {
 
