@@ -55,7 +55,7 @@ describe('BasicLAHappyPath', () => {
         cy.url({ timeout: 80000 }).should('include', '/Check/Loader');
     
         cy.get('h2.govuk-notification-banner__title', { timeout: 80000 })
-            .should('contain.text', 'May not be eligible');
+            .should('contain.text', 'Not eligible');
     
         cy.contains(
             'You can contact the relevant school to ask them to collect it from the parent or guardian.',
