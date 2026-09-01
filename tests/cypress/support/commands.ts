@@ -21,132 +21,57 @@ function getCookiesPath(userType: string): string {
   }
 }
 
+const expectedOrganisation: Record<string, string> = {
+  school: 'The Telford Park School',
+  schoolCanReviewEvidenceDisabled: 'The Aldgate School',
+  matSchoolWithLaFlagDisabled: 'Altrincham Grammar School For Girls',
+  matSchoolWithMatFlagDisabled: 'The Telford Park School',
+  schoolNonMatFlagOn: 'The Astley Cooper School',
+  MAT: 'Thomas Telford Multi Academy Trust',
+  basic: 'Manchester City Council',
+  LA: 'Telford And Wrekin Council',
+};
+
 Cypress.Commands.add('checkSession', (userType: string) => {
-  const filePath = getCookiesPath(userType);
-  cy.task<Cypress.CookieData | null>('readFileMaybe', filePath).then((data) => {
-    if (data && data.cookies) {
-      if (data.cookies.length > 0) {
-        cy.loadCookies(userType);
-        cy.visit((Cypress.config().baseUrl ?? "") + "/home", { failOnStatusCode: false })
-
-        cy.get('body').then(($body) => {
-          let expectedText: string;
-          switch (userType) {
-            case 'school':
-              expectedText = 'The Telford Park School';
-              break;
-            case 'schoolCanReviewEvidenceDisabled':
-              expectedText = 'The Aldgate School';
-              break;
-            case 'matSchoolWithLaFlagDisabled':
-              expectedText = 'Altrincham Grammar School For Girls';
-              break;
-            case 'matSchoolWithMatFlagDisabled':
-              expectedText = 'The Telford Park School';
-              break;
-            case 'schoolNonMatFlagOn':
-              expectedText = 'The Astley Cooper School';
-              break;
-            case 'MAT':
-              expectedText = 'Thomas Telford Multi Academy Trust';
-              break;
-            case 'basic':
-              expectedText = 'Manchester City Council';
-              break;
-            default:
-              expectedText = 'Telford And Wrekin Council';
-              break;
-          }
-
-          if ($body.text().includes(expectedText)) {
-            cy.get('.govuk-caption-l').should('include.text', expectedText);
-          } else {
-            cy.log('Cookies were rejected by server (403 or redirect), forcing new login');
-            cy.clearCookies();
-            if (userType === 'school') {
-              cy.login('school');
-            } else if (userType === 'schoolCanReviewEvidenceDisabled') {
-              cy.login('schoolCanReviewEvidenceDisabled');
-            } else if (userType === 'matSchoolWithLaFlagDisabled') {
-              cy.login('matSchoolWithLaFlagDisabled');
-            } else if (userType === 'matSchoolWithMatFlagDisabled') {
-              cy.login('matSchoolWithMatFlagDisabled');
-            } else if (userType === 'schoolNonMatFlagOn') {
-              cy.login('schoolNonMatFlagOn');
-            } else if (userType === 'MAT') {
-              cy.login('MAT');
-            } else if (userType === 'basic') {
-              cy.login('basic');
-            } else {
-              cy.login('LA');
-            }
-          }
-        });
-      } else {
-        cy.log('No cookies found, forcing new login');
-        if (userType === 'school') {
-          cy.login('school');
-        } else if (userType === 'schoolCanReviewEvidenceDisabled') {
-          cy.login('schoolCanReviewEvidenceDisabled');
-        } else if (userType === 'matSchoolWithLaFlagDisabled') {
-          cy.login('matSchoolWithLaFlagDisabled');
-        } else if (userType === 'matSchoolWithMatFlagDisabled') {
-          cy.login('matSchoolWithMatFlagDisabled');
-        } else if (userType === 'schoolNonMatFlagOn') {
-          cy.login('schoolNonMatFlagOn');
-        } else if (userType === 'MAT') {
-          cy.login('MAT');
-        } else if (userType === 'basic') {
-          cy.login('basic');
-        } else {
-          cy.login('LA');
-        }
-      }
-    } else {
-      cy.log(`File not found or invalid data: ${filePath}`);
-      if (userType === 'school') {
-        cy.login('school');
-      } else if (userType === 'schoolCanReviewEvidenceDisabled') {
-        cy.login('schoolCanReviewEvidenceDisabled');
-      } else if (userType === 'matSchoolWithLaFlagDisabled') {
-        cy.login('matSchoolWithLaFlagDisabled');
-      } else if (userType === 'matSchoolWithMatFlagDisabled') {
-        cy.login('matSchoolWithMatFlagDisabled');
-      } else if (userType === 'schoolNonMatFlagOn') {
-        cy.login('schoolNonMatFlagOn');
-      } else if (userType === 'MAT') {
-        cy.login('MAT');
-      } else if (userType === 'basic') {
-        cy.login('basic');
-      } else {
-        cy.login('LA');
-      }
-    }
-  });
+  cy.login(userType);
+  cy.visit((Cypress.config().baseUrl ?? '') + '/home');
 });
 
-Cypress.Commands.add('login', (userType) => {
-  // Funnel login request to correct function and then store the cookies - Call 'checkSession' rather than use this directly
-  cy.session([userType], () => {
-    if (userType === 'school') {
-      cy.loginSchoolUser();
-    } else if (userType === 'schoolCanReviewEvidenceDisabled') {
-      cy.loginSchoolUserCanReviewEvidenceDisabled();
-    } else if (userType === 'matSchoolWithLaFlagDisabled') {
-      cy.loginMatSchoolWithLaFlagDisabled();
-    } else if (userType === 'matSchoolWithMatFlagDisabled') {
-      cy.loginMatSchoolWithMatFlagDisabled();
-    } else if (userType === 'schoolNonMatFlagOn') {
-      cy.loginSchoolNonMatFlagOn();
-    } else if (userType === 'MAT') {
-      cy.loginMultiAcademyTrustUser();
-    } else if (userType === "basic") {
-      cy.loginBasicUser();
-    } else {
-      cy.loginLocalAuthorityUser();
+Cypress.Commands.add('login', (userType: string) => {
+  cy.session(  
+    ['role', userType],
+    () => {
+      if (userType === 'school') {
+        cy.loginSchoolUser();
+      } else if (userType === 'schoolCanReviewEvidenceDisabled') {
+        cy.loginSchoolUserCanReviewEvidenceDisabled();
+      } else if (userType === 'matSchoolWithLaFlagDisabled') {
+        cy.loginMatSchoolWithLaFlagDisabled();
+      } else if (userType === 'matSchoolWithMatFlagDisabled') {
+        cy.loginMatSchoolWithMatFlagDisabled();
+      } else if (userType === 'schoolNonMatFlagOn') {
+        cy.loginSchoolNonMatFlagOn();
+      } else if (userType === 'MAT') {
+        cy.loginMultiAcademyTrustUser();
+      } else if (userType === 'basic') {
+        cy.loginBasicUser();
+      } else {
+        cy.loginLocalAuthorityUser();
+      }
+    },
+    {
+      validate() {
+        cy.visit((Cypress.config().baseUrl ?? '') + '/home', {
+          failOnStatusCode: false,
+        });
+        cy.get('.govuk-caption-l').should(
+          'include.text',
+          expectedOrganisation[userType]
+        );
+      },
+      cacheAcrossSpecs: true,
     }
-    cy.storeCookies(userType);
-  });
+  );
 });
 
 Cypress.Commands.add('loginSchoolNonMatFlagOn', () => {
