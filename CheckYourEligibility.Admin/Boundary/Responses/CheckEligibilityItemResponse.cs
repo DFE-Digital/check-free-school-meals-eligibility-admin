@@ -22,7 +22,7 @@ public class CheckEligibilityItem
     public string? ChildLastName { get; set; }
     public string? ChildDateOfBirth { get; set; }
     public string? ChildSchoolUrn { get; set; }
-
+    public int? Order { get; set; }
 }
 
 public class CheckEligibilityItemResponse

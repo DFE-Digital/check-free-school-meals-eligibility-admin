@@ -127,7 +127,7 @@ public class BulkUploadTests : TestBase
                     LastName = "Smith",
                     DateOfBirth = "1985-03-15",
                     NationalInsuranceNumber = "AB123456C",
-                    Sequence = 1
+                    Order = 1
                 }
             }
         };
@@ -214,7 +214,7 @@ public class BulkUploadTests : TestBase
                     LastName = "Smith",
                     DateOfBirth = "1985-03-15",
                     NationalInsuranceNumber = "AB123456C",
-                    Sequence = 1
+                    Order = 1
                 }
             }
         };

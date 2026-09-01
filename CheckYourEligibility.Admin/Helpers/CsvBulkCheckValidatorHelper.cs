@@ -126,7 +126,7 @@ namespace CheckYourEligibility.Admin.Helpers
                 LastName = csv.GetField(ParentLastNameHeader)?.Trim() ?? string.Empty,
                 DateOfBirth = ParseDate(dob),
                 NationalInsuranceNumber = csv.GetField(ParentNINOHeader)?.Trim().ToUpper(),
-                Sequence = sequence
+                Order = sequence
             };
         }
 
@@ -143,7 +143,7 @@ namespace CheckYourEligibility.Admin.Helpers
                 ChildDateOfBirth = ParseDate(csv.GetField(ChildDateOfBirthHeader)),
                 ChildSchoolUrn = csv.GetField(ChildSchoolUrnHeader)?.Trim() ?? string.Empty,
                 EmailAddress = GetOptionalEmailAddress(csv),
-                Sequence = sequence
+                Order = sequence
             };
         }
 
@@ -160,7 +160,7 @@ namespace CheckYourEligibility.Admin.Helpers
                 ChildDateOfBirth = ParseDate(csv.GetField(ChildDateOfBirthHeader)),
                 ChildSchoolUrn = schoolUrn,
                 EmailAddress = GetOptionalEmailAddress(csv),
-                Sequence = sequence
+                Order = sequence
             };
         }
         /// <summary>
