@@ -116,7 +116,7 @@ it("will run a successful batch check", () => {
       year: "numeric",
     })
     .replace(",", "")
-    .replace("Sep", "Sept");
+    .replace("Sept", "Sep");
 
   cy.contains("table tbody tr", "BASIC-bulkchecktemplate_complete.csv")
     .should("exist")
