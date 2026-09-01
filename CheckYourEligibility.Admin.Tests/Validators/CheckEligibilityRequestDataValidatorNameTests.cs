@@ -98,8 +98,7 @@ public class CheckEligibilityRequestDataValidatorNameTests
         {
             LastName = "Smith",
             DateOfBirth = "1985-04-23",
-            NationalInsuranceNumber = "AA123456C",
-            Sequence = 1
+            NationalInsuranceNumber = "AA123456C"
         };
     }
 
@@ -114,8 +113,7 @@ public class CheckEligibilityRequestDataValidatorNameTests
             ChildFirstName = "Emily",
             ChildLastName = "Smith",
             ChildDateOfBirth = "2015-09-10",
-            ChildSchoolUrn = "123456",
-            Sequence = 1
+            ChildSchoolUrn = "123456"
         };
     }
 
