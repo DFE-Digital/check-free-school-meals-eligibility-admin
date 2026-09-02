@@ -121,7 +121,8 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
           month: "short",
           year: "numeric",
         })
-        .replace(",", "");
+        .replace(",", "")
+        .replace("Sept", "Sep");
 
       cy.contains("table tbody tr", "valid.csv")
         .first()
