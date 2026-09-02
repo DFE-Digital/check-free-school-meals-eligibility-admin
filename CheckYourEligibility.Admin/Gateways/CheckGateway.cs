@@ -227,7 +227,9 @@ public class CheckGateway : BaseGateway, ICheckGateway
             }
             else
             {
-                return response.Data.Select(x => _mapper.Map<TBulkExport>(x));
+                return response.Data
+                    .OrderBy(x => x.Order)
+                    .Select(x => _mapper.Map<TBulkExport>(x));
             }
         }
         catch (Exception ex)
