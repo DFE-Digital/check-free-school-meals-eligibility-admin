@@ -591,6 +591,45 @@ public class CheckControllerTests : TestBase
     }
 
     [Test]
+    public async Task Check_Answers_Post_Should_Send_Evidence_Notification_For_Applications_Requiring_Review()
+    {
+        // Arrange
+        var request = _fixture.Create<FsmApplication>();
+        var responses = new List<ApplicationSaveItemResponse>
+        {
+            new ApplicationSaveItemResponse
+            {
+                Data = new ApplicationResponse
+                {
+                    Status = ApplicationStatus.SentForReview,
+                    ParentEmail = "test@example.com",
+                    Reference = "REF12345"
+                }
+            }
+        };
+
+        _submitApplicationUseCaseMock
+            .Setup(x => x.Execute(request, null, It.IsAny<string>()))
+            .ReturnsAsync(responses);
+
+        // Act
+        var result = await _sut.Check_Answers_Post(request);
+
+        // Assert
+        result.Should().BeOfType<RedirectToActionResult>();
+        var redirectResult = result as RedirectToActionResult;
+        redirectResult.ActionName.Should().Be("AppealsRegistered");
+
+        _sendNotificationUseCaseMock.Verify(x => x.Execute(It.Is<NotificationRequest>(req =>
+            req.Data.Email == "test@example.com" &&
+            req.Data.Type == NotificationType.ParentApplicationEvidenceSent &&
+            req.Data.Personalisation != null &&
+            req.Data.Personalisation.ContainsKey("reference") &&
+            req.Data.Personalisation.ContainsKey("parentFirstName"))),
+        Times.Once);
+    }
+
+    [Test]
     public async Task Check_Answers_Post_Should_Continue_Even_When_Notification_Fails()
     {
         // Arrange

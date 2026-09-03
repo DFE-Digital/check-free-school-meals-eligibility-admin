@@ -737,6 +737,7 @@ public class ApplicationController : BaseController
 
         var eligibilityTier = Enum.Parse<EligibilityTier>(tier);
         await _adminGateway.PatchApplicationStatus(id, ApplicationStatus.ReviewedEntitled, eligibilityTier);
+        await SendApplicationDecisionNotification(id, NotificationType.ParentApplicationSuccessful);
 
         return RedirectToAction("ApplicationApproved", new { id });
     }
@@ -748,8 +749,43 @@ public class ApplicationController : BaseController
         if (checkAccess != null) return checkAccess;
 
         await _adminGateway.PatchApplicationStatus(id, ApplicationStatus.ReviewedNotEntitled);
+        await SendApplicationDecisionNotification(id, NotificationType.ParentApplicationUnsuccessful);
 
         return RedirectToAction("ApplicationDeclined", new { id });
+    }
+
+    private async Task SendApplicationDecisionNotification(string id, NotificationType notificationType)
+    {
+        var application = await _adminGateway.GetApplication(id);
+        if (application == null || application.Data == null)
+        {
+            _logger.LogError($"Application not found for notification ID: {id.Replace(Environment.NewLine, "")}");
+            return;
+        }
+
+        try
+        {
+            var notificationRequest = new NotificationRequest
+            {
+                Data = new NotificationRequestData
+                {
+                    Email = application.Data.ParentEmail,
+                    Type = notificationType,
+                    Personalisation = new Dictionary<string, object>
+                    {
+                        { "reference", application.Data.Reference },
+                        { "parentFirstName", $"{application.Data.ParentFirstName}" }
+                    }
+                }
+            };
+
+            await _sendNotificationUseCase.Execute(notificationRequest);
+            _logger.LogInformation("Notification sent for application {Reference}", application.Data.Reference);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send notification for application {Reference}", application.Data.Reference);
+        }
     }
 
     public async Task<IActionResult> ApplicationArchiveSend(string id)

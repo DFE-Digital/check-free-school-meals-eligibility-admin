@@ -412,7 +412,9 @@ public class CheckController : BaseController
                     Data = new NotificationRequestData
                     {
                         Email = response.Data.ParentEmail,
-                        Type = NotificationType.ParentApplicationSuccessful,
+                        Type = response.Data.Status == ApplicationStatus.Entitled
+                            ? NotificationType.ParentApplicationSuccessful
+                            : NotificationType.ParentApplicationEvidenceSent,
                         Personalisation = new Dictionary<string, object>
                         {
                         { "reference", $"{response.Data.Reference}" },

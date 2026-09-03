@@ -1074,10 +1074,18 @@ public class ApplicationControllerTests : TestBase
     {
         //Arrange
         var id = "f41e59a2-9847-4084-9e17-0511e77571fb";
+        var email = "parent@example.com";
+        var reference = "ABC123";
+        var parentFirstName = "Test";
         var response = _fixture.Create<Task<ApplicationItemResponse>>();
         response.Result.Data.Establishment.Id = 123456;
         response.Result.Data.Id = id;
+        response.Result.Data.ParentEmail = email;
+        response.Result.Data.Reference = reference;
+        response.Result.Data.ParentFirstName = parentFirstName;
         _adminGatewayMock.Setup(x => x.GetApplication(It.IsAny<string>())).Returns(response);
+        _sendNotificationUseCaseMock.Setup(x => x.Execute(It.IsAny<NotificationRequest>()))
+            .ReturnsAsync(new NotificationItemResponse());
         //act
         var result = await _sut.ApplicationApproveSend(id, "expanded");
 
@@ -1085,6 +1093,14 @@ public class ApplicationControllerTests : TestBase
         result.Should().BeOfType<RedirectToActionResult>();
         var redirect = result as RedirectToActionResult;
         redirect.ActionName.Should().BeEquivalentTo("ApplicationApproved");
+        _sendNotificationUseCaseMock.Verify(x => x.Execute(It.Is<NotificationRequest>(req =>
+            req.Data.Email == email &&
+            req.Data.Type == NotificationType.ParentApplicationSuccessful &&
+            req.Data.Personalisation.ContainsKey("reference") &&
+            req.Data.Personalisation["reference"].ToString() == reference &&
+            req.Data.Personalisation.ContainsKey("parentFirstName") &&
+            req.Data.Personalisation["parentFirstName"].ToString() == parentFirstName
+        )), Times.Once);
     }
 
     [Test]
@@ -1110,10 +1126,18 @@ public class ApplicationControllerTests : TestBase
     {
         //Arrange
         var id = "f41e59a2-9847-4084-9e17-0511e77571fb";
+        var email = "parent@example.com";
+        var reference = "ABC123";
+        var parentFirstName = "Test";
         var response = _fixture.Create<Task<ApplicationItemResponse>>();
         response.Result.Data.Establishment.Id = 123456;
         response.Result.Data.Id = id;
+        response.Result.Data.ParentEmail = email;
+        response.Result.Data.Reference = reference;
+        response.Result.Data.ParentFirstName = parentFirstName;
         _adminGatewayMock.Setup(x => x.GetApplication(It.IsAny<string>())).Returns(response);
+        _sendNotificationUseCaseMock.Setup(x => x.Execute(It.IsAny<NotificationRequest>()))
+            .ReturnsAsync(new NotificationItemResponse());
         //act
         var result = await _sut.ApplicationDeclineSend(id);
 
@@ -1121,6 +1145,14 @@ public class ApplicationControllerTests : TestBase
         result.Should().BeOfType<RedirectToActionResult>();
         var redirect = result as RedirectToActionResult;
         redirect.ActionName.Should().BeEquivalentTo("ApplicationDeclined");
+        _sendNotificationUseCaseMock.Verify(x => x.Execute(It.Is<NotificationRequest>(req =>
+            req.Data.Email == email &&
+            req.Data.Type == NotificationType.ParentApplicationUnsuccessful &&
+            req.Data.Personalisation.ContainsKey("reference") &&
+            req.Data.Personalisation["reference"].ToString() == reference &&
+            req.Data.Personalisation.ContainsKey("parentFirstName") &&
+            req.Data.Personalisation["parentFirstName"].ToString() == parentFirstName
+        )), Times.Once);
     }
 
     [Test]
