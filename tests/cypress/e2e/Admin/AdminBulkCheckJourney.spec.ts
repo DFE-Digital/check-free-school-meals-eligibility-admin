@@ -26,25 +26,27 @@ const createBulkCsv = (rowCount: number, includeSchoolURN: boolean): string => {
     "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth";
 
   const header = includeSchoolURN
-    ? `${baseHeader},Child School Urn`
-    : baseHeader;
+    ? `${baseHeader},Child School Urn,Parent Email Address`
+    : `${baseHeader},Parent Email Address`;
 
   const rows = Array.from({ length: rowCount }, (_, index) => {
     const day = ((index % 28) + 1).toString().padStart(2, "0");
 
     const baseRow = [
-      `John`,
-      `Smith`,
+      "John",
+      "Smith",
       `${day}/01/2000`,
-      `AB123456C`,
-      `Jay`,
-      `Smith`,
+      "AB123456C",
+      "Jay",
+      "Smith",
       `${day}/01/2010`,
     ];
 
     if (includeSchoolURN) {
-      baseRow.push("150716"); //Telford Park School URN
+      baseRow.push("150716"); // Telford Park School URN
     }
+
+    baseRow.push(`parent${index}@example.com`);
 
     return baseRow.join(",");
   });

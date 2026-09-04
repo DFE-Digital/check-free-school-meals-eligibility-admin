@@ -156,6 +156,55 @@ namespace CheckYourEligibility.Admin.Tests.Validators
 
             Assert.That(result.Errors, Is.Empty);
         }
+
+        [TestCase("parent@example.com")]
+        [TestCase("name+tag@sub.example.co.uk")]
+        public async Task Validate_ValidEmailAddress_Passes(string emailAddress)
+        {
+            var model = CreateValidModel(emailAddress);
+            var context = CreateContext(model);
+
+            var result = await _validator.ValidateAsync(context);
+
+            Assert.That(
+                result.Errors.Any(e =>
+                    e.PropertyName.EndsWith(nameof(CheckEligibilityRequestData_Enhanced.EmailAddress))),
+                Is.False);
+        }
+
+        [Test]
+        public async Task Validate_NullEmailAddress_Passes()
+        {
+            var model = CreateValidModel(null);
+            var context = CreateContext(model);
+
+            var result = await _validator.ValidateAsync(context);
+
+            Assert.That(
+                result.Errors.Any(e =>
+                    e.PropertyName.EndsWith(nameof(CheckEligibilityRequestData_Enhanced.EmailAddress))),
+                Is.False);
+        }
+
+        [TestCase("parent.example.com")]
+        [TestCase("@example.com")]
+        [TestCase("parent@")]
+        [TestCase("parent@@example.com")]
+        [TestCase("parent@example")]
+        public async Task Validate_InvalidEmailAddress_ReturnsExpectedMessage(string emailAddress)
+        {
+            var model = CreateValidModel(emailAddress);
+            var context = CreateContext(model);
+
+            var result = await _validator.ValidateAsync(context);
+
+            Assert.That(
+                result.Errors.Any(e =>
+                    e.PropertyName.EndsWith(nameof(CheckEligibilityRequestData_Enhanced.EmailAddress)) &&
+                    e.ErrorMessage == ValidationMessages.InvalidEmailAddress),
+                Is.True);
+        }
+
         #region Helpers
         private ValidationContext<CheckEligibilityRequestDataBase> CreateContext(
             CheckEligibilityRequestData_Enhanced model,
@@ -171,6 +220,23 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 context.RootContextData["organisationType"] = orgType;
 
             return context;
+        }
+
+        private static CheckEligibilityRequestData_Enhanced CreateValidModel(string? emailAddress)
+        {
+            return new CheckEligibilityRequestData_Enhanced
+            {
+                NationalInsuranceNumber = "AA123456C",
+                FirstName = "Test",
+                LastName = "Test",
+                DateOfBirth = "1985-04-23",
+                Order = 1,
+                ChildFirstName = "Emily",
+                ChildLastName = "Test",
+                ChildDateOfBirth = "2015-09-10",
+                ChildSchoolUrn = "123456",
+                EmailAddress = emailAddress
+            };
         }
         #endregion
     }
