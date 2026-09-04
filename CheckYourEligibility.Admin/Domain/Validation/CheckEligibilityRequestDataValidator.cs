@@ -20,10 +20,11 @@ public class CheckEligibilityRequestDataValidator : AbstractValidator<IEligibili
                 .ChildRules(baseValidator =>
                 {
                     baseValidator.RuleFor(x => x.LastName)
+                        .Cascade(CascadeMode.Stop)
                         .NotEmpty()
                         .WithMessage(ValidationMessages.LastName)
                         .Must(DataValidation.BeAValidName)
-                        .WithMessage(ValidationMessages.LastName);
+                        .WithMessage(ValidationMessages.InvalidLastName);
 
                     // DOB (required + valid)
                     baseValidator.RuleFor(x => x.DateOfBirth)
@@ -51,24 +52,27 @@ public class CheckEligibilityRequestDataValidator : AbstractValidator<IEligibili
                 {
                     // First Name (required + valid)
                     enhanced.RuleFor(x => x.FirstName)
+                        .Cascade(CascadeMode.Stop)
                         .NotEmpty()
                         .WithMessage(ValidationMessages.FirstName)
                         .Must(DataValidation.BeAValidName)
-                        .WithMessage(ValidationMessages.FirstName);
+                        .WithMessage(ValidationMessages.InvalidFirstName);
 
                     // Child First Name (required + valid)
                     enhanced.RuleFor(x => x.ChildFirstName)
+                        .Cascade(CascadeMode.Stop)
                         .NotEmpty()
                         .WithMessage(ValidationMessages.ChildFirstName)
                         .Must(DataValidation.BeAValidName)
-                        .WithMessage(ValidationMessages.ChildFirstName);
+                        .WithMessage(ValidationMessages.InvalidChildFirstName);
 
                     // Child Last Name (required + valid)
                     enhanced.RuleFor(x => x.ChildLastName)
+                        .Cascade(CascadeMode.Stop)
                         .NotEmpty()
                         .WithMessage(ValidationMessages.ChildLastName)
                         .Must(DataValidation.BeAValidName)
-                        .WithMessage(ValidationMessages.ChildLastName);
+                        .WithMessage(ValidationMessages.InvalidChildLastName);
 
                     // Child DOB (required + valid)
                     enhanced.RuleFor(x => x.ChildDateOfBirth)

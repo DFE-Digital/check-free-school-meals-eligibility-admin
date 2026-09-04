@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using CheckYourEligibility.Admin.Attributes;
 
 namespace CheckYourEligibility.API.Domain.Validation;
 
@@ -24,14 +25,14 @@ internal static class DataValidation
         return res.Success;
     }
 
-    internal static bool BeAValidName(string value)
+    internal static bool BeAValidName(string? value)
     {
-        var regexString =
-            @"^[a-zA-Z ,.''\u2018\u2019-]+$";
-        var rg = new Regex(regexString);
-        var res = rg.Match(value);
-        return res.Success;
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        return Regex.IsMatch(value, NameAttribute.NameValidationRegex);
     }
+
     internal static bool BeAValidDate(string value)
     {
         var regexString =
