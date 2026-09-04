@@ -40,7 +40,7 @@ public class CheckEligibilityRequestDataValidatorNameTests
 
         Assert.That(
             result.Errors.Select(x => x.ErrorMessage),
-            Is.EqualTo(new[] { ValidationMessages.InvalidLastName }));
+            Is.EqualTo(new[] { "Enter a parent last name with valid characters" }));
     }
 
     [Test]
