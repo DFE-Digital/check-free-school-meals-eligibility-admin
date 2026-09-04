@@ -1,5 +1,6 @@
 @using CheckYourEligibility.Admin.Domain.DfeSignIn
 @using CheckYourEligibility.Admin.Domain.Enums
+@model TieredOutcome
 @{
     ViewData["Title"] = "May not be eligible";
     var orgType = TempData["organisationType"] as OrganisationCategory?;
@@ -55,7 +56,17 @@
                     You'll be told how to send the local authority supporting evidence after you've made
                     an appeal.
                 </p>
-                @Html.ActionLink("Appeal now", "Enter_Child_Details", "Check", null, new { @class = "govuk-button" })
+                <form asp-controller="Check" asp-action="Start_Child_Details" method="post" novalidate>
+                    <input type="hidden" asp-for="ParentGuardian.FirstName" />
+                    <input type="hidden" asp-for="ParentGuardian.LastName" />
+                    <input type="hidden" asp-for="ParentGuardian.Day" />
+                    <input type="hidden" asp-for="ParentGuardian.Month" />
+                    <input type="hidden" asp-for="ParentGuardian.Year" />
+                    <input type="hidden" asp-for="ParentGuardian.EmailAddress" />
+                    <input type="hidden" asp-for="ParentGuardian.NationalInsuranceNumber" />
+                    <input type="hidden" asp-for="Status" />
+                    <button type="submit" class="govuk-button" data-module="govuk-button">Appeal now</button>
+                </form>
             }
             else
             {
@@ -86,7 +97,17 @@
 
                 if (TempData["organisationRole"].Equals(OrgRole.enhanced))
                 {
-                    @Html.ActionLink("Continue to add child details", "Enter_Child_Details", "Check", null, new { @class = "govuk-button" })
+                    <form asp-controller="Check" asp-action="Start_Child_Details" method="post" novalidate>
+                        <input type="hidden" asp-for="ParentGuardian.FirstName" />
+                        <input type="hidden" asp-for="ParentGuardian.LastName" />
+                        <input type="hidden" asp-for="ParentGuardian.Day" />
+                        <input type="hidden" asp-for="ParentGuardian.Month" />
+                        <input type="hidden" asp-for="ParentGuardian.Year" />
+                        <input type="hidden" asp-for="ParentGuardian.EmailAddress" />
+                        <input type="hidden" asp-for="ParentGuardian.NationalInsuranceNumber" />
+                        <input type="hidden" asp-for="Status" />
+                        <button type="submit" class="govuk-button" data-module="govuk-button">Continue to add child details</button>
+                    </form>
                 }
             }
 

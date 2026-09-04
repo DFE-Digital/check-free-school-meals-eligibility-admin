@@ -4,21 +4,23 @@ namespace CheckYourEligibility.Admin.UseCases;
 
 public interface IProcessChildDetailsUseCase
 {
-    Task<FsmApplication> Execute(Children children, ISession session);
+    Task<FsmApplication> Execute(Children children);
 }
 
 public class ProcessChildDetailsUseCase : IProcessChildDetailsUseCase
 {
-    public Task<FsmApplication> Execute(Children children, ISession session)
+    public Task<FsmApplication> Execute(Children children)
     {
         var fsmApplication = new FsmApplication
         {
-            ParentFirstName = session.GetString("ParentFirstName"),
-            ParentLastName = session.GetString("ParentLastName"),
-            ParentDateOfBirth = session.GetString("ParentDOB"),
-            ParentNass = session.GetString("ParentNASS") ?? null,
-            ParentNino = session.GetString("ParentNINO") ?? null,
-            ParentEmail = session.GetString("ParentEmail"),
+            ParentFirstName = children.ParentFirstName,
+            ParentLastName = children.ParentLastName,
+            ParentDateOfBirth = children.ParentDateOfBirth,
+            ParentNass = children.ParentNass,
+            ParentNino = children.ParentNino,
+            ParentEmail = children.ParentEmail,
+            Tier = children.Tier,
+            EligibilityEndDate = children.EligibilityEndDate,
             Children = children
         };
 

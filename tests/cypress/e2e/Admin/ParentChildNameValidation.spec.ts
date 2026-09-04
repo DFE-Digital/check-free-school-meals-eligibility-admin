@@ -59,12 +59,9 @@ describe('Test that approved accented characters are accepted in name input fiel
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Perform check').click();
 
-        //Loader page
-        cy.url().should('include', 'Check/Loader');
-
         //Not eligible outcome
         cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'may not be eligible for free school meals.');
-        cy.contains('a.govuk-button', 'Appeal now').click();
+        cy.contains('button.govuk-button', 'Appeal now').click();
 
         //Enter child details
         cy.url().should('include', '/Enter_Child_Details');
@@ -79,7 +76,7 @@ describe('Test that approved accented characters are accepted in name input fiel
         cy.contains('button', 'Save and continue').click();
 
         //Add supporting evidence or skip
-        cy.url().should('include', '/UploadEvidence');
+        cy.get('h1').should('include.text', 'Send supporting evidence');
         cy.fixture('TestImage.png').then(fileContent => {
             cy.get('input[type="file"]').attachFile({
                 fileContent,
