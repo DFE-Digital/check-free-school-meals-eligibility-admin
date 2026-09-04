@@ -1,9 +1,26 @@
 function checkStatus() {
-    let url = document.getElementById("content").getAttribute("data-url");
-    fetch(url)
+    let content = document.getElementById("content");
+    let url = content.getAttribute("data-url");
+
+    // Post back the check reference/parent details embedded in this page (rather than relying on
+    // TempData/Session, which are shared across all tabs of the browser). See ELIG-3594.
+    let responseJson = document.getElementById("loader-response")?.value ?? "";
+    let parentGuardianJson = document.getElementById("loader-parent")?.value ?? "";
+    let body = new URLSearchParams();
+    body.append("responseJson", responseJson);
+    body.append("parentGuardianJson", parentGuardianJson);
+
+    fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString()
+    })
         .then(response => {
-            // If the server redirected to the success page, navigate there
-            if (response.url && response.url !== window.location.href) {
+            // Only follow this if the server itself redirected the poll somewhere else. Normalise
+            // "url" (relative) to an absolute URL first - response.url is always absolute, so
+            // comparing them directly would always mismatch and force a reload on every poll.
+            var absoluteUrl = new URL(url, window.location.href).href;
+            if (response.url && response.url !== absoluteUrl) {
                 clearInterval(loaderTimer);
                 window.location.href = response.url;
                 return;

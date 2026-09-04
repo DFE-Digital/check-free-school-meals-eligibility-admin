@@ -74,7 +74,7 @@
         </div>
     }
 
-    <form asp-controller="Check" method="post" enctype="multipart/form-data" novalidate="">
+    <form asp-controller="Check" asp-action="UploadEvidence" method="post" enctype="multipart/form-data" novalidate="">
         <!-- Parent Details -->
         <input type="hidden" asp-for="ParentFirstName" value="@safeModel.ParentFirstName" />
         <input type="hidden" asp-for="ParentLastName" value="@safeModel.ParentLastName" />
@@ -82,6 +82,20 @@
         <input type="hidden" asp-for="ParentNino" value="@safeModel.ParentNino" />
         <input type="hidden" asp-for="ParentDateOfBirth" value="@safeModel.ParentDateOfBirth" />
         <input type="hidden" asp-for="ParentEmail" value="@safeModel.ParentEmail" />
+        <input type="hidden" asp-for="Tier" value="@safeModel.Tier" />
+        <input type="hidden" asp-for="EligibilityEndDate" value="@safeModel.EligibilityEndDate" />
+
+        <!-- Also carry the nested Children.* copy of these same answers - "Edit details" on Check_Answers
+             reads it, and it would otherwise be wiped to null after a trip through this page. See ELIG-3594. -->
+        <input type="hidden" asp-for="Children.ParentFirstName" value="@safeModel.ParentFirstName" />
+        <input type="hidden" asp-for="Children.ParentLastName" value="@safeModel.ParentLastName" />
+        <input type="hidden" asp-for="Children.ParentNass" value="@safeModel.ParentNass" />
+        <input type="hidden" asp-for="Children.ParentNino" value="@safeModel.ParentNino" />
+        <input type="hidden" asp-for="Children.ParentDateOfBirth" value="@safeModel.ParentDateOfBirth" />
+        <input type="hidden" asp-for="Children.ParentEmail" value="@safeModel.ParentEmail" />
+        <input type="hidden" asp-for="Children.Status" value="@safeModel.Children?.Status" />
+        <input type="hidden" asp-for="Children.Tier" value="@safeModel.Tier" />
+        <input type="hidden" asp-for="Children.EligibilityEndDate" value="@safeModel.EligibilityEndDate" />
 
         <!-- Child details -->
         @if (safeModel.Children?.ChildList != null)

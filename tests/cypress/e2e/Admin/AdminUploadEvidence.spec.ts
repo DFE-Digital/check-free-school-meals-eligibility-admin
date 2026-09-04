@@ -30,9 +30,8 @@ describe('Full journey of creating an application through school portal through 
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Perform check').click();
 
-        cy.url().should('include', 'Check/Loader');
         cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
-        cy.contains('a.govuk-button', 'Appeal now').click();
+        cy.contains('button.govuk-button', 'Appeal now').click();
 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
@@ -47,7 +46,6 @@ describe('Full journey of creating an application through school portal through 
         cy.contains('button', 'Save and continue').click();
 
         //Example of how to add a single file
-        // cy.url().should('include', '/UploadEvidence');
         // cy.fixture('TestImage.png').then(fileContent => {
         //     cy.get('input[type="file"]').attachFile({
         //         fileContent,
@@ -57,7 +55,7 @@ describe('Full journey of creating an application through school portal through 
         // });
 
         // Load files from fixtures folder
-        cy.url().should('include', '/UploadEvidence');
+        cy.get('h1').should('include.text', 'Send supporting evidence');
         cy.fixture('TestImage.png').then(fileContent1 => {
             cy.fixture('TestImage2.png').then(fileContent2 => {
                 cy.get('input[type="file"]').attachFile([
@@ -98,9 +96,8 @@ describe('Full journey of creating an application through school portal through 
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Perform check').click();
 
-        cy.url().should('include', 'Check/Loader');
         cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
-        cy.contains('a.govuk-button', 'Appeal now').click();
+        cy.contains('button.govuk-button', 'Appeal now').click();
 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
@@ -142,9 +139,8 @@ describe('Full journey of creating an application through school portal through 
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Perform check').click();
 
-        cy.url().should('include', 'Check/Loader');
         cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
-        cy.contains('a.govuk-button', 'Appeal now').click();
+        cy.contains('button.govuk-button', 'Appeal now').click();
 
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
@@ -159,7 +155,7 @@ describe('Full journey of creating an application through school portal through 
         cy.contains('button', 'Save and continue').click();
 
         // Load files from fixtures folder
-        cy.url().should('include', '/UploadEvidence');
+        cy.get('h1').should('include.text', 'Send supporting evidence');
         cy.fixture('TestFile1.txt').then(fileContent1 => {
             cy.fixture('TestFile2.txt').then(fileContent2 => {
                 cy.get('input[type="file"]').attachFile([

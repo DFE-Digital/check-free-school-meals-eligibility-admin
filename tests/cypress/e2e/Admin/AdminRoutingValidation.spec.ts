@@ -22,8 +22,7 @@ describe('Eligible and Not Eligible responses in LA and School portal will route
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type(NINE);
         cy.contains('button', 'Perform check').click();
-        cy.url().should('include', 'Check/Loader');
-        cy.get('a.govuk-button', { timeout: 80000 }).should('contain.text', "Continue to add child details");
+        cy.get('button.govuk-button', { timeout: 80000 }).should('contain.text', "Continue to add child details");
 
         cy.visit((Cypress.config().baseUrl ?? "") + "/home");
         cy.get('.govuk-caption-l').should('include.text', 'The Telford Park School');
@@ -40,8 +39,7 @@ describe('Eligible and Not Eligible responses in LA and School portal will route
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type(NINNE);
         cy.contains('button', 'Perform check').click();
-        cy.url().should('include', 'Check/Loader');
-        cy.get('a.govuk-button', { timeout: 80000 }).should('contain.text', "Appeal now");
+        cy.get('button.govuk-button', { timeout: 80000 }).should('contain.text', "Appeal now");
     });
 
     it('Will route to the LA varient of outcome pages when logged in as LA', () => {
@@ -62,8 +60,7 @@ describe('Eligible and Not Eligible responses in LA and School portal will route
         cy.get('#NationalInsuranceNumber').type(NINE);
         cy.contains('button', 'Perform check').click();
 
-        cy.url().should('include', 'Check/Loader');
-        cy.get('a.govuk-button', { timeout: 80000 }).should('contain.text', "Continue to add child details");
+        cy.get('button.govuk-button', { timeout: 80000 }).should('contain.text', "Continue to add child details");
 
         cy.visit((Cypress.config().baseUrl ?? "") + "/home");
         cy.wait(1);
@@ -79,7 +76,6 @@ describe('Eligible and Not Eligible responses in LA and School portal will route
         cy.get('#NationalInsuranceNumber').type(NINNE);
         cy.contains('button', 'Perform check').click();
 
-        cy.url().should('include', 'Check/Loader');
         cy.get('h1.govuk-heading-l', { timeout: 80000 }).should('contain.text', "Review supporting evidence");
     });
 });
