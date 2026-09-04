@@ -129,7 +129,40 @@
                         </h2>
                         <ul class="govuk-summary-card__actions">
                             <li class="govuk-summary-card__action">
-                                @Html.ActionLink("Edit details", "ChangeChildDetails", new { child = i })
+                                <form asp-controller="Check" asp-action="ChangeChildDetails" method="post" novalidate style="display:inline">
+                                    <!-- Posts the currently-displayed answers back (rather than re-reading TempData,
+                                         which is shared across all tabs of the browser). See ELIG-3594. -->
+                                    <input type="hidden" asp-for="Children.ParentFirstName" />
+                                    <input type="hidden" asp-for="Children.ParentLastName" />
+                                    <input type="hidden" asp-for="Children.ParentNass" />
+                                    <input type="hidden" asp-for="Children.ParentNino" />
+                                    <input type="hidden" asp-for="Children.ParentDateOfBirth" />
+                                    <input type="hidden" asp-for="Children.ParentEmail" />
+                                    <input type="hidden" asp-for="Children.Status" />
+                                    <input type="hidden" asp-for="Children.Tier" />
+                                    <input type="hidden" asp-for="Children.EligibilityEndDate" />
+                                    @for (var j = 0; j < Model.Children.ChildList.Count; j++)
+                                    {
+                                        <input type="hidden" asp-for="Children.ChildList[j].FirstName" />
+                                        <input type="hidden" asp-for="Children.ChildList[j].LastName" />
+                                        <input type="hidden" asp-for="Children.ChildList[j].Day" />
+                                        <input type="hidden" asp-for="Children.ChildList[j].Month" />
+                                        <input type="hidden" asp-for="Children.ChildList[j].Year" />
+                                        <input type="hidden" asp-for="Children.ChildList[j].School.URN" />
+                                        <input type="hidden" asp-for="Children.ChildList[j].School.Name" />
+                                        <input type="hidden" asp-for="Children.ChildList[j].School.LA" />
+                                    }
+                                    @if (Model.Evidence?.EvidenceList != null)
+                                    {
+                                        for (var k = 0; k < Model.Evidence.EvidenceList.Count; k++)
+                                        {
+                                            <input type="hidden" asp-for="Evidence.EvidenceList[k].FileName" />
+                                            <input type="hidden" asp-for="Evidence.EvidenceList[k].FileType" />
+                                            <input type="hidden" asp-for="Evidence.EvidenceList[k].StorageAccountReference" />
+                                        }
+                                    }
+                                    <button type="submit" class="button-as-link-style govuk-link">Edit details</button>
+                                </form>
                             </li>
                         </ul>
                     </div>
@@ -224,7 +257,36 @@
                         </h2>
                         <ul class="govuk-summary-card__actions">
                             <li class="govuk-summary-card__action">
-                                @Html.ActionLink("Change", "UploadEvidence")
+                                <form asp-controller="Check" asp-action="ShowUploadEvidence" method="post" novalidate style="display:inline">
+                                    <!-- Posts the currently-displayed answers back (rather than re-reading TempData,
+                                         which is shared across all tabs of the browser). See ELIG-3594. -->
+                                    <input type="hidden" asp-for="ParentFirstName" value="@Model.ParentFirstName" />
+                                    <input type="hidden" asp-for="ParentLastName" value="@Model.ParentLastName" />
+                                    <input type="hidden" asp-for="ParentNass" value="@Model.ParentNass" />
+                                    <input type="hidden" asp-for="ParentNino" value="@Model.ParentNino" />
+                                    <input type="hidden" asp-for="ParentDateOfBirth" value="@Model.ParentDateOfBirth" />
+                                    <input type="hidden" asp-for="ParentEmail" value="@Model.ParentEmail" />
+                                    <input type="hidden" asp-for="Tier" value="@Model.Tier" />
+                                    <input type="hidden" asp-for="EligibilityEndDate" value="@Model.EligibilityEndDate" />
+                                    @for (var m = 0; m < Model.Children.ChildList.Count; m++)
+                                    {
+                                        <input type="hidden" asp-for="Children.ChildList[m].FirstName" />
+                                        <input type="hidden" asp-for="Children.ChildList[m].LastName" />
+                                        <input type="hidden" asp-for="Children.ChildList[m].Day" />
+                                        <input type="hidden" asp-for="Children.ChildList[m].Month" />
+                                        <input type="hidden" asp-for="Children.ChildList[m].Year" />
+                                        <input type="hidden" asp-for="Children.ChildList[m].School.URN" />
+                                        <input type="hidden" asp-for="Children.ChildList[m].School.Name" />
+                                        <input type="hidden" asp-for="Children.ChildList[m].School.LA" />
+                                    }
+                                    @for (var n = 0; n < Model.Evidence.EvidenceList.Count; n++)
+                                    {
+                                        <input type="hidden" asp-for="Evidence.EvidenceList[n].FileName" />
+                                        <input type="hidden" asp-for="Evidence.EvidenceList[n].FileType" />
+                                        <input type="hidden" asp-for="Evidence.EvidenceList[n].StorageAccountReference" />
+                                    }
+                                    <button type="submit" class="button-as-link-style govuk-link">Change</button>
+                                </form>
                             </li>
                         </ul>
                     </div>
@@ -268,6 +330,8 @@
                 <input type="hidden" asp-for="ParentNino" value="@Model.ParentNino" />
                 <input type="hidden" asp-for="ParentDateOfBirth" value="@Model.ParentDateOfBirth" />
                 <input type="hidden" asp-for="ParentEmail" value="@Model.ParentEmail" />
+                <input type="hidden" asp-for="Tier" value="@Model.Tier" />
+                <input type="hidden" asp-for="EligibilityEndDate" value="@Model.EligibilityEndDate" />
 
                 <!-- Child details -->
                 @for (var i = 0; i < Model.Children.ChildList.Count; i++)

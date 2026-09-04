@@ -324,16 +324,20 @@ public class CheckControllerTests : TestBase
             .Returns(validationResult);
 
         _performEligibilityCheckUseCaseMock
-            .Setup(x => x.Execute(request, _sut.HttpContext.Session))
+            .Setup(x => x.Execute(request))
             .ReturnsAsync(checkEligibilityResponse);
+
+        _getCheckStatusUseCaseMock
+            .Setup(x => x.Execute(It.IsAny<string>()))
+            .ReturnsAsync(new StatusValue { Status = "queuedForProcessing" });
 
         // Act
         var result = await _sut.Enter_Details(request);
 
-        // Assert
-        result.Should().BeOfType<RedirectToActionResult>();
-        var redirectResult = result as RedirectToActionResult;
-        redirectResult.ActionName.Should().Be("Loader");
+        // Assert - renders the Loader view directly (no redirect/TempData round-trip for this hop)
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Loader");
         _sut.TempData["Response"].Should().NotBeNull();
 
         _validateParentDetailsUseCaseMock.Verify(
@@ -341,7 +345,7 @@ public class CheckControllerTests : TestBase
             Times.Once);
 
         _performEligibilityCheckUseCaseMock.Verify(
-            x => x.Execute(request, _sut.HttpContext.Session),
+            x => x.Execute(request),
             Times.Once);
     }
 
@@ -364,16 +368,20 @@ public class CheckControllerTests : TestBase
             .Returns(validationResult);
 
         _performEligibilityCheckUseCaseMock
-            .Setup(x => x.Execute(request, _sut.HttpContext.Session))
+            .Setup(x => x.Execute(request))
             .ReturnsAsync(checkEligibilityResponse);
+
+        _getCheckStatusUseCaseMock
+            .Setup(x => x.Execute(It.IsAny<string>()))
+            .ReturnsAsync(new StatusValue { Status = "queuedForProcessing" });
 
         // Act
         var result = await _sut.Enter_Details(request);
 
-        // Assert
-        result.Should().BeOfType<RedirectToActionResult>();
-        var redirectResult = result as RedirectToActionResult;
-        redirectResult.ActionName.Should().Be("Loader");
+        // Assert - renders the Loader view directly (no redirect/TempData round-trip for this hop)
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Loader");
         _sut.TempData["Response"].Should().NotBeNull();
 
         _validateParentDetailsUseCaseMock.Verify(
@@ -381,7 +389,7 @@ public class CheckControllerTests : TestBase
             Times.Once);
 
         _performEligibilityCheckUseCaseMock.Verify(
-            x => x.Execute(request, _sut.HttpContext.Session),
+            x => x.Execute(request),
             Times.Once);
     }
 
@@ -411,44 +419,28 @@ public class CheckControllerTests : TestBase
     {
         // Arrange
         var request = _fixture.Create<Children>();
+        request.Status = "eligible";
         var fsmApplication = _fixture.Create<FsmApplication>();
 
         _processChildDetailsUseCaseMock
-            .Setup(x => x.Execute(request, _sut.HttpContext.Session))
+            .Setup(x => x.Execute(request))
             .ReturnsAsync(fsmApplication);
 
         // Act
         var result = _sut.Enter_Child_Details(request);
 
-        // Assert
-        result.Should().BeOfType<RedirectToActionResult>();
-        var redirectResult = result as RedirectToActionResult;
-        redirectResult.ActionName.Should().Be("UploadEvidence");
+        // Assert - renders Check_Answers directly (no redirect/TempData round-trip for this hop)
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Check_Answers");
+        viewResult.Model.Should().Be(fsmApplication);
 
         _processChildDetailsUseCaseMock.Verify(
-            x => x.Execute(request, _sut.HttpContext.Session),
+            x => x.Execute(request),
             Times.Once);
 
         // Verify TempData has the FSM application
         _sut.TempData["FsmApplication"].Should().NotBeNull();
-    }
-
-    [Test]
-    public void Enter_Child_Details_Post_When_IsRedirect_True_Should_Return_View()
-    {
-        // Arrange
-        var request = _fixture.Create<Children>();
-        _sut.TempData["FsmApplication"] = JsonConvert.SerializeObject(_fixture.Create<FsmApplication>());
-        _sut.TempData["IsRedirect"] = true;
-
-        // Act
-        var result = _sut.Enter_Child_Details(request);
-
-        // Assert
-        result.Should().BeOfType<ViewResult>();
-        var viewResult = result as ViewResult;
-        viewResult.ViewName.Should().Be("Enter_Child_Details");
-        viewResult.Model.Should().BeEquivalentTo(request);
     }
 
     [Test]
@@ -718,24 +710,34 @@ public class CheckControllerTests : TestBase
     }
 
     [Test]
+    public void ApplicationsRegistered_When_TempData_Missing_Should_Redirect_To_Home()
+    {
+        // Act - simulates a page refresh after TempData has already been consumed
+        var result = _sut.ApplicationsRegistered();
+
+        // Assert
+        result.Should().BeOfType<RedirectToActionResult>();
+        var redirectResult = result as RedirectToActionResult;
+        redirectResult.ActionName.Should().Be("Index");
+        redirectResult.ControllerName.Should().Be("Home");
+    }
+
+    [Test]
     public void ChangeChildDetails_Should_Process_And_Return_View()
     {
-        // Arrange
-        var childIndex = 0;
-        var fsmApplication = _fixture.Create<FsmApplication>();
+        // Arrange - posted directly from Check_Answers' hidden fields, not read back from TempData
+        var request = _fixture.Create<FsmApplication>();
         var expectedChildren = new Children
         {
             ChildList = new List<Child> { _fixture.Create<Child>() }
         };
-
-        _sut.TempData["FsmApplication"] = JsonConvert.SerializeObject(fsmApplication);
 
         _changeChildDetailsUseCaseMock
             .Setup(x => x.Execute(It.IsAny<string>()))
             .Returns(expectedChildren);
 
         // Act
-        var result = _sut.ChangeChildDetails(childIndex);
+        var result = _sut.ChangeChildDetails(request);
 
         // Assert
         result.Should().BeOfType<ViewResult>();
@@ -746,7 +748,6 @@ public class CheckControllerTests : TestBase
         resultModel.Should().NotBeNull();
         resultModel.ChildList.Should().NotBeNull();
 
-        _sut.TempData["IsRedirect"].Should().Be(true);
         _sut.TempData["FsmEvidence"].Should().NotBeNull();
 
         _changeChildDetailsUseCaseMock.Verify(
@@ -769,6 +770,19 @@ public class CheckControllerTests : TestBase
         var viewResult = result as ViewResult;
         viewResult.ViewName.Should().Be("AppealsRegistered");
         viewResult.Model.Should().BeEquivalentTo(expectedViewModel);
+    }
+
+    [Test]
+    public void AppealsRegistered_When_TempData_Missing_Should_Redirect_To_Home()
+    {
+        // Act - simulates a page refresh after TempData has already been consumed
+        var result = _sut.AppealsRegistered();
+
+        // Assert
+        result.Should().BeOfType<RedirectToActionResult>();
+        var redirectResult = result as RedirectToActionResult;
+        redirectResult.ActionName.Should().Be("Index");
+        redirectResult.ControllerName.Should().Be("Home");
     }
 
     [TestCase("eligible", "Outcome/Eligible")]
@@ -803,7 +817,7 @@ public class CheckControllerTests : TestBase
         var responseJson = JsonConvert.SerializeObject(checkEligibilityResponse);
         _tempData["Response"] = responseJson;
         _getCheckStatusUseCaseMock
-            .Setup(x => x.Execute(responseJson, _sessionMock.Object))
+            .Setup(x => x.Execute(responseJson))
             .ReturnsAsync(new StatusValue { Status = status });
 
         var checkEligibilityItemResponse = _fixture.Create<CheckEligibilityItemResponse>();
@@ -818,7 +832,7 @@ public class CheckControllerTests : TestBase
         result.Should().BeOfType<ViewResult>();
         var viewResult = result as ViewResult;
         viewResult.ViewName.Should().Be(expectedView);
-        _getCheckStatusUseCaseMock.Verify(x => x.Execute(responseJson, _sessionMock.Object), Times.Once);
+        _getCheckStatusUseCaseMock.Verify(x => x.Execute(responseJson), Times.Once);
     }
 
     [Test]
@@ -847,7 +861,7 @@ public class CheckControllerTests : TestBase
         };
         _tempData["Response"] = JsonConvert.SerializeObject(response);
 
-        _getCheckStatusUseCaseMock.Setup(x => x.Execute(It.IsAny<string>(), _sessionMock.Object))
+        _getCheckStatusUseCaseMock.Setup(x => x.Execute(It.IsAny<string>()))
             .ReturnsAsync(new StatusValue { Status = "queuedForProcessing" });
 
         var ParentMock = _fixture.Create<ParentGuardian>();
@@ -859,6 +873,75 @@ public class CheckControllerTests : TestBase
         result.Should().BeOfType<ViewResult>();
         var viewResult = result as ViewResult;
         viewResult.ViewName.Should().Be("Loader");
+    }
+
+    [Test]
+    public async Task Given_Poll_Status_Post_Uses_Posted_Values_Not_TempData()
+    {
+        // Arrange - simulates the JS loader's own poll, which no longer reads TempData/Session
+        var response = new CheckEligibilityResponse
+        {
+            Data = new StatusValue { Status = "eligible" }
+        };
+        var responseJson = JsonConvert.SerializeObject(response);
+        var parent = _fixture.Create<ParentGuardian>();
+        var parentGuardianJson = JsonConvert.SerializeObject(parent);
+
+        // TempData deliberately holds different (stale/other-tab) data to prove it's ignored
+        _tempData["Response"] = JsonConvert.SerializeObject(new CheckEligibilityResponse
+        {
+            Data = new StatusValue { Status = "notEligible" }
+        });
+
+        _getCheckStatusUseCaseMock
+            .Setup(x => x.Execute(responseJson))
+            .ReturnsAsync(new StatusValue { Status = "eligible" });
+
+        var checkEligibilityItemResponse = _fixture.Create<CheckEligibilityItemResponse>();
+        _getCheckUseCaseMock
+            .Setup(x => x.Execute(responseJson))
+            .ReturnsAsync(checkEligibilityItemResponse);
+
+        // Act
+        var result = await _sut.Loader(responseJson, parentGuardianJson);
+
+        // Assert
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Outcome/Eligible");
+        var model = viewResult.Model as TieredOutcome;
+        model.ParentGuardian.Should().BeEquivalentTo(parent);
+
+        _getCheckStatusUseCaseMock.Verify(x => x.Execute(responseJson), Times.Once);
+    }
+
+    [Test]
+    public async Task Given_Poll_Status_Post_When_Still_Processing_Returns_LoaderState_For_Next_Poll()
+    {
+        // Arrange
+        var responseJson = JsonConvert.SerializeObject(new CheckEligibilityResponse
+        {
+            Data = new StatusValue { Status = "queuedForProcessing" }
+        });
+        var parentGuardianJson = JsonConvert.SerializeObject(_fixture.Create<ParentGuardian>());
+
+        _getCheckStatusUseCaseMock.Setup(x => x.Execute(responseJson))
+            .ReturnsAsync(new StatusValue { Status = "queuedForProcessing" });
+
+        // Act
+        var result = await _sut.Loader(responseJson, parentGuardianJson);
+
+        // Assert
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Loader");
+        var model = viewResult.Model as LoaderState;
+        model.Should().NotBeNull();
+        model.ResponseJson.Should().Be(responseJson);
+        model.ParentGuardianJson.Should().Be(parentGuardianJson);
+
+        // The no-JS fallback path must not be touched by client-driven polls
+        _tempData.ContainsKey("Response").Should().BeFalse();
     }
 
     [Test]
@@ -927,6 +1010,24 @@ public class CheckControllerTests : TestBase
         result.Should().BeOfType<ViewResult>();
         var viewResult = result as ViewResult;
         viewResult.Model.Should().BeNull();
+    }
+
+    [Test]
+    public void ShowUploadEvidence_Should_Use_Posted_Data_Not_TempData()
+    {
+        // Arrange - TempData deliberately holds a different (stale/other-tab) application
+        var request = _fixture.Create<FsmApplication>();
+        _sut.TempData["FsmApplication"] = JsonConvert.SerializeObject(_fixture.Create<FsmApplication>());
+
+        // Act
+        var result = _sut.ShowUploadEvidence(request);
+
+        // Assert
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("UploadEvidence");
+        viewResult.Model.Should().BeEquivalentTo(request, options => options.Excluding(x => x.EvidenceFiles));
+        _sut.TempData["FsmApplication"].Should().Be(JsonConvert.SerializeObject(request));
     }
 
     [Test]
@@ -999,10 +1100,10 @@ public class CheckControllerTests : TestBase
         // Act
         var result = await _sut.UploadEvidence(request, "attach");
 
-        // Assert
-        result.Should().BeOfType<RedirectToActionResult>();
-        var redirectResult = result as RedirectToActionResult;
-        redirectResult.ActionName.Should().Be("Check_Answers");
+        // Assert - renders Check_Answers directly (no redirect/TempData round-trip for this hop)
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Check_Answers");
 
         _uploadEvidenceFileUseCaseMock.Verify(
             x => x.Execute(It.IsAny<IFormFile>(), It.IsAny<string>()),
@@ -1042,10 +1143,10 @@ public class CheckControllerTests : TestBase
         // Act
         var result = await _sut.UploadEvidence(request, "attach");
 
-        // Assert
-        result.Should().BeOfType<RedirectToActionResult>();
-        var redirectResult = result as RedirectToActionResult;
-        redirectResult.ActionName.Should().Be("Check_Answers");
+        // Assert - renders Check_Answers directly (no redirect/TempData round-trip for this hop)
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Check_Answers");
 
         // Verify the existing evidence was preserved
         var savedApp = JsonConvert.DeserializeObject<FsmApplication>(_sut.TempData["FsmApplication"].ToString());
@@ -1165,8 +1266,10 @@ public class CheckControllerTests : TestBase
         // Act
         var result = await _sut.UploadEvidence(request, "attach");
 
-        // Assert
-        result.Should().BeOfType<RedirectToActionResult>();
+        // Assert - renders Check_Answers directly (no redirect/TempData round-trip for this hop)
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Check_Answers");
 
         // Verify both files were uploaded
         _uploadEvidenceFileUseCaseMock.Verify(
@@ -1188,10 +1291,10 @@ public class CheckControllerTests : TestBase
         // Act
         var result = _sut.ContinueWithoutMoreFiles(request);
 
-        // Assert
-        result.Should().BeOfType<RedirectToActionResult>();
-        var redirectResult = result as RedirectToActionResult;
-        redirectResult.ActionName.Should().Be("Check_Answers");
+        // Assert - renders Check_Answers directly (no redirect/TempData round-trip for this hop)
+        result.Should().BeOfType<ViewResult>();
+        var viewResult = result as ViewResult;
+        viewResult.ViewName.Should().Be("Check_Answers");
 
         // Verify TempData was set
         _sut.TempData["FsmApplication"].Should().NotBeNull();

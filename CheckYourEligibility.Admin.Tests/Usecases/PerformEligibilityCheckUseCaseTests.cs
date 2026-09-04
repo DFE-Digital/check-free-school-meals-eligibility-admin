@@ -1,11 +1,9 @@
-using System.Text;
 using CheckYourEligibility.Admin.Boundary.Requests;
 using CheckYourEligibility.Admin.Boundary.Responses;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Models;
 using CheckYourEligibility.Admin.UseCases;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Moq;
 
 namespace CheckYourEligibility.Admin.Tests.UseCases;
@@ -18,24 +16,6 @@ public class PerformEligibilityCheckUseCaseTests
     {
         _checkGatewayMock = new Mock<ICheckGateway>();
         _sut = new PerformEligibilityCheckUseCase(_checkGatewayMock.Object);
-
-        _sessionMock = new Mock<ISession>();
-        var sessionStorage = new Dictionary<string, byte[]>();
-
-        _sessionMock.Setup(s => s.Set(It.IsAny<string>(), It.IsAny<byte[]>()))
-            .Callback<string, byte[]>((key, value) => sessionStorage[key] = value);
-
-        _sessionMock.Setup(s => s.TryGetValue(It.IsAny<string>(), out It.Ref<byte[]>.IsAny))
-            .Returns((string key, out byte[] value) =>
-            {
-                var result = sessionStorage.TryGetValue(key, out var storedValue);
-                value = storedValue;
-                return result;
-            });
-
-        _sessionMock.Setup(s => s.Remove(It.IsAny<string>()))
-             .Callback<string>(key => sessionStorage.Remove(key));
-
 
         _parent = new ParentGuardian
         {
@@ -57,7 +37,6 @@ public class PerformEligibilityCheckUseCaseTests
 
     private PerformEligibilityCheckUseCase _sut;
     private Mock<ICheckGateway> _checkGatewayMock;
-    private Mock<ISession> _sessionMock;
 
     private ParentGuardian _parent;
     private CheckEligibilityResponse _eligibilityResponse;
@@ -70,15 +49,10 @@ public class PerformEligibilityCheckUseCaseTests
             .ReturnsAsync(_eligibilityResponse);
 
         // Act
-        var response = await _sut.Execute(_parent, _sessionMock.Object);
+        var response = await _sut.Execute(_parent);
 
         // Assert
         response.Should().BeEquivalentTo(_eligibilityResponse);
-
-        Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentFirstName")).Should().Be("John");
-        Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentLastName")).Should().Be("Doe");
-        Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentDOB")).Should().Be("1980-01-01");
-        Encoding.UTF8.GetString(_sessionMock.Object.Get("ParentNINO")).Should().Be("AB123456C");
     }
 
     [Test]
@@ -89,7 +63,7 @@ public class PerformEligibilityCheckUseCaseTests
             .ThrowsAsync(new Exception("API Error"));
 
         // Act
-        Func<Task> act = async () => await _sut.Execute(_parent, _sessionMock.Object);
+        Func<Task> act = async () => await _sut.Execute(_parent);
 
         // Assert
         await act.Should().ThrowAsync<Exception>().WithMessage("API Error");
