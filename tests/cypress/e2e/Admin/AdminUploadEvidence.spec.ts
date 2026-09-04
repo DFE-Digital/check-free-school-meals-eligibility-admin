@@ -30,7 +30,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Perform check').click();
 
-        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
+        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
         cy.contains('button.govuk-button', 'Appeal now').click();
 
         cy.url().should('include', '/Enter_Child_Details');
@@ -96,7 +96,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Perform check').click();
 
-        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
+        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
         cy.contains('button.govuk-button', 'Appeal now').click();
 
         cy.url().should('include', '/Enter_Child_Details');
@@ -139,7 +139,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Perform check').click();
 
-        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
+        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
         cy.contains('button.govuk-button', 'Appeal now').click();
 
         cy.url().should('include', '/Enter_Child_Details');
