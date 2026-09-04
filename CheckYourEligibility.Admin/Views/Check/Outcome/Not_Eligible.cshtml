@@ -1,7 +1,7 @@
 @using CheckYourEligibility.Admin.Domain.DfeSignIn
 @using CheckYourEligibility.Admin.Domain.Enums
 @{
-    ViewData["Title"] = "May not be eligible";
+    ViewData["Title"] = "Not eligible at time of check";
     var orgType = TempData["organisationType"] as OrganisationCategory?;
 
     var isSchool = orgType == OrganisationCategory.Establishment;
@@ -22,7 +22,7 @@
                 </div>
                 <div class="govuk-notification-banner__content">
                     <p class="govuk-notification-banner__heading">
-                        The children of this parent or guardian may not be eligible for free school meals.
+                        The children of this parent or guardian are not eligible for free school meals at the time of the check 
                     </p>
                     @if (isSchool)
                     {

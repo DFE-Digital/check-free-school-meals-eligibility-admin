@@ -63,7 +63,7 @@ describe('Test that approved accented characters are accepted in name input fiel
         cy.url().should('include', 'Check/Loader');
 
         //Not eligible outcome
-        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'may not be eligible for free school meals.');
+        cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
         cy.contains('a.govuk-button', 'Appeal now').click();
 
         //Enter child details
