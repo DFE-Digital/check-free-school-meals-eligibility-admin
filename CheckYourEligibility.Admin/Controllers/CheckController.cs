@@ -136,12 +136,18 @@ public class CheckController : BaseController
         TempData.Remove("FsmApplication");
         TempData.Remove("FsmEvidence");
 
-        var response = await _performEligibilityCheckUseCase.Execute(request, HttpContext.Session);
-        TempData["Response"] = JsonConvert.SerializeObject(response);
+        var response = await _performEligibilityCheckUseCase.Execute(request);
+        var responseJson = JsonConvert.SerializeObject(response);
+
+        // Render the loader directly from the response already in hand (rather than redirecting and
+        // reading TempData back) - a concurrent tab overwriting TempData in that gap could otherwise
+        // hijack this tab's very first render. TempData is still set for the <noscript> fallback. See ELIG-3594.
+        TempData["Response"] = responseJson;
         TempData["ParentGuardianRequest"] = JsonConvert.SerializeObject(request);
-        return RedirectToAction("Loader");
+        return await ProcessLoaderStatus(responseJson, request, saveToTempDataForNoScript: true);
     }
 
+    [HttpGet]
     public async Task<IActionResult> Loader(ParentGuardian request)
     {
         if (TempData["ParentGuardianRequest"] != null) // Means it was queued previously and stored in temp
@@ -151,6 +157,24 @@ public class CheckController : BaseController
         }
 
         var responseJson = TempData["Response"] as string;
+        return await ProcessLoaderStatus(responseJson, request, saveToTempDataForNoScript: true);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Loader(string responseJson, string parentGuardianJson)
+    {
+        // Polls from the JS loader carry their own check reference/parent details (echoed back from
+        // the page that rendered them) instead of relying on TempData, so a concurrent tab writing
+        // TempData for a different check cannot hijack this poll. See ELIG-3594.
+        var request = string.IsNullOrEmpty(parentGuardianJson)
+            ? new ParentGuardian()
+            : JsonConvert.DeserializeObject<ParentGuardian>(parentGuardianJson);
+
+        return await ProcessLoaderStatus(responseJson, request, saveToTempDataForNoScript: false);
+    }
+
+    private async Task<IActionResult> ProcessLoaderStatus(string responseJson, ParentGuardian request, bool saveToTempDataForNoScript)
+    {
         try
         {
 
@@ -165,14 +189,24 @@ public class CheckController : BaseController
                 TempData["organisationRole"] = OrgRole.basic; // set only if basic
             }
 
-            var outcome = await _getCheckStatusUseCase.Execute(responseJson, HttpContext.Session);
+            var outcome = await _getCheckStatusUseCase.Execute(responseJson);
 
-            // If the check is still queued, show the loader again
+            // If the check is still queued, show the loader again. TempData is only kept here for the
+            // <noscript> meta-refresh fallback; JS-enabled polling instead re-posts the values embedded
+            // in the LoaderState model below, so it never depends on TempData/Session. See ELIG-3594.
             if (outcome.Status == "queuedForProcessing")
             {
-                TempData["Response"] = responseJson;
-                TempData["ParentGuardianRequest"] = JsonConvert.SerializeObject(request);
-                return View("Loader");
+                if (saveToTempDataForNoScript)
+                {
+                    TempData["Response"] = responseJson;
+                    TempData["ParentGuardianRequest"] = JsonConvert.SerializeObject(request);
+                }
+
+                return View("Loader", new LoaderState
+                {
+                    ResponseJson = responseJson,
+                    ParentGuardianJson = JsonConvert.SerializeObject(request)
+                });
             }
             
             // Get current FSM policy 
@@ -191,18 +225,16 @@ public class CheckController : BaseController
                 var checkData = await _getCheckUseCase.Execute(responseJson);
                 tieredOutcome.Tier = checkData.Data.Tier;
                 tieredOutcome.EligibilityEndDate = checkData.Data.EligibilityEndDate;
-                if (tieredOutcome.Tier != null) {
-                    HttpContext.Session.SetString("FSM_Tier", tieredOutcome.Tier);
-                    HttpContext.Session.SetString("FSM_EndDate", tieredOutcome.EligibilityEndDate);
-                }
             }
 
+            // ELIG-3594: pass the outcome as the view model (rather than caching it in Session) so it can be
+            // carried forward via hidden fields, instead of being read back from shared per-browser state later.
             switch (outcome.Status)
             {
                 case "eligible":
                     return View("Outcome/Eligible", tieredOutcome);
                 case "notEligible":
-                    return View("Outcome/Not_Eligible");
+                    return View("Outcome/Not_Eligible", tieredOutcome);
                 case "parentNotFound":
                     return View("Outcome/Not_Found");
                 default:
@@ -215,12 +247,69 @@ public class CheckController : BaseController
             return View("Outcome/Technical_Error");
         }
     }
+
+    [HttpGet]
+    public IActionResult Start_Child_Details()
+    {
+        // Only reached if the auth cookie expired and the re-authentication redirect replayed this
+        // as a GET (the original POST body/outcome data is lost in that replay, so it can't be
+        // recovered here) - send the user back to a safe, working page instead of a raw 404.
+        TempData["Errors"] = JsonConvert.SerializeObject(new Dictionary<string, List<string>>
+        {
+            { string.Empty, new List<string> { "Your session timed out. Please start the check again." } }
+        });
+        return RedirectToAction("Enter_Details");
+    }
+
+    [HttpPost]
+    public IActionResult Start_Child_Details(TieredOutcome model)
+    {
+        string? dobString = null;
+        if (int.TryParse(model.ParentGuardian?.Year, out var year) &&
+            int.TryParse(model.ParentGuardian?.Month, out var month) &&
+            int.TryParse(model.ParentGuardian?.Day, out var day))
+        {
+            dobString = new DateOnly(year, month, day).ToString("yyyy-MM-dd");
+        }
+
+        // Seed the parent/tier bundle for the very next Enter_Child_Details render; from then on it
+        // travels as hidden fields on that form, not via Session/TempData. See ELIG-3594.
+        TempData["ParentBundle"] = JsonConvert.SerializeObject(new Children
+        {
+            ParentFirstName = model.ParentGuardian?.FirstName,
+            ParentLastName = model.ParentGuardian?.LastName,
+            ParentDateOfBirth = dobString,
+            ParentEmail = model.ParentGuardian?.EmailAddress,
+            ParentNino = model.ParentGuardian?.NationalInsuranceNumber,
+            Status = model.Status,
+            Tier = model.Tier,
+            EligibilityEndDate = model.EligibilityEndDate
+        });
+
+        return RedirectToAction("Enter_Child_Details");
+    }
+
     [HttpGet]
     public IActionResult Enter_Child_Details()
     {
         var childrenModel = _enterChildDetailsUseCase.Execute(
              TempData["ChildList"] as string,
              TempData["IsChildAddOrRemove"] as bool?);
+
+        if (TempData["ParentBundle"] is string parentBundleJson && !string.IsNullOrEmpty(parentBundleJson))
+        {
+            var parentBundle = JsonConvert.DeserializeObject<Children>(parentBundleJson);
+            childrenModel.ParentFirstName = parentBundle.ParentFirstName;
+            childrenModel.ParentLastName = parentBundle.ParentLastName;
+            childrenModel.ParentDateOfBirth = parentBundle.ParentDateOfBirth;
+            childrenModel.ParentEmail = parentBundle.ParentEmail;
+            childrenModel.ParentNino = parentBundle.ParentNino;
+            childrenModel.ParentNass = parentBundle.ParentNass;
+            childrenModel.Status = parentBundle.Status;
+            childrenModel.Tier = parentBundle.Tier;
+            childrenModel.EligibilityEndDate = parentBundle.EligibilityEndDate;
+            TempData.Keep("ParentBundle");
+        }
 
         OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
         TempData["organisationType"] = organisationType;
@@ -234,17 +323,15 @@ public class CheckController : BaseController
         OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
         TempData["organisationType"] = organisationType;
 
-        if (TempData["FsmApplication"] != null && TempData["IsRedirect"] != null && (bool)TempData["IsRedirect"])
-            return View("Enter_Child_Details", request);
-
         if (!ModelState.IsValid) return View("Enter_Child_Details", request);
 
-        var fsmApplication = _processChildDetailsUseCase.Execute(request, HttpContext.Session).Result;
-        if (HttpContext.Session.GetString("CheckResult") == "eligible")
+        var fsmApplication = _processChildDetailsUseCase.Execute(request).Result;
+        // Render the next page directly from the application just built (rather than redirecting and
+        // reading TempData back), so a concurrent tab overwriting TempData can't hijack this render. See ELIG-3594.
+        TempData["FsmApplication"] = JsonConvert.SerializeObject(fsmApplication);
+        if (request.Status == "eligible")
         {
-            TempData["FsmApplication"] = JsonConvert.SerializeObject(fsmApplication);
-      
-            return RedirectToAction("Check_Answers");
+            return View("Check_Answers", fsmApplication);
         }
         // Restore evidence from TempData if it exists (from ChangeChildDetails)
         if (TempData["FsmEvidence"] != null)
@@ -261,7 +348,7 @@ public class CheckController : BaseController
 
         TempData["FsmApplication"] = JsonConvert.SerializeObject(fsmApplication);
 
-        return RedirectToAction("UploadEvidence");
+        return View("UploadEvidence", fsmApplication);
     }
 
     [HttpPost]
@@ -274,10 +361,12 @@ public class CheckController : BaseController
             var updatedChildren = _addChildUseCase.Execute(request);
 
             TempData["ChildList"] = JsonConvert.SerializeObject(updatedChildren.ChildList);
+            TempData["ParentBundle"] = JsonConvert.SerializeObject(updatedChildren);
         }
         catch (MaxChildrenException e)
         {
             TempData["ChildList"] = JsonConvert.SerializeObject(request.ChildList);
+            TempData["ParentBundle"] = JsonConvert.SerializeObject(request);
         }
 
         return RedirectToAction("Enter_Child_Details");
@@ -293,6 +382,7 @@ public class CheckController : BaseController
             var updatedChildren = await _removeChildUseCase.Execute(request, index);
 
             TempData["ChildList"] = JsonConvert.SerializeObject(updatedChildren.ChildList);
+            TempData["ParentBundle"] = JsonConvert.SerializeObject(updatedChildren);
 
             return RedirectToAction("Enter_Child_Details");
         }
@@ -359,19 +449,7 @@ public class CheckController : BaseController
             OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
             TempData["organisationType"] = organisationType;
 
-
-            var policy = await GetFreeSchoolMealsPolicy();
-            if (policy.EligibilityCriteria == EligibilityCriteria.expanded)
-            {
-                var tier = HttpContext.Session.GetString("FSM_Tier");
-                var endDate = HttpContext.Session.GetString("FSM_EndDate");
-                fsmApplication.Tier = tier;
-                fsmApplication.EligibilityEndDate = endDate;
-
-            }
-                
-
-                return View("Check_Answers", fsmApplication);
+            return View("Check_Answers", fsmApplication);
         }
 
         // Fallback - empty model
@@ -431,6 +509,12 @@ public class CheckController : BaseController
                     response.Data.Reference);
             }
         }
+
+        // Carry Tier/EndDate forward for the single immediate redirect to ApplicationsRegistered
+        // (not cached in Session, which would be visible to/overwritten by other tabs).
+        TempData["FSM_Tier"] = request.Tier;
+        TempData["FSM_EndDate"] = request.EligibilityEndDate;
+
         return RedirectToAction(
             responses.FirstOrDefault()?.Data.Status == ApplicationStatus.Entitled
                 ? "ApplicationsRegistered"
@@ -461,24 +545,21 @@ public class CheckController : BaseController
         return RedirectToAction(redirectAction);
     }
 
-    public IActionResult ChangeChildDetails(int child)
+    [HttpPost]
+    public IActionResult ChangeChildDetails(FsmApplication request)
     {
-        TempData["IsRedirect"] = true;
+        // Re-posting the full FsmApplication triggers auto-validation of fields this page doesn't
+        // care about; matches the same ModelState.Clear() already used by UploadEvidence for this reason.
+        ModelState.Clear();
         var model = new Children { ChildList = new List<Child>() };
-        var fsmApplication = new FsmApplication();
 
         try
         {
-            if (TempData["FsmApplication"] != null)
-            {
-                fsmApplication = JsonConvert.DeserializeObject<FsmApplication>(TempData["FsmApplication"].ToString());
+            // Build from the answers just posted by this page (rather than TempData, which is shared
+            // across all tabs of the browser and can hold a different tab's application). See ELIG-3594.
+            TempData["FsmEvidence"] = JsonConvert.SerializeObject(request.Evidence);
 
-                // Save the evidence
-                TempData["FsmEvidence"] = JsonConvert.SerializeObject(fsmApplication.Evidence);
-            }
-
-            model = _changeChildDetailsUseCase.Execute(
-                TempData["FsmApplication"] as string);
+            model = _changeChildDetailsUseCase.Execute(JsonConvert.SerializeObject(request));
         }
         catch (JSONException e)
         {
@@ -499,14 +580,18 @@ public class CheckController : BaseController
     [HttpGet]
     public IActionResult ApplicationsRegistered()
     {
+        if (TempData["FsmApplicationResponse"] == null) return RedirectToAction("Index", "Home");
+
         var vm = JsonConvert.DeserializeObject<List<ApplicationSaveItemResponse>>(TempData["FsmApplicationResponse"]
             .ToString());
+        // Re-save so a page refresh doesn't lose it (TempData only survives one request by default).
+        TempData["FsmApplicationResponse"] = JsonConvert.SerializeObject(vm);
 
         OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
         TempData["organisationType"] = organisationType;
 
-        var tier = HttpContext.Session.GetString("FSM_Tier");
-        var endDate = HttpContext.Session.GetString("FSM_EndDate");
+        var tier = TempData["FSM_Tier"] as string;
+        var endDate = TempData["FSM_EndDate"] as string;
 
         string? formattedEndDate = null;
         if (!string.IsNullOrEmpty(endDate) && DateTime.TryParse(endDate, out var parsed))
@@ -523,9 +608,26 @@ public class CheckController : BaseController
     [HttpGet]
     public IActionResult AppealsRegistered()
     {
+        if (TempData["FsmApplicationResponse"] == null) return RedirectToAction("Index", "Home");
+
         var vm = JsonConvert.DeserializeObject<List<ApplicationSaveItemResponse>>(TempData["FsmApplicationResponse"]
             .ToString());
+        // Re-save so a page refresh doesn't lose it (TempData only survives one request by default).
+        TempData["FsmApplicationResponse"] = JsonConvert.SerializeObject(vm);
         return View("AppealsRegistered", vm);
+    }
+
+    [HttpPost]
+    public IActionResult ShowUploadEvidence(FsmApplication request)
+    {
+        // Re-posting the full FsmApplication triggers auto-validation of fields this page doesn't
+        // care about; matches the same ModelState.Clear() already used by UploadEvidence for this reason.
+        ModelState.Clear();
+
+        // Refresh TempData with what was just posted (rather than trusting whatever's already there,
+        // which could belong to a different tab) so the evidence submission reads the right data. See ELIG-3594.
+        TempData["FsmApplication"] = JsonConvert.SerializeObject(request);
+        return View("UploadEvidence", request);
     }
 
     [HttpGet]
@@ -561,6 +663,8 @@ public class CheckController : BaseController
             ParentNass = request.ParentNass ?? string.Empty, // Ensure not null
             ParentDateOfBirth = request.ParentDateOfBirth,
             ParentEmail = request.ParentEmail,
+            Tier = request.Tier,
+            EligibilityEndDate = request.EligibilityEndDate,
             Children = request.Children,
             Evidence = new Evidence { EvidenceList = new List<EvidenceFile>() }
         };
@@ -648,7 +752,11 @@ public class CheckController : BaseController
             return View("UploadEvidence", updatedRequest);
         }
 
-        return RedirectToAction("Check_Answers");
+        // Render directly from the application just built (rather than redirecting and reading
+        // TempData back), so a concurrent tab overwriting TempData can't hijack this render. See ELIG-3594.
+        OrganisationCategory organisationTypeForAnswers = _Claims.Organisation.Category.Id;
+        TempData["organisationType"] = organisationTypeForAnswers;
+        return View("Check_Answers", updatedRequest);
     }
 
     [HttpPost]
@@ -670,6 +778,9 @@ public class CheckController : BaseController
 
         TempData["FsmApplication"] = JsonConvert.SerializeObject(application);
 
-        return RedirectToAction("Check_Answers");
+        // Render directly (see ELIG-3594 comment above) rather than redirecting through TempData.
+        OrganisationCategory organisationTypeForContinue = _Claims.Organisation.Category.Id;
+        TempData["organisationType"] = organisationTypeForContinue;
+        return View("Check_Answers", application);
     }
 }

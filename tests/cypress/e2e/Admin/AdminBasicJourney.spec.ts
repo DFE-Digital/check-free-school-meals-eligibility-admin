@@ -25,9 +25,6 @@ describe('BasicLAHappyPath', () => {
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Perform check').click();
 
-        //Loader page
-        cy.url().should('include', 'Check/Loader');
-
         //eligible outcome
         cy.get('h2.govuk-notification-banner__title', { timeout: 80000 }).should('include.text', 'Children eligible');
         cy.contains('a.govuk-link', 'Do another check');
@@ -51,8 +48,6 @@ describe('BasicLAHappyPath', () => {
         cy.get('#NationalInsuranceNumber').clear().type('PN123456A');
     
         cy.contains('button', 'Perform check').click();
-    
-        cy.url({ timeout: 80000 }).should('include', '/Check/Loader');
     
         cy.get('h2.govuk-notification-banner__title', { timeout: 80000 })
             .should('contain.text', 'Not eligible');

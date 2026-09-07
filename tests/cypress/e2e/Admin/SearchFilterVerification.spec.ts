@@ -34,9 +34,8 @@ describe('Keyword search validation', () => {
     cy.contains('button', 'Perform check').click();
 
     //loader page and result
-    cy.url().should('include', 'Check/Loader');
     cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
-    cy.contains('a.govuk-button', 'Appeal now').click();
+    cy.contains('button.govuk-button', 'Appeal now').click();
 
     //enter child details
     cy.url().should('include', '/Enter_Child_Details');
