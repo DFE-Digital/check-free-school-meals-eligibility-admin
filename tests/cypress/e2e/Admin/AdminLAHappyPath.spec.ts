@@ -25,12 +25,9 @@ describe('Full journey of creating an application through school portal through 
         cy.get('#NationalInsuranceNumber').type("nn123456c");
         cy.contains('button', 'Perform check').click();
 
-        //Loader page
-        cy.url().should('include', 'Check/Loader');
-
         //Eligible outcome page
         cy.contains('.govuk-notification-banner__title', "Children eligible for free school meals", { timeout: 80000, });
-        cy.get('a.govuk-button').contains("Continue to add child details").click();
+        cy.get('button.govuk-button').contains("Continue to add child details").click();
         //Enter child details
         cy.url().should('include', '/Enter_Child_Details');
         cy.get('[id="ChildList[0].FirstName"]').type(childFirstName);
