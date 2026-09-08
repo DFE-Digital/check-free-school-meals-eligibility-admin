@@ -90,7 +90,6 @@ public static class DateTimeExtensions
             .ToString(
                 "dd MMM yyyy h:mmtt",
                 CultureInfo.GetCultureInfo("en-GB"))
-            .Replace(" Sep ", " Sept ")
             .Replace("AM", "am")
             .Replace("PM", "pm");
     }

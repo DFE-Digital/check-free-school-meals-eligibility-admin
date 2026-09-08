@@ -59,18 +59,5 @@ namespace CheckYourEligibility.Admin.Tests.Models
             // Assert
             result.Should().Be("05 Jul 2026 3:05pm");
         }
-
-        [Test]
-        public void ToLocalString12HourFormatReadable_Should_Use_Sept_Consistently()
-        {
-            // Arrange
-            var utcDate = new DateTime(2026, 9, 8, 13, 5, 0, DateTimeKind.Utc);
-
-            // Act
-            var result = utcDate.ToLocalString12HourFormatReadable();
-
-            // Assert
-            result.Should().Be("08 Sept 2026 2:05pm");
-        }
     }
 }
