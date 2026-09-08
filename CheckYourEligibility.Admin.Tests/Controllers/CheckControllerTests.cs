@@ -852,7 +852,7 @@ public class CheckControllerTests : TestBase
         _sut.TempData["Response"] = responseJson;
 
         _getCheckStatusUseCaseMock
-            .Setup(x => x.Execute(responseJson, _sessionMock.Object))
+            .Setup(x => x.Execute(responseJson))
             .ReturnsAsync(response.Data);
 
         var ParentMock = _fixture.Create<ParentGuardian>();
