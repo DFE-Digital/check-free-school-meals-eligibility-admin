@@ -123,7 +123,7 @@ it("will run a successful batch check", () => {
     .then(($row) => {
       cy.wrap($row).find("td").eq(0).invoke("text").should("match", /\.csv$/i);
       cy.wrap($row).find("td").eq(1).should("have.text", "15");
-      cy.wrap($row).find("td").eq(2).should("have.text", "TESTER");
+      cy.wrap($row).find("td").eq(2).should("have.text", "TESTER"); //API sets last name value.Trim().ToUpperInvariant()
       cy.wrap($row).find("td").eq(3).should("contain.text", today);
       cy.wrap($row).find("td").eq(4).invoke("text").should("not.be.empty");
       cy.wrap($row).find("td").eq(5).find("strong").should("have.class", "govuk-tag");

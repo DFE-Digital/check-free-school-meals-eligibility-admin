@@ -1,4 +1,5 @@
 ﻿using CheckYourEligibility.Admin.Domain.Enums;
+using System.Globalization;
 
 namespace CheckYourEligibility.Admin.Models;
 
@@ -85,6 +86,11 @@ public static class DateTimeExtensions
 
     public static string ToLocalString12HourFormatReadable(this DateTime datetime)
     {
-        return GetLocalTime(datetime).ToString("dd MMM yyyy h:mmtt").Replace("AM", "am").Replace("PM", "pm");
+        return GetLocalTime(datetime)
+            .ToString(
+                "dd MMM yyyy h:mmtt",
+                CultureInfo.GetCultureInfo("en-GB"))
+            .Replace("AM", "am")
+            .Replace("PM", "pm");
     }
 }
