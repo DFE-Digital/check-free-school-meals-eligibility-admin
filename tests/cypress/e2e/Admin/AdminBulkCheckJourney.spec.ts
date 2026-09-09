@@ -26,8 +26,8 @@ const createBulkCsv = (rowCount: number, includeSchoolURN: boolean): string => {
     "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth";
 
   const header = includeSchoolURN
-    ? `${baseHeader},Child School Urn,Parent Email Address`
-    : `${baseHeader},Parent Email Address`;
+    ? `${baseHeader},Child School Urn,Parent Email Address (optional)`
+    : `${baseHeader},Parent Email Address (optional)`;
 
   const rows = Array.from({ length: rowCount }, (_, index) => {
     const day = ((index % 28) + 1).toString().padStart(2, "0");

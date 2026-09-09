@@ -142,7 +142,7 @@ Parent Last Name,Parent Date of Birth,Parent National Insurance number
         SetupValidatorValid();
 
         var result = await ExecuteEnhanced(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional)
 John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,  Parent@Example.COM  ");
 
         Assert.That(result.Errors, Is.Empty);
@@ -157,7 +157,7 @@ John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,  Parent@Example.C
         SetupValidatorValid();
 
         var result = await ExecuteEnhanced(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address (optional)
 John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,  Parent@Example.COM  ",
             isSchool: true);
 
@@ -175,10 +175,10 @@ John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,  Parent@Example.COM  ",
 
         var csv = isSchool
             ? @"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address (optional)
 John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,"
             : @"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address
+Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional)
 John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,";
 
         var result = await ExecuteEnhanced(csv, isSchool);
