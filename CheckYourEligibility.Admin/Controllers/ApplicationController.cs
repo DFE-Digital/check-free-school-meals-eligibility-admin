@@ -756,15 +756,15 @@ public class ApplicationController : BaseController
 
     private async Task SendApplicationDecisionNotification(string id, NotificationType notificationType)
     {
-        var application = await _adminGateway.GetApplication(id);
-        if (application == null || application.Data == null)
-        {
-            _logger.LogError($"Application not found for notification ID: {id.Replace(Environment.NewLine, "")}");
-            return;
-        }
-
         try
         {
+            var application = await _adminGateway.GetApplication(id);
+            if (application == null || application.Data == null)
+            {
+                _logger.LogError($"Application not found for notification ID: {id.Replace(Environment.NewLine, "")}");
+                return;
+            }
+
             var notificationRequest = new NotificationRequest
             {
                 Data = new NotificationRequestData
@@ -784,7 +784,8 @@ public class ApplicationController : BaseController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to send notification for application {Reference}", application.Data.Reference);
+            // Status update already succeeded; notification failure must not block the confirmation redirect.
+            _logger.LogError(ex, "Failed to send notification for application ID: {Id}", id.Replace(Environment.NewLine, ""));
         }
     }
 
