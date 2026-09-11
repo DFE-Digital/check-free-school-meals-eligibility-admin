@@ -1172,4 +1172,50 @@ public class ApplicationControllerTests : TestBase
         result.Should().BeOfType<ContentResult>()
             .Which.StatusCode.Should().Be(StatusCodes.Status403Forbidden);
     }
+
+    [Test]
+    public async Task Given_ApplicationApproveSend_NotificationLookupThrows_Returns_RedirectToApproved()
+    {
+        //Arrange
+        var id = "f41e59a2-9847-4084-9e17-0511e77571fb";
+        var response = _fixture.Create<Task<ApplicationItemResponse>>();
+        response.Result.Data.Establishment.Id = 123456;
+        response.Result.Data.Id = id;
+
+        _adminGatewayMock.SetupSequence(x => x.GetApplication(id))
+            .Returns(response) // ConfirmCheckAccess succeeds
+            .ThrowsAsync(new Exception("Gateway failure")); // notification lookup fails
+
+        //act
+        var result = await _sut.ApplicationApproveSend(id, "expanded");
+
+        //assert
+        result.Should().BeOfType<RedirectToActionResult>();
+        var redirect = result as RedirectToActionResult;
+        redirect.ActionName.Should().BeEquivalentTo("ApplicationApproved");
+        _sendNotificationUseCaseMock.Verify(x => x.Execute(It.IsAny<NotificationRequest>()), Times.Never);
+    }
+
+    [Test]
+    public async Task Given_ApplicationDeclineSend_NotificationLookupThrows_Returns_RedirectToDeclined()
+    {
+        //Arrange
+        var id = "f41e59a2-9847-4084-9e17-0511e77571fb";
+        var response = _fixture.Create<Task<ApplicationItemResponse>>();
+        response.Result.Data.Establishment.Id = 123456;
+        response.Result.Data.Id = id;
+
+        _adminGatewayMock.SetupSequence(x => x.GetApplication(id))
+            .Returns(response) // ConfirmCheckAccess succeeds
+            .ThrowsAsync(new Exception("Gateway failure")); // notification lookup fails
+
+        //act
+        var result = await _sut.ApplicationDeclineSend(id);
+
+        //assert
+        result.Should().BeOfType<RedirectToActionResult>();
+        var redirect = result as RedirectToActionResult;
+        redirect.ActionName.Should().BeEquivalentTo("ApplicationDeclined");
+        _sendNotificationUseCaseMock.Verify(x => x.Execute(It.IsAny<NotificationRequest>()), Times.Never);
+    }
 }
