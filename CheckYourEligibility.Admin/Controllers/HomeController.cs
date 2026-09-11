@@ -82,6 +82,7 @@ public class HomeController : BaseController
         TempData["organisationType"] = organisationType;
 
         await IsExpandedFSMEnabled();
+        ViewBag.IsEnhanced = _Claims.Roles[0].Code == DfeSignInRoles.RoleCodeBasic ? false : true; 
 
         var schoolMenuContext = ViewBag.SchoolMenuContext as SchoolMenuContext ?? new SchoolMenuContext();
         var schoolCanReviewEvidence = schoolMenuContext.ShowReviewEvidenceTiles;

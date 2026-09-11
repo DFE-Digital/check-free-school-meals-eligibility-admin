@@ -10,6 +10,7 @@
     var orgType = TempData["organisationType"] as OrganisationCategory?;
     bool expandedEnabled = ViewBag.IsExpandedFSMEnabled;
     var SchoolCanReviewEvidence = Model.SchoolCanReviewEvidence;
+    bool isEnhanced = ViewBag.IsEnhanced ?? false;
 }
 
 <div class="govuk-grid-column-two-thirds">
@@ -21,6 +22,8 @@
         orgType == OrganisationCategory.LocalAuthority
         ||
         orgType == OrganisationCategory.MultiAcademyTrust
+        ||
+        orgType == OrganisationCategory.Establishment && isEnhanced == true
         )
     {
         <h2 class="govuk-heading-m">Run a check</h2>
