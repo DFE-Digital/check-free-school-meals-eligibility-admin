@@ -109,6 +109,15 @@ namespace CheckYourEligibility.Admin.Helpers
             return dob;
         }
 
+        private static string? GetOptionalEmailAddress(IReaderRow csv)
+        {
+            var emailAddress = csv.GetField(ParentEmailAddressHeader)?.Trim();
+
+            return string.IsNullOrEmpty(emailAddress)
+                ? null
+                : emailAddress;
+        }
+
         public static CheckEligibilityRequestDataBase CreateRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
         {
             var dob = csv.GetField(ParentDateOfBirthHeader)?.Trim() ?? string.Empty;
@@ -121,7 +130,10 @@ namespace CheckYourEligibility.Admin.Helpers
             };
         }
 
-        public static CheckEligibilityRequestData_Enhanced CreateEnhancedRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
+        public static CheckEligibilityRequestData_Enhanced CreateEnhancedRequestItem(
+         IReaderRow csv,
+         int sequence,
+         string? schoolUrn)
         {
             return new CheckEligibilityRequestData_Enhanced
             {
@@ -133,6 +145,7 @@ namespace CheckYourEligibility.Admin.Helpers
                 ChildLastName = csv.GetField(ChildLastNameHeader)?.Trim() ?? string.Empty,
                 ChildDateOfBirth = ParseDate(csv.GetField(ChildDateOfBirthHeader)),
                 ChildSchoolUrn = csv.GetField(ChildSchoolUrnHeader)?.Trim() ?? string.Empty,
+                EmailAddress = GetOptionalEmailAddress(csv),
                 Order = sequence
             };
         }
@@ -149,6 +162,7 @@ namespace CheckYourEligibility.Admin.Helpers
                 ChildLastName = csv.GetField(ChildLastNameHeader)?.Trim() ?? string.Empty,
                 ChildDateOfBirth = ParseDate(csv.GetField(ChildDateOfBirthHeader)),
                 ChildSchoolUrn = schoolUrn,
+                EmailAddress = GetOptionalEmailAddress(csv),
                 Order = sequence
             };
         }

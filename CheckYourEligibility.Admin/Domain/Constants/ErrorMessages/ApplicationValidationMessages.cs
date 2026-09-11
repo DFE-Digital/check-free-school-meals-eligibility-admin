@@ -19,4 +19,5 @@ public static class ValidationMessages
     public const string InvalidLastName = "Parent Last Name contains an invalid character";
     public const string InvalidChildFirstName = "Child First Name contains an invalid character";
     public const string InvalidChildLastName = "Child Last Name contains an invalid character";
+    public const string InvalidEmailAddress = "Invalid email address";
 }

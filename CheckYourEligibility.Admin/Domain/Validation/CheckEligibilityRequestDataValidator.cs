@@ -81,6 +81,10 @@ public class CheckEligibilityRequestDataValidator : AbstractValidator<IEligibili
                         .Must(DataValidation.BeAValidDate)
                         .WithMessage(ValidationMessages.ChildDOB);
 
+                    enhanced.RuleFor(x => x.EmailAddress)
+                        .Must(EmailAddressAttribute.IsValidEmailAddress)
+                        .WithMessage(ValidationMessages.InvalidEmailAddress);
+
                     // School URN (required + valid + business rule)
                     enhanced.RuleFor(x => x.ChildSchoolUrn)
                         .Cascade(CascadeMode.Stop)

@@ -30,6 +30,7 @@ public class CheckEligibilityRequestData_Enhanced : CheckEligibilityRequestDataB
     public string ChildLastName { get; set; }
     public string ChildDateOfBirth   { get; set; }
     public string ChildSchoolUrn { get; set; }
+    public string? EmailAddress { get; set; }
 
 }
 public class CheckEligibilityRequest_Enhanced

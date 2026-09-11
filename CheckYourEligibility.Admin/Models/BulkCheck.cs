@@ -38,4 +38,5 @@ public class BulkExport: BulkExportBase
 
     public string ChildSchoolUrn { get; set; }
 
+    public string? EmailAddress { get; set; }
 }
