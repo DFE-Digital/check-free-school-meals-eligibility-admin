@@ -594,12 +594,18 @@ public class CheckController : BaseController
         TempData["organisationType"] = organisationType;
 
         var tier = TempData["FSM_Tier"] as string;
-        var endDate = TempData["FSM_EndDate"] as string;
-
         string? formattedEndDate = null;
-        if (!string.IsNullOrEmpty(endDate) && DateTime.TryParse(endDate, out var parsed))
+        try
         {
-            formattedEndDate = parsed.ToString("dd MMMM yyyy");
+            if (TempData["FSM_EndDate"] != null)
+            {
+                var endDateTime = (DateTime)TempData["FSM_EndDate"];
+                formattedEndDate = endDateTime.ToString("dd MMMM yyyy");
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Eligibility end date not found in temp data");
         }
         ViewBag.Tier = tier;
         ViewBag.FormattedEndDate = formattedEndDate;
