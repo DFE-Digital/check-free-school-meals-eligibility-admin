@@ -764,7 +764,7 @@ public class ApplicationController : BaseController
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Failed to archive application {id.Replace(Environment.NewLine, "")}");
-            TempData["ErrorMessage"] = "Sorry, there was a problem archiving this record. " + ex.Message;
+            TempData["ErrorMessage"] = "This record cannot be restored. You will need to run a new check and create a new application.";
             return RedirectToAction("ApplicationDetail", new { id });
         }
 
@@ -788,7 +788,7 @@ public class ApplicationController : BaseController
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Failed to restore application {id.Replace(Environment.NewLine, "")}");
-            TempData["ErrorMessage"] = "Sorry, there was a problem restoring this record. " + ex.Message;
+            TempData["ErrorMessage"] = "This record cannot be restored. You will need to run a new check and create a new application.";
         }
 
         return RedirectToAction("ApplicationDetail", new { id });
