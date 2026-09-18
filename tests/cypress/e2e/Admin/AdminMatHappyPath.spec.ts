@@ -19,7 +19,7 @@ describe('Full journey of creating an application through school portal through 
         cy.contains('Search all records');
         cy.contains('Guidance');
 
-        //Future work should extend to perform check
+        //Future work should extend to Run check
 
     });
 })

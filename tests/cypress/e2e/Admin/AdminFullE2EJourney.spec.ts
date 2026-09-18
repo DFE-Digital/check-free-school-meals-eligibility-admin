@@ -33,7 +33,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type(NIN);
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
 
         //Not eligible outcome
         cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
@@ -181,7 +181,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type(NIN);
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
 
         //Not eligible outcome
         cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
@@ -324,7 +324,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type("nn123456c");
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
 
         //Eligible outcome page
         cy.get('.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'are eligible for free school meals.');
@@ -389,7 +389,7 @@ describe('Full journey of creating an application through school portal through 
     
         cy.get('#NationalInsuranceNumber').type("nn123456c");
     
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
     
         // Eligible outcome page
         cy.get('.govuk-notification-banner__heading', { timeout: 80000 })
