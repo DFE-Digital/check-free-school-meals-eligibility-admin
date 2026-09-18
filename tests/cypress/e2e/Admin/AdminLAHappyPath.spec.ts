@@ -23,7 +23,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type("nn123456c");
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
 
         //Eligible outcome page
         cy.contains('.govuk-notification-banner__title', "Children eligible for free school meals", { timeout: 80000, });

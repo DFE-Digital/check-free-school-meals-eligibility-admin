@@ -23,7 +23,7 @@ describe('BasicLAHappyPath', () => {
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type(NIN);
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
 
         //eligible outcome
         cy.get('h2.govuk-notification-banner__title', { timeout: 80000 }).should('include.text', 'Children eligible');
@@ -47,7 +47,7 @@ describe('BasicLAHappyPath', () => {
         cy.get('[id="DateOfBirth.Year"]').clear().type('1990');
         cy.get('#NationalInsuranceNumber').clear().type('PN123456A');
     
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
     
         cy.get('h2.govuk-notification-banner__title', { timeout: 80000 })
             .should('contain.text', 'Not eligible');
