@@ -27,7 +27,7 @@ describe('TechnicalError outcome should display Error Code and CorrelationID', (
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type("XX123456C");
-        cy.contains('button', 'Run Check').click();
+        cy.contains('button', 'Run check').click();
 
         //Loader page
         cy.url().should('include', 'Check/Loader');
