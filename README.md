@@ -74,7 +74,6 @@ Our goal is to make sure that our tests are easy to read and sturdy, to help kee
    purpose of the test, when this is unavoidable please again make sure that the helper function is clearly named and
    will allow a user to understand its purpose.
 
+### Local development setup
 
-
-
-
+See the [FSM Parent local setup guide](https://dfedigital.atlassian.net/wiki/spaces/ECE/pages/6144294917) for prerequisites, local configuration, Azure Key Vault secret mapping and troubleshooting common setup issues.
