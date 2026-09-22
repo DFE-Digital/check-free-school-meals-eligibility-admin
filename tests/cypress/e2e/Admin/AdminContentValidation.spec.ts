@@ -38,7 +38,7 @@ describe("Links on not eligible page route to the intended locations", () => {
     beforeEach(() => {
         cy.checkSession('schoolNonMatFlagOn');
         visitPrefilledForm();
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
     });
 
     it("Guidance link should route to guidance page", () => {
@@ -65,7 +65,7 @@ describe('Date of Birth Validation Tests', () => {
         cy.get('[id="DateOfBirth.Day"]').clear();
         cy.get('[id="DateOfBirth.Month"]').clear();
         cy.get('[id="DateOfBirth.Year"]').clear();
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
 
         cy.get('.govuk-error-message').should('contain', 'Enter a date of birth');
         cy.get('[id="DateOfBirth.Day"]').should('have.class', 'govuk-input--error');
@@ -77,7 +77,7 @@ describe('Date of Birth Validation Tests', () => {
         cy.get('[id="DateOfBirth.Day"]').clear().type('abc');
         cy.get('[id="DateOfBirth.Month"]').clear().type('xyz');
         cy.get('[id="DateOfBirth.Year"]').clear().type('abcd');
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
 
         cy.get('.govuk-error-message').should('contain', 'Date of birth must be a real date');
         cy.get('[id="DateOfBirth.Day"]').should('have.class', 'govuk-input--error');
@@ -89,7 +89,7 @@ describe('Date of Birth Validation Tests', () => {
         cy.get('[id="DateOfBirth.Day"]').clear().type('50');
         cy.get('[id="DateOfBirth.Month"]').clear().type('13');
         cy.get('[id="DateOfBirth.Year"]').clear().type('1800');
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
 
         cy.get('.govuk-error-message').should('contain', 'Date of birth must be a real date');
         cy.get('[id="DateOfBirth.Day"]').should('have.class', 'govuk-input--error');
@@ -101,7 +101,7 @@ describe('Date of Birth Validation Tests', () => {
         cy.get('[id="DateOfBirth.Day"]').clear().type('01');
         cy.get('[id="DateOfBirth.Month"]').clear().type('01');
         cy.get('[id="DateOfBirth.Year"]').clear().type((new Date().getFullYear() + 1).toString());
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
 
         cy.get('.govuk-error-message').should('contain', 'Enter a date in the past');
     });
@@ -110,7 +110,7 @@ describe('Date of Birth Validation Tests', () => {
         cy.get('[id="DateOfBirth.Day"]').clear().type('31');
         cy.get('[id="DateOfBirth.Month"]').clear().type('02');
         cy.get('[id="DateOfBirth.Year"]').clear().type('2020');
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
 
         cy.get('.govuk-error-message').should('contain', 'Date of birth must be a real date');
     });
@@ -119,7 +119,7 @@ describe('Date of Birth Validation Tests', () => {
         cy.get('[id="DateOfBirth.Day"]').clear().type('15');
         cy.get('[id="DateOfBirth.Month"]').clear().type('06');
         cy.get('[id="DateOfBirth.Year"]').clear().type('2005');
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
 
         cy.get('#Day + .govuk-error-message').should('not.exist');
         cy.get('#Month + .govuk-error-message').should('not.exist');
@@ -152,7 +152,7 @@ describe('Date of Birth Validation Tests', () => {
 //             //Soft-Check
 //             cy.url().should('include', '/Check/Enter_Details');
 //             visitPrefilledForm(true);
-//             cy.contains('button', 'Perform check').click();
+//             cy.contains('button', 'Run check').click();
 //             //Not Eligible, Appeal
 //             cy.url().should('include', 'Check/Loader');
 //             cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
@@ -208,7 +208,7 @@ describe('Date of Birth Validation Tests', () => {
 //             //Soft-Check
 //             cy.url().should('include', '/Check/Enter_Details');
 //             visitPrefilledForm(true);
-//             cy.contains('button', 'Perform check').click();
+//             cy.contains('button', 'Run check').click();
 //             //Not Eligible, Appeal
 //             cy.url().should('include', 'Check/Loader');
 //             cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');

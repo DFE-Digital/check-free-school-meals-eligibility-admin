@@ -40,7 +40,7 @@ describe('Test that approved accented characters are accepted in name input fiel
         // Test the validation for First name and Last name accept the DWP predefined list of approved characters 
         cy.get('#FirstName').type(approvedChars);
         cy.get('#LastName').type(approvedChars);
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
         cy.get('#error-summary')
             .should('not.contain.text', 'First Name field contains an invalid character')
             .and('not.contain.text', 'Last Name field contains an invalid character');
@@ -57,7 +57,7 @@ describe('Test that approved accented characters are accepted in name input fiel
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
         cy.get('#NationalInsuranceNumber').type(NIN);
-        cy.contains('button', 'Perform check').click();
+        cy.contains('button', 'Run check').click();
 
         //Not eligible outcome
         cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');

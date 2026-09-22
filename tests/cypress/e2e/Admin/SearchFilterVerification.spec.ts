@@ -31,7 +31,7 @@ describe('Keyword search validation', () => {
     cy.get('[id="DateOfBirth.Month"]').type('01');
     cy.get('[id="DateOfBirth.Year"]').type('1990');
     cy.get('#NationalInsuranceNumber').type(NIN);
-    cy.contains('button', 'Perform check').click();
+    cy.contains('button', 'Run check').click();
 
     //loader page and result
     cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
