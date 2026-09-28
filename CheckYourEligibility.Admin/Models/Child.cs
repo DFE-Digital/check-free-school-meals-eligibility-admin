@@ -7,7 +7,9 @@ public class Child
 {
     [NotMapped] public int ChildIndex { get; set; }
 
-    [ChildName("first name")] public string? FirstName { get; set; }
+    [ChildName("first name")]
+    [Name]
+    public string? FirstName { get; set; }
 
     [ChildName("last name")]
     [LastName("last name", "child", "ChildIndex")]
