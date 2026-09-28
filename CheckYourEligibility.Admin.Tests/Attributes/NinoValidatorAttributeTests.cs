@@ -1,203 +1,72 @@
-//using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using CheckYourEligibility.Admin.Attributes;
+using FluentAssertions;
 
-//namespace CheckYourEligibility.Admin.Tests.Attributes;
+namespace CheckYourEligibility.Admin.Tests.Attributes;
 
-//[TestFixture]
-//public class NinoValidatorAttributeTests
-//{
-//    #region Test Models
+[TestFixture]
+public class NinoValidatorAttributeTests
+{
+    private class TestModel
+    {
+        [NinValidator]
+        public string? NationalInsuranceNumber { get; set; }
+    }
 
-//    private class TestModel
-//    {
-//        public string? NationalInsuranceNumber { get; set; }
-//    }
+    [TestCase("AB123456A")]
+    [TestCase("AB123456B")]
+    [TestCase("AB123456C")]
+    [TestCase("AB123456D")]
+    [TestCase("ab123456c")]
+    public void Validate_ValidNino_ReturnsSuccess(string nino)
+    {
+        var results = Validate(nino);
 
-//    #endregion
+        results.Should().BeEmpty();
+    }
 
-//    #region Valid NIN Format Tests
+    [TestCase("12123456C")]
+    [TestCase("AB123456E")]
+    [TestCase("AB123456")]
+    [TestCase("AB-123456C")]
+    [TestCase("AB 12 34 56 C")]
+    [TestCase("BG123456A")]
+    [TestCase("GB123456A")]
+    [TestCase("NK123456A")]
+    [TestCase("KN123456A")]
+    [TestCase("TN123456A")]
+    [TestCase("NT123456A")]
+    [TestCase("ZZ123456A")]
+    [TestCase("AB12345 6C")]
+    [TestCase("AB123456 ")]
+    public void Validate_InvalidNino_ReturnsError(string nino)
+    {
+        var results = Validate(nino);
 
-//    [Test]
-//    [TestCase("AB123456C")]
-//    [TestCase("CD987654D")]
-//    [TestCase("AB123456")] // Without suffix
-//    [TestCase("ZY123456A")]
-//    [TestCase("ab123456c")] // Lowercase (should normalize)
-//    [TestCase("AB 12 34 56 C")] // With spaces (should normalize)
-//    public void IsValid_WithValidNinFormat_ReturnsSuccess(string nin)
-//    {
-//        // Arrange
-//        var model = new TestModel
-//        {
-//            NationalInsuranceNumber = nin
-//        };
+        results.Should().ContainSingle();
+        results[0].ErrorMessage.Should().Be(
+            "Enter a National Insurance number in the correct format");
+    }
 
-//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-//        var results = new List<ValidationResult>();
+    private static List<ValidationResult> Validate(string? nino)
+    {
+        var model = new TestModel
+        {
+            NationalInsuranceNumber = nino
+        };
 
-//        // Act
-//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
+        var context = new ValidationContext(model)
+        {
+            MemberName = nameof(TestModel.NationalInsuranceNumber)
+        };
 
-//        // Assert
-//        Assert.That(isValid, Is.True);
-//    }
+        var results = new List<ValidationResult>();
 
-//    #endregion
+        Validator.TryValidateProperty(
+            model.NationalInsuranceNumber,
+            context,
+            results);
 
-//    #region Invalid NIN Format Tests
-
-//    [Test]
-//    [TestCase("1234567890")] // All digits
-//    [TestCase("ABCDEFGHIJ")] // All letters
-//    [TestCase("AB12345")] // Too short
-//    [TestCase("AB1234567890")] // Too long (>9)
-//    [TestCase("AB123456E")] // Invalid suffix (E not allowed)
-//    [TestCase("AB-123456C")] // Invalid character after normalization
-//    [TestCase("")] // Empty
-//    public void IsValid_WithInvalidNinFormat_ReturnsError(string nin)
-//    {
-//        // Arrange
-//        var model = new TestModel
-//        {
-//            NationalInsuranceNumber = nin
-//        };
-
-//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-//        var results = new List<ValidationResult>();
-
-//        // Act
-//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
-
-//        // Assert
-//        Assert.That(isValid, Is.False);
-//        Assert.That(results, Is.Not.Empty);
-//    }
-
-//    [Test]
-//    public void IsValid_WithNinTooLong_ReturnsSpecificError()
-//    {
-//        // Arrange
-//        var model = new TestModel
-//        {
-//            NationalInsuranceNumber = "AB123456789012" // More than 9 characters
-//        };
-
-//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-//        var results = new List<ValidationResult>();
-
-//        // Act
-//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
-
-//        // Assert
-//        Assert.That(isValid, Is.False);
-//        Assert.That(results[0].ErrorMessage, Does.Contain("no more than 9 alphanumeric characters"));
-//    }
-
-//    #endregion
-
-//    #region Normalization Tests
-
-//    [Test]
-//    public void IsValid_WithSpacesInNin_NormalizesAndValidates()
-//    {
-//        // Arrange
-//        var model = new TestModel
-//        {
-//            NationalInsuranceNumber = "AB 12 34 56 C"
-//        };
-
-//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-//        var results = new List<ValidationResult>();
-
-//        // Act
-//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
-
-//        // Assert
-//        Assert.That(isValid, Is.True);
-//    }
-
-//    [Test]
-//    public void IsValid_WithLowercaseNin_NormalizesAndValidates()
-//    {
-//        // Arrange
-//        var model = new TestModel
-//        {
-//            NationalInsuranceNumber = "ab123456c"
-//        };
-
-//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-//        var results = new List<ValidationResult>();
-
-//        // Act
-//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
-
-//        // Assert
-//        Assert.That(isValid, Is.True);
-//    }
-
-//    [Test]
-//    public void IsValid_WithMixedCaseAndSpaces_NormalizesAndValidates()
-//    {
-//        // Arrange
-//        var model = new TestModel
-//        {
-//            NationalInsuranceNumber = "Ab 12 34 56 c"
-//        };
-
-//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-//        var results = new List<ValidationResult>();
-
-//        // Act
-//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
-
-//        // Assert
-//        Assert.That(isValid, Is.True);
-//    }
-
-//    #endregion
-
-//    #region Valid Suffix Tests
-
-//    [Test]
-//    [TestCase("AB123456A")]
-//    [TestCase("AB123456B")]
-//    [TestCase("AB123456C")]
-//    [TestCase("AB123456D")]
-//    public void IsValid_WithValidSuffix_ReturnsSuccess(string nin)
-//    {
-//        // Arrange
-//        var model = new TestModel
-//        {
-//            NationalInsuranceNumber = nin
-//        };
-
-//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-//        var results = new List<ValidationResult>();
-
-//        // Act
-//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
-
-//        // Assert
-//        Assert.That(isValid, Is.True);
-//    }
-
-//    [Test]
-//    public void IsValid_WithNoSuffix_ReturnsSuccess()
-//    {
-//        // Arrange - 8 characters without suffix
-//        var model = new TestModel
-//        {
-//            NationalInsuranceNumber = "AB123456"
-//        };
-
-//        var context = new ValidationContext(model) { MemberName = nameof(TestModel.NationalInsuranceNumber) };
-//        var results = new List<ValidationResult>();
-
-//        // Act
-//        var isValid = Validator.TryValidateProperty(model.NationalInsuranceNumber, context, results);
-
-//        // Assert
-//        Assert.That(isValid, Is.True);
-//    }
-
-//    #endregion
-//}
+        return results;
+    }
+}
