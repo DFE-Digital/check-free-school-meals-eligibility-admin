@@ -28,6 +28,7 @@ public class NinoValidatorAttributeTests
     [TestCase("12123456C")]
     [TestCase("AB123456E")]
     [TestCase("AB123456")]
+    [TestCase("AB12345678C")]
     [TestCase("AB-123456C")]
     [TestCase("AB 12 34 56 C")]
     [TestCase("BG123456A")]
