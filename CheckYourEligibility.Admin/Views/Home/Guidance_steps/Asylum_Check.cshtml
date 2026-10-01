@@ -1,10 +1,34 @@
-﻿@{
+﻿@using CheckYourEligibility.Admin.Domain.DfeSignIn
+@{
     ViewData["Title"] = "How to complete checks when the parent or guardian is an asylum seeker";
+
+    bool isEnhanced = ViewBag.IsEnhanced ?? false;
+    var orgType = TempData["organisationType"] as OrganisationCategory?;
 }
 
 <div class="govuk-grid-column-two-thirds">
     <a class="govuk-back-link backLinkJS" href="@Url.Action("Guidance", "Home")">Back</a>
 
+    @if (orgType == OrganisationCategory.Establishment && isEnhanced == true)
+    {
+        ViewData["Title"] = "How to complete checks when the parent or guardian is an asylum seeker";
+   
+        <h1 class="govuk-heading-l">
+            @ViewData["Title"]
+        </h1>
+        <p>
+            Some parents who are claiming asylum are eligible for free school meals under separate eligibility criteria.
+            These families may not have a National insurance number and cannot be processed through our standard online free school meals
+            checking system.
+        </p>
+        <p>
+            Schools should contact their local authority to arrange an offline check for families seeking asylum who cannot be verified through the online system.
+        </p>
+        <h3 class="govuk-heading-m" id="further-assistance">Help and support</h3>
+        <p>For further help and support, contact our support team using the <a href="https://customerhelpportal.education.gov.uk/" class="govuk-link">Customer help portal</a>.</p>
+    }
+    else
+    {
     <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
     <p>
         Some parents who are claiming asylum are eligible for free school meals under separate eligibility criteria.
@@ -164,4 +188,5 @@
             </div>
         </div>
     </div>
+    }
 </div>
