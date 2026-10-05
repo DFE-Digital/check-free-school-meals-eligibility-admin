@@ -82,6 +82,7 @@ public class HomeController : BaseController
         TempData["organisationType"] = organisationType;
 
         await IsExpandedFSMEnabled();
+        ViewBag.IsEnhanced = _Claims.Roles[0].Code == DfeSignInRoles.RoleCodeBasic ? false : true; 
 
         var schoolMenuContext = ViewBag.SchoolMenuContext as SchoolMenuContext ?? new SchoolMenuContext();
         var schoolCanReviewEvidence = schoolMenuContext.ShowReviewEvidenceTiles;
@@ -104,7 +105,16 @@ public class HomeController : BaseController
 
     public IActionResult FSMFormDownload() => View("FSMFormDownload");
 
-    public IActionResult AsylumCheck() => View("Guidance_steps/Asylum_Check");
+    public async Task<IActionResult> AsylumCheck() {
+
+        OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
+        TempData["organisationType"] = organisationType;
+
+        await IsExpandedFSMEnabled();
+        ViewBag.IsEnhanced = _Claims.Roles[0].Code == DfeSignInRoles.RoleCodeBasic ? false : true;
+
+
+        return View("Guidance_steps/Asylum_Check");} 
 
     public IActionResult BatchCheck() => View("Guidance_steps/Batch_Check");
 
