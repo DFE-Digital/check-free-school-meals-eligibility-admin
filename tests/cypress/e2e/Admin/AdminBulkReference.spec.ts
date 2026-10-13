@@ -32,6 +32,9 @@ services.forEach((service) => {
   describe(`FSM ${service.session} batch references`, () => {
     beforeEach(() => {
       cy.checkSession(service.session);
+      // The Basic journey deliberately exhausts the upload allowance in its cached session.
+      // Start each reference case with fresh application state after restoring sign-in.
+      cy.clearCookie(".AspNetCore.Session");
       cy.visit("/home");
       cy.contains("Run a batch check").click();
     });
