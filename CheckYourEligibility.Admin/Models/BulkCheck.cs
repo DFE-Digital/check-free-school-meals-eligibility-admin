@@ -25,6 +25,7 @@ public class BulkExportBase : IBulkExport
     public string Outcome { get; set; }
     public string? EligibilityEndDate { get; set; }
     public string? Tier { get; set; }
+    public string? Reference { get; set; }
 }
 
 public class BulkExport: BulkExportBase

@@ -53,9 +53,9 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
         
 
         public static List<string> GuidanceItemsBasic = [
-             "last name",
-             "date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
-             "National Insurance number"
+             "parent last name",
+             "parent date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
+             "parent National Insurance number"
             ];
 
         /// <summary>
@@ -80,8 +80,6 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
             {
                 GuidanceItemsEnhanced.Add("URN of the school the child attends on a full-time basis");
             }
-
-            GuidanceItemsEnhanced.Add("Parent email address (optional)");
 
             return GuidanceItemsEnhanced;
 

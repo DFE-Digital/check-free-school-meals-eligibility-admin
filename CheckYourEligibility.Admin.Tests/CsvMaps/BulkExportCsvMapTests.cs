@@ -48,7 +48,8 @@ public class BulkExportCsvMapTests
                 BulkCheckConstants.ChildDateOfBirthHeader,
                 BulkCheckConstants.ChildSchoolUrnHeader,
                 BulkCheckConstants.ParentEmailAddressHeader,
-                BulkCheckConstants.Outcome
+                BulkCheckConstants.Outcome,
+                BulkCheckConstants.ReferenceHeader
             ]);
     }
 
@@ -68,7 +69,8 @@ public class BulkExportCsvMapTests
                 BulkCheckConstants.ChildSchoolUrnHeader,
                 BulkCheckConstants.ParentEmailAddressHeader,
                 BulkCheckConstants.Outcome,
-                BulkCheckConstants.EligibilityEndDate
+                BulkCheckConstants.EligibilityEndDate,
+                BulkCheckConstants.ReferenceHeader
             ]);
     }
 
