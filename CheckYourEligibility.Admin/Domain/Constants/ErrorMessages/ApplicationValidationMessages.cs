@@ -4,6 +4,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.ErrorMessages;
 
 public static class ValidationMessages
 {
+    public const string ReferenceTooLong = "Reference must be 100 characters or fewer.";
     public const string FirstName = "Parent First Name is required";
     public const string LastName = "Parent Last Name is required";
     public const string DOB = "Date of birth is required:- (yyyy-mm-dd)";

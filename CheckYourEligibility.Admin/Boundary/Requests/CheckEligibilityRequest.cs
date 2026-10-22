@@ -5,6 +5,14 @@ namespace CheckYourEligibility.Admin.Boundary.Requests;
 
 public class CheckEligibilityRequestDataBase : IEligibilityServiceType
 {
+    private string? reference;
+
+    public string? Reference
+    {
+        get => reference;
+        set => reference = value?.Trim();
+    }
+
     protected CheckEligibilityType baseType = CheckEligibilityType.FreeSchoolMeals;
     public string? NationalInsuranceNumber { get; set; }
     public string LastName { get; set; } = string.Empty;

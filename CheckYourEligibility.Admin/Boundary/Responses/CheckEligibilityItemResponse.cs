@@ -23,6 +23,7 @@ public class CheckEligibilityItem
     public string? ChildDateOfBirth { get; set; }
     public string? ChildSchoolUrn { get; set; }
     public string? EmailAddress { get; set; }
+    public string? Reference { get; set; }
     public int? Order { get; set; }
 }
 

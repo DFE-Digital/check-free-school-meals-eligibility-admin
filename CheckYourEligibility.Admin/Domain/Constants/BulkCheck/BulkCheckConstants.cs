@@ -10,6 +10,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
         public const string ParentDateOfBirthHeader = "Parent Date of Birth";
         public const string ParentNINOHeader = "Parent National Insurance number";
         public const string ParentEmailAddressHeader = "Parent Email Address (optional)";
+        public const string ReferenceHeader = "Reference (optional)";
 
         public const string ChildFirstNameHeader = "Child First Name";
         public const string ChildLastNameHeader = "Child Last Name";
@@ -22,7 +23,8 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
         public static string[] Headers = {
                 ParentLastNameHeader,
                 ParentDateOfBirthHeader,
-                ParentNINOHeader };
+                ParentNINOHeader,
+                ReferenceHeader };
 
 
         public static string[] enhancedHeaders = {
@@ -34,7 +36,8 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
                 ChildLastNameHeader,
                 ChildDateOfBirthHeader,
                 ChildSchoolUrnHeader,
-                ParentEmailAddressHeader };
+                ParentEmailAddressHeader,
+                ReferenceHeader };
 
         public static string[] enhancedSchoolHeaders = {
                 ParentFirstNameHeader,
@@ -44,14 +47,15 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
                 ChildFirstNameHeader,
                 ChildLastNameHeader,
                 ChildDateOfBirthHeader,
-                ParentEmailAddressHeader };
+                ParentEmailAddressHeader,
+                ReferenceHeader };
 
         
 
         public static List<string> GuidanceItemsBasic = [
-             "last name",
-             "date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
-             "National Insurance number"
+             "parent last name",
+             "parent date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
+             "parent National Insurance number"
             ];
 
         /// <summary>
@@ -76,8 +80,6 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
             {
                 GuidanceItemsEnhanced.Add("URN of the school the child attends on a full-time basis");
             }
-
-            GuidanceItemsEnhanced.Add("Parent email address (optional)");
 
             return GuidanceItemsEnhanced;
 

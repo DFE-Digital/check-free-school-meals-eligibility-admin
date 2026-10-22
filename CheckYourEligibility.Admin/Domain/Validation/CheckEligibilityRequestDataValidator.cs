@@ -19,6 +19,10 @@ public class CheckEligibilityRequestDataValidator : AbstractValidator<IEligibili
                 // Last Name (required + valid)
                 .ChildRules(baseValidator =>
                 {
+                    baseValidator.RuleFor(x => x.Reference)
+                        .MaximumLength(100)
+                        .WithMessage(ValidationMessages.ReferenceTooLong);
+
                     baseValidator.RuleFor(x => x.LastName)
                         .Cascade(CascadeMode.Stop)
                         .NotEmpty()
