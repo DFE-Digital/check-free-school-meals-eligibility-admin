@@ -15,6 +15,7 @@ namespace CheckYourEligibility.Admin.Boundary.Responses
         public DateTime DateCheckSubmitted { get; set; }
 
         public string Outcome { get; set; }
+        public string AsylumSeekerReference { get; set; }
 
         public string CheckType { get; set; }
 

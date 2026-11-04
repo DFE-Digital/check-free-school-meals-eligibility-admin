@@ -211,7 +211,8 @@ public class EligibilityCheckReportingController : BaseController
                     CheckType = x.ProcessingType,
                     CheckedBy = x.CheckedBy,
                     Outcome = x.OutcomeDisplay,
-                    Tier = x.Tier
+                    Tier = x.Tier,
+                    AsylumSeekerReference = x.AsylumSeekerReference
                 }).ToList();
 
                 csv.WriteRecords(exportData);

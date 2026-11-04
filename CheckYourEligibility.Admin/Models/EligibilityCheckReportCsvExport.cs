@@ -27,4 +27,6 @@ public class EligibilityCheckReportCsvExport
 
     [Name("Tier")]
     public string Tier { get; set; }
+    [Name("Asylum Seeker Reference")]
+    public string AsylumSeekerReference { get; set; }
 }
