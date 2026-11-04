@@ -174,7 +174,7 @@ John,Smith,1985-03-15,AB123456C,");
     {
         SetupValidatorFailures(
             new ValidationFailure(nameof(CheckEligibilityRequestDataBase.DateOfBirth), ValidationMessages.DOB),
-            new ValidationFailure(nameof(CheckEligibilityRequestDataBase.NationalInsuranceNumber), ValidationMessages.NI)
+            new ValidationFailure(nameof(CheckEligibilityRequestDataBase.NationalInsuranceNumber), ValidationMessages.InvalidNI)
         );
 
         var result = await Execute(@"

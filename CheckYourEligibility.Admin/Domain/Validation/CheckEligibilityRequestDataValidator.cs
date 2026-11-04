@@ -32,12 +32,35 @@ public class CheckEligibilityRequestDataValidator : AbstractValidator<IEligibili
                         .Must(DataValidation.BeAValidDate)
                         .WithMessage(ValidationMessages.DOB);
 
-                    // NI (required + valid)
-                    baseValidator.RuleFor(x => x.NationalInsuranceNumber)
-                        .NotEmpty()
-                        .WithMessage(ValidationMessages.NI)
-                        .Must(DataValidation.BeAValidNi)                     
-                        .WithMessage(ValidationMessages.NI);
+                    // NI or NASS (required)
+                    baseValidator.RuleFor(x => x)
+                        .Must(x =>
+                         !string.IsNullOrWhiteSpace(x.NationalInsuranceNumber) ||
+                         !string.IsNullOrWhiteSpace(x.NationalAsylumSeekerServiceNumber))
+                        .WithMessage(ValidationMessages.NI_or_NASS);
+
+                    //NI and NASS (both not allowed)
+                    baseValidator.RuleFor(x => x)
+                        .Must(x =>
+                         string.IsNullOrWhiteSpace(x.NationalInsuranceNumber) ||
+                         string.IsNullOrWhiteSpace(x.NationalAsylumSeekerServiceNumber))
+                        .WithMessage(ValidationMessages.NI_and_NASS);
+
+                    // Validate NI when present
+                    baseValidator.When(x => !string.IsNullOrWhiteSpace(x.NationalInsuranceNumber), () =>
+                    {
+                        baseValidator.RuleFor(x => x.NationalInsuranceNumber)
+                            .Must(DataValidation.BeAValidNi)
+                            .WithMessage(ValidationMessages.InvalidNI);
+                    });
+
+                    // Validate NASS when present
+                    baseValidator.When(x => !string.IsNullOrWhiteSpace(x.NationalAsylumSeekerServiceNumber), () =>
+                    {
+                        baseValidator.RuleFor(x => x.NationalAsylumSeekerServiceNumber)
+                            .Must(DataValidation.BeAValidNass)
+                            .WithMessage(ValidationMessages.InvalidNASS);
+                    });
                 });
         });
 
