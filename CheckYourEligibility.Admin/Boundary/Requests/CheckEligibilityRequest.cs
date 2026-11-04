@@ -9,6 +9,14 @@ public interface IEligibilityServiceType
 
 public class CheckEligibilityRequestDataBase : IEligibilityServiceType
 {
+    private string? reference;
+
+    public string? Reference
+    {
+        get => reference;
+        set => reference = value?.Trim();
+    }
+
     protected CheckEligibilityType baseType = CheckEligibilityType.FreeSchoolMeals;
 
     public string? NationalInsuranceNumber { get; set; }
@@ -18,8 +26,7 @@ public class CheckEligibilityRequestDataBase : IEligibilityServiceType
     public string LastName { get; set; } = string.Empty;
 
     public string DateOfBirth { get; set; } = string.Empty;
-
-    public int? Sequence { get; set; }
+    public int? Order { get; set; }
 }
 
 public class CheckEligibilityRequestBulkBase
@@ -34,6 +41,10 @@ public class CheckEligibilityRequestData_Enhanced : CheckEligibilityRequestDataB
     public string FirstName { get; set; }
 
     public string ChildFirstName { get; set; }
+    public string ChildLastName { get; set; }
+    public string ChildDateOfBirth   { get; set; }
+    public string ChildSchoolUrn { get; set; }
+    public string? EmailAddress { get; set; }
 
     public string ChildLastName { get; set; }
 

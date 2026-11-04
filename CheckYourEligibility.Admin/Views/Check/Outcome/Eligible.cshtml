@@ -147,7 +147,19 @@
                 <div class="govuk-button-group">
                     @if (TempData["organisationRole"].Equals(OrgRole.enhanced))
                     {
-                        @Html.ActionLink("Continue to add child details", "Enter_Child_Details", "Check", null, new { @class = "govuk-button" })
+                        <form asp-controller="Check" asp-action="Start_Child_Details" method="post" novalidate>
+                            <input type="hidden" asp-for="ParentGuardian.FirstName" />
+                            <input type="hidden" asp-for="ParentGuardian.LastName" />
+                            <input type="hidden" asp-for="ParentGuardian.Day" />
+                            <input type="hidden" asp-for="ParentGuardian.Month" />
+                            <input type="hidden" asp-for="ParentGuardian.Year" />
+                            <input type="hidden" asp-for="ParentGuardian.EmailAddress" />
+                            <input type="hidden" asp-for="ParentGuardian.NationalInsuranceNumber" />
+                            <input type="hidden" asp-for="Status" />
+                            <input type="hidden" asp-for="Tier" />
+                            <input type="hidden" asp-for="EligibilityEndDate" />
+                            <button type="submit" class="govuk-button" data-module="govuk-button">Continue to add child details</button>
+                        </form>
                     }
                     @Html.ActionLink("Do another check", "Enter_Details", "Check", null, new { @class = "govuk-link" })
                 </div>

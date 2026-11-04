@@ -562,17 +562,7 @@ hr {
 }
 
 /*END - SchoolListSearch in SchoolList should be accessible using only the keyboard*/
-
-.govuk-table__actions {
-    margin: 0;
-    // Reset default user agent styles @include govuk-media-query($from: tablet)
-
-{
-    display: table-cell;
-}
-
-}
-
+/*BEGIN - Changes to trable structure for batch check history table since multiple action hyperlinks inhabit the same cell*/
 .govuk-table__actions {
     margin-bottom: 15px;
 }
@@ -600,7 +590,6 @@ hr {
         isolation: isolate;
     }
 
-// Full table font size override
 .govuk-table-\!-font-size-16 :is(TD, TH, .govuk-tag, .govuk-link) {
     font-size: 14px !important;
     font-size: 0.875 !important;
@@ -630,4 +619,6 @@ hr {
 .expando-toggle:has(input:checked) .expando-select {
     display: block;
 }
+/*END - Changes to trable structure for batch check history table since multiple action hyperlinks inhabit the same cell*/
+
 

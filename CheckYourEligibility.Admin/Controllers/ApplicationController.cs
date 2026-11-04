@@ -737,6 +737,7 @@ public class ApplicationController : BaseController
 
         var eligibilityTier = Enum.Parse<EligibilityTier>(tier);
         await _adminGateway.PatchApplicationStatus(id, ApplicationStatus.ReviewedEntitled, eligibilityTier);
+        await SendApplicationDecisionNotification(id, NotificationType.ParentApplicationSuccessful);
 
         return RedirectToAction("ApplicationApproved", new { id });
     }
@@ -748,8 +749,44 @@ public class ApplicationController : BaseController
         if (checkAccess != null) return checkAccess;
 
         await _adminGateway.PatchApplicationStatus(id, ApplicationStatus.ReviewedNotEntitled);
+        await SendApplicationDecisionNotification(id, NotificationType.ParentApplicationUnsuccessful);
 
         return RedirectToAction("ApplicationDeclined", new { id });
+    }
+
+    private async Task SendApplicationDecisionNotification(string id, NotificationType notificationType)
+    {
+        try
+        {
+            var application = await _adminGateway.GetApplication(id);
+            if (application == null || application.Data == null)
+            {
+                _logger.LogError($"Application not found for notification ID: {id.Replace(Environment.NewLine, "")}");
+                return;
+            }
+
+            var notificationRequest = new NotificationRequest
+            {
+                Data = new NotificationRequestData
+                {
+                    Email = application.Data.ParentEmail,
+                    Type = notificationType,
+                    Personalisation = new Dictionary<string, object>
+                    {
+                        { "reference", application.Data.Reference },
+                        { "parentFirstName", $"{application.Data.ParentFirstName}" }
+                    }
+                }
+            };
+
+            await _sendNotificationUseCase.Execute(notificationRequest);
+            _logger.LogInformation("Notification sent for application {Reference}", application.Data.Reference);
+        }
+        catch (Exception ex)
+        {
+            // Status update already succeeded; notification failure must not block the confirmation redirect.
+            _logger.LogError(ex, "Failed to send notification for application ID: {Id}", id.Replace(Environment.NewLine, ""));
+        }
     }
 
     public async Task<IActionResult> ApplicationArchiveSend(string id)
@@ -757,9 +794,17 @@ public class ApplicationController : BaseController
         var checkAccess = await ConfirmCheckAccess(id);
         if (checkAccess != null) return checkAccess;
 
-        await _adminGateway.PatchApplicationStatus(id, ApplicationStatus.Archived);
+        try
+        {
+            await _adminGateway.PatchApplicationStatus(id, ApplicationStatus.Archived);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to archive application {id.Replace(Environment.NewLine, "")}");
+            TempData["ErrorMessage"] = "Sorry, there was a problem archiving this record. " + ex.Message;
+            return RedirectToAction("ApplicationDetail", new { id });
+        }
 
-        var response = await _adminGateway.GetApplication(id);
         return RedirectToAction("ApplicationArchived", new { id });
     }
 
@@ -768,13 +813,19 @@ public class ApplicationController : BaseController
         var checkAccess = await ConfirmCheckAccess(id);
         if (checkAccess != null) return checkAccess;
 
-        var currentApplication = await _adminGateway.GetApplication(id);
-        if (currentApplication.Data.Status == ApplicationStatus.Archived)
+        try
         {
-            await _adminGateway.RestoreApplicationStatus(id);
-
-            var response = await _adminGateway.GetApplication(id);
-            TempData["restored"] = true;
+            var currentApplication = await _adminGateway.GetApplication(id);
+            if (currentApplication.Data.Status == ApplicationStatus.Archived)
+            {
+                await _adminGateway.RestoreApplicationStatus(id);
+                TempData["restored"] = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to restore application {id.Replace(Environment.NewLine, "")}");
+            TempData["ErrorMessage"] = "This record cannot be restored. You will need to run a new check and create a new application.";
         }
 
         return RedirectToAction("ApplicationDetail", new { id });

@@ -9,10 +9,10 @@ const bulkBasicOverLimitRowCount = Number(
 
 const createBasicBulkCsv = (rowCount: number): string => {
   const header =
-    "Parent Last Name,Parent Date of Birth,Parent National Insurance number";
+    "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)";
   const rows = Array.from({ length: rowCount }, (_, index) => {
     const day = ((index % 28) + 1).toString().padStart(2, "0");
-    return `Tester,${day}/01/2000,AB123456C`;
+    return `Tester,${day}/01/2000,AB123456C,`;
   });
   return [header, ...rows].join("\n");
 };
@@ -115,14 +115,15 @@ it("will run a successful batch check", () => {
       month: "short",
       year: "numeric",
     })
-    .replace(",", "");
+    .replace(",", "")
+    .replace("Sept", "Sep");
 
   cy.contains("table tbody tr", "BASIC-bulkchecktemplate_complete.csv")
     .should("exist")
     .then(($row) => {
       cy.wrap($row).find("td").eq(0).invoke("text").should("match", /\.csv$/i);
       cy.wrap($row).find("td").eq(1).should("have.text", "15");
-      cy.wrap($row).find("td").eq(2).should("have.text", "Tester");
+      cy.wrap($row).find("td").eq(2).should("have.text", "TESTER"); //API sets last name value.Trim().ToUpperInvariant()
       cy.wrap($row).find("td").eq(3).should("contain.text", today);
       cy.wrap($row).find("td").eq(4).invoke("text").should("not.be.empty");
       cy.wrap($row).find("td").eq(5).find("strong").should("have.class", "govuk-tag");

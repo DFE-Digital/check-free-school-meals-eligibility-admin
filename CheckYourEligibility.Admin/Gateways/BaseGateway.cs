@@ -297,9 +297,11 @@ public class BaseGateway
     protected virtual async Task LogApiErrorInternal(HttpResponseMessage task, string method, string uri, string data)
     {
         var guid = Guid.NewGuid().ToString();
+        string? apiErrorTitle = null;
         if (task?.Content != null)
         {
             var jsonString = await task.Content.ReadAsStringAsync();
+            apiErrorTitle = TryGetApiErrorTitle(jsonString);
             _telemetry.TrackEvent($"Ui_Calling_API {method} failure",
                 new Dictionary<string, string>
                 {
@@ -316,8 +318,9 @@ public class BaseGateway
                 new Dictionary<string, string> { { "LogId", guid }, { "Address", uri } });
         }
 
-        throw new Exception(
-            $"Ui_Calling_API Failure:-{method} , your issue has been logged please use the following reference:- {guid}");
+        throw new Exception(!string.IsNullOrWhiteSpace(apiErrorTitle)
+            ? $"{apiErrorTitle} (reference:- {guid})"
+            : $"Ui_Calling_API Failure:-{method} , your issue has been logged please use the following reference:- {guid}");
     }
 
     [ExcludeFromCodeCoverage(Justification =
@@ -325,9 +328,11 @@ public class BaseGateway
     protected virtual async Task LogApiErrorInternal(HttpResponseMessage task, string method, string uri)
     {
         var guid = Guid.NewGuid().ToString();
+        string? apiErrorTitle = null;
         if (task.Content != null)
         {
             var jsonString = await task.Content.ReadAsStringAsync();
+            apiErrorTitle = TryGetApiErrorTitle(jsonString);
             _telemetry.TrackEvent($"Ui_Calling_API {method} failure",
                 new Dictionary<string, string>
                 {
@@ -343,7 +348,32 @@ public class BaseGateway
                 new Dictionary<string, string> { { "LogId", guid }, { "Address", uri } });
         }
 
-        throw new Exception(
-            $"Ui_Calling_API Failure:-{method} , your issue has been logged please use the following reference:- {guid}");
+        throw new Exception(!string.IsNullOrWhiteSpace(apiErrorTitle)
+            ? $"{apiErrorTitle} (reference:- {guid})"
+            : $"Ui_Calling_API Failure:-{method} , your issue has been logged please use the following reference:- {guid}");
+    }
+
+    private static string? TryGetApiErrorTitle(string jsonString)
+    {
+        try
+        {
+            var errorResponse = JsonConvert.DeserializeObject<ApiErrorResponse>(jsonString);
+            return errorResponse?.Errors?.FirstOrDefault()?.Title;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private class ApiErrorResponse
+    {
+        public List<ApiError>? Errors { get; set; }
+    }
+
+    private class ApiError
+    {
+        public string? Title { get; set; }
+        public int Status { get; set; }
     }
 }

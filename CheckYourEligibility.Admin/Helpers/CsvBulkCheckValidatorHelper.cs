@@ -11,6 +11,8 @@ namespace CheckYourEligibility.Admin.Helpers
 
         public const string MissingHeadersErrorMessage = "Invalid CSV format. Missing required header:";
 
+        public const string MissingReferenceHeaderErrorMessage = "The selected file must include the column heading Reference (optional).";
+
         public static async Task<CsvHeaderValidationResponse> ValidateHeadersAsync(CsvReader csv, string[] expectedHeaders)
         {
             var validationResponse = new CsvHeaderValidationResponse() { isSuccess = true };
@@ -22,6 +24,15 @@ namespace CheckYourEligibility.Admin.Helpers
                 csv.ReadHeader();
                 var headers = csv.HeaderRecord;
 
+                // Identify the mandatory Reference header even when its absence changes the column count.
+                var requiresReference = expectedHeaders.Contains(ReferenceHeader);
+                if (requiresReference && headers != null && !headers.Contains(ReferenceHeader))
+                {
+                    validationResponse.isSuccess = false;
+                    validationResponse.error = MissingReferenceHeaderErrorMessage;
+                    return validationResponse;
+                }
+
                 if (headers == null || headers.Length != expectedHeaders.Length)
                 {
                     validationResponse.isSuccess = false;
@@ -29,7 +40,14 @@ namespace CheckYourEligibility.Admin.Helpers
                     return validationResponse;
                 }
 
-                // Normalize headers for comparison
+                if (requiresReference && headers.Last() != ReferenceHeader)
+                {
+                    validationResponse.isSuccess = false;
+                    validationResponse.error = IncorrectHeadersErrorMessage;
+                    return validationResponse;
+                }
+
+                // Normalize existing headers for comparison.
                 var normalizedHeaders = headers.Select(h => h.Trim().ToLowerInvariant()).ToArray();
 
                 // Check if all expected headers are present
@@ -94,7 +112,10 @@ namespace CheckYourEligibility.Admin.Helpers
             return PopulateBaseFields(new CheckEligibilityRequestDataBase(), csv, sequence);
         }
 
-        public static CheckEligibilityRequestData_Enhanced CreateEnhancedRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
+        public static CheckEligibilityRequestData_Enhanced CreateEnhancedRequestItem(
+         IReaderRow csv,
+         int sequence,
+         string? schoolUrn)
         {
             return BuildEnhancedRequestItem(csv, sequence, GetTrimmedField(csv, ChildSchoolUrnHeader));
         }
@@ -116,6 +137,15 @@ namespace CheckYourEligibility.Admin.Helpers
             return false;
         }
 
+        private static string? GetOptionalEmailAddress(IReaderRow csv)
+        {
+            var emailAddress = csv.GetField(ParentEmailAddressHeader)?.Trim();
+
+            return string.IsNullOrEmpty(emailAddress)
+                ? null
+                : emailAddress;
+        }
+
         private static CheckEligibilityRequestData_Enhanced BuildEnhancedRequestItem(IReaderRow csv, int sequence, string? childSchoolUrn)
         {
             var request = new CheckEligibilityRequestData_Enhanced
@@ -124,7 +154,9 @@ namespace CheckYourEligibility.Admin.Helpers
                 ChildFirstName = GetTrimmedField(csv, ChildFirstNameHeader),
                 ChildLastName = GetTrimmedField(csv, ChildLastNameHeader),
                 ChildDateOfBirth = ParseDate(GetTrimmedField(csv, ChildDateOfBirthHeader)),
-                ChildSchoolUrn = childSchoolUrn
+                ChildSchoolUrn = childSchoolUrn,
+                EmailAddress = GetOptionalEmailAddress(csv),
+                Reference = csv.GetField(ReferenceHeader),
             };
 
             return PopulateBaseFields(request, csv, sequence);
@@ -135,21 +167,19 @@ namespace CheckYourEligibility.Admin.Helpers
         {
             request.LastName = GetTrimmedField(csv, ParentLastNameHeader);
             request.DateOfBirth = ParseDate(GetTrimmedField(csv, ParentDateOfBirthHeader));
-            request.NationalInsuranceNumber = GetUpperTrimmedField(csv, ParentNINOHeader);
+            request.NationalInsuranceNumber = GetTrimmedField(csv, ParentNINOHeader, isUpper: true);
             request.NationalAsylumSeekerServiceNumber = GetTrimmedField(csv, ParentNASSHeader);
-            request.Sequence = sequence;
+            request.Order = sequence;
 
             return request;
         }
 
-        private static string GetTrimmedField(IReaderRow csv, string header)
+        private static string GetTrimmedField(IReaderRow csv, string header, bool isUpper = false)
         {
-            return csv.GetField(header)?.Trim() ?? string.Empty;
-        }
+            string field = csv.GetField(header)?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(field) && isUpper) return field.ToUpper();
 
-        private static string GetUpperTrimmedField(IReaderRow csv, string header)
-        {
-            return GetTrimmedField(csv, header).ToUpper();
+            return field;
         }
 
         public class BulkCheckCsvResult<T> where T : CheckEligibilityRequestDataBase

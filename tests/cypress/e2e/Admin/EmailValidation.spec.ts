@@ -99,7 +99,7 @@ describe("email address validation", () => {
             const emailEl = win.document.getElementById('EmailAddress') as HTMLInputElement;
             if (emailEl) emailEl.value = email; // Set the value directly
         });
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
         cy.get('.govuk-error-message').should('contain', 'Enter an email address in the correct format, like name@example.com');
     };
 
@@ -109,7 +109,7 @@ describe("email address validation", () => {
             const emailEl = win.document.getElementById('EmailAddress') as HTMLInputElement;
             if (emailEl) emailEl.value = email;
         });
-        cy.contains('Perform check').click();
+        cy.contains('Run check').click();
         // Check that the validation message specifically for email is not present
         cy.get('.govuk-error-message span[data-valmsg-for="EmailAddress"]').should('not.exist');
 

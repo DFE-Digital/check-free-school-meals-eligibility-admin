@@ -12,10 +12,14 @@ namespace CheckYourEligibility.Admin.Mappings
         public BulkExportProfile()
         {
             CreateMap<CheckEligibilityItem, BulkExportBase>()
+                .ForMember(d => d.Reference,
+                    opt => opt.MapFrom(s => s.Reference == null ? null : s.Reference.Trim()))
                 .ForMember(d => d.Outcome,
                     opt => opt.MapFrom(s => s.Status.GetFsmStatusDescriptionBulkCheck(s.Tier)));
 
             CreateMap<CheckEligibilityItem, BulkExport>()
+                .ForMember(d => d.Reference,
+                    opt => opt.MapFrom(s => s.Reference == null ? null : s.Reference.Trim()))
                 .ForMember(d => d.Outcome,
                     opt => opt.MapFrom(s => s.Status.GetFsmStatusDescriptionBulkCheck(s.Tier)))
                 .ForMember(d => d.EligibilityEndDate,

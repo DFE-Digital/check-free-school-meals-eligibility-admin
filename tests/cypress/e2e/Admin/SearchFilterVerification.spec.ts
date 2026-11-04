@@ -31,12 +31,11 @@ describe('Keyword search validation', () => {
     cy.get('[id="DateOfBirth.Month"]').type('01');
     cy.get('[id="DateOfBirth.Year"]').type('1990');
     cy.get('#NationalInsuranceNumber').type(NIN);
-    cy.contains('button', 'Perform check').click();
+    cy.contains('button', 'Run check').click();
 
     //loader page and result
-    cy.url().should('include', 'Check/Loader');
-    cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian may not be eligible for free school meals');
-    cy.contains('a.govuk-button', 'Appeal now').click();
+    cy.get('p.govuk-notification-banner__heading', { timeout: 80000 }).should('include.text', 'The children of this parent or guardian are not eligible');
+    cy.contains('button.govuk-button', 'Appeal now').click();
 
     //enter child details
     cy.url().should('include', '/Enter_Child_Details');
