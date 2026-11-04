@@ -288,6 +288,7 @@ public class ApplicationController : BaseController
                                   "Parent Email," +
                                   "Parent DOB," +
                                   "Parent NI Number," +
+                                  "Parent National Asylum Seeker Reference Number," +
                                   "Child First Name," +
                                   "Child Last Name," +
                                   "Child DOB," +
@@ -298,7 +299,7 @@ public class ApplicationController : BaseController
 
             foreach (var app in response.Data)
                 csvContent.AppendLine(string.Format(
-                    "{0},\"{1}\",\"{2}\",\"{3}\",\"{4}\",{5},{6},\"{7}\",\"{8}\",{9},\"{10}\",{11},\"{12}\",{13}",
+                    "{0},\"{1}\",\"{2}\",\"{3}\",\"{4}\",{5},{6},{7},\"{8}\",\"{9}\",{10},\"{11}\",{12},\"{13}\",{14}",
                     app.Reference,
                     app.Status.GetApplicationStatusDescription(app.Tier),
                     app.ParentFirstName?.Replace("\"", "\"\""),
@@ -306,6 +307,7 @@ public class ApplicationController : BaseController
                     app.ParentEmail?.Replace("\"", "\"\""),
                     app.ParentDateOfBirth,
                     app.ParentNationalInsuranceNumber?.Replace("\"", "\"\"") ?? "",
+                    app.ParentNationalAsylumSeekerServiceNumber?.Replace("\"", "\"\"") ?? "",
                     app.ChildFirstName?.Replace("\"", "\"\""),
                     app.ChildLastName?.Replace("\"", "\"\""),
                     app.ChildDateOfBirth,
