@@ -21,17 +21,11 @@ namespace CheckYourEligibility.Admin.Tests.Usecases;
 [TestFixture]
 public class BulkReferenceUploadTests
 {
-    public enum UploadMode { Basic, EnhancedLA, EnhancedMAT, EnhancedSchool }
     private static readonly UploadMode[] Modes = Enum.GetValues<UploadMode>();
 
-    private static IEnumerable<TestCaseData> AcceptedReferences()
-    {
-        var references = new[] { "", new string(' ', 101), new string('a', 99), new string('a', 100),
-            " \t" + new string('a', 100) + "\t ", "  MiXeD  Case-001  ", "  Référence, \"quoted\"  " };
-        foreach (var mode in Modes)
-        foreach (var reference in references)
-            yield return new TestCaseData(mode, reference);
-    }
+    public enum UploadMode
+
+    { Basic, EnhancedLA, EnhancedMAT, EnhancedSchool }
 
     [TestCaseSource(nameof(AcceptedReferences))]
     public async Task Execute_Trims_Before_Validation_And_Preserves_Reference_And_Email_In_Json(
@@ -157,6 +151,36 @@ public class BulkReferenceUploadTests
             ? ValidationMessages.InvalidSchoolUrnForLA : ValidationMessages.InvalidSchoolUrnForMAT);
     }
 
+    [TestCaseSource(nameof(IdentifierValidationCases))]
+    public async Task Execute_Validates_National_Insurance_And_Asylum_Numbers(
+        UploadMode mode,
+        string nationalInsuranceNumber,
+        string nationalAsylumSeekerServiceNumber,
+        string? expectedError)
+    {
+        var result = await Parse(
+            mode,
+            Header(mode) + "\r\n" + Row(
+                mode,
+                "REF",
+                nationalInsuranceNumber: nationalInsuranceNumber,
+                nationalAsylumSeekerServiceNumber: nationalAsylumSeekerServiceNumber));
+
+        result.ErrorMessage.Should().BeEmpty();
+        if (expectedError is null)
+        {
+            result.Errors.Should().BeEmpty();
+            result.ValidRequests.Should().ContainSingle();
+        }
+        else
+        {
+            result.ValidRequests.Should().BeEmpty();
+            var error = result.Errors.Should().ContainSingle().Which;
+            error.LineNumber.Should().Be(2);
+            error.Message.Should().Be(expectedError);
+        }
+    }
+
     [TestCaseSource(nameof(Modes))]
     public async Task Execute_Allows_Blank_Trailing_Value_With_Mandatory_Header(UploadMode mode)
     {
@@ -180,35 +204,80 @@ public class BulkReferenceUploadTests
     [TestCaseSource(nameof(Modes))]
     public async Task Service_Template_Has_Expected_Schema_And_Is_Accepted_By_Parser(UploadMode mode)
     {
-        var fileName = mode switch
+        var templateFileName = mode switch
         {
             UploadMode.Basic => "BulkCheckTemplate.csv",
             UploadMode.EnhancedSchool => "BulkCheckTemplate_Enhanced_School.csv",
             _ => "BulkCheckTemplate_Enhanced.csv"
         };
-        var content = await File.ReadAllTextAsync(Path.Combine(TestContext.CurrentContext.TestDirectory, "Templates", fileName));
-        content.TrimEnd('\r', '\n').Should().Be(Header(mode));
-        var result = await Parse(mode, content.TrimEnd('\r', '\n') + "\r\n" + Row(mode, " TEMPLATE-001 "));
+        var templatePath = Path.Combine(TestContext.CurrentContext.TestDirectory, "Templates", templateFileName);
+        var templateContent = await File.ReadAllTextAsync(templatePath);
+        var templateHeader = templateContent.TrimEnd('\r', '\n');
+
+        templateHeader.Should().Be(Header(mode));
+
+        var contentWithValidRow = templateHeader + "\r\n" + Row(mode, " TEMPLATE-001 ");
+        var result = await Parse(mode, contentWithValidRow);
 
         result.ErrorMessage.Should().BeEmpty();
         result.Errors.Should().BeEmpty();
         result.ValidRequests.Should().ContainSingle().Which.Reference.Should().Be("TEMPLATE-001");
     }
 
+    private static IEnumerable<TestCaseData> IdentifierValidationCases()
+    {
+        var cases = new[]
+        {
+            ("", "", ValidationMessages.NI_or_NASS),
+            ("AB123456C", "123456789", ValidationMessages.NI_and_NASS),
+            ("INVALID", "", ValidationMessages.InvalidNI),
+            ("AB123456C", "", (string?)null),
+            ("", "invalid", ValidationMessages.InvalidNASS),
+            ("", "123456789", (string?)null)
+        };
+
+        foreach (var mode in Modes)
+        {
+            foreach (var (nationalInsuranceNumber, nationalAsylumSeekerServiceNumber, expectedError) in cases)
+            {
+                yield return new TestCaseData(
+                    mode,
+                    nationalInsuranceNumber,
+                    nationalAsylumSeekerServiceNumber,
+                    expectedError);
+            }
+        }
+    }
+
+    private static IEnumerable<TestCaseData> AcceptedReferences()
+    {
+        var references = new[] { "", new string(' ', 101), new string('a', 99), new string('a', 100),
+            " \t" + new string('a', 100) + "\t ", "  MiXeD  Case-001  ", "  Référence, \"quoted\"  " };
+        foreach (var mode in Modes)
+            foreach (var reference in references)
+                yield return new TestCaseData(mode, reference);
+    }
+
     private static string Header(UploadMode mode)
     {
         if (mode == UploadMode.Basic)
-            return "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)";
-        var header = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth";
+            return "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Reference (optional)";
+        var header = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth";
         if (mode != UploadMode.EnhancedSchool) header += ",Child School Urn";
         return header + ",Parent Email Address (optional),Reference (optional)";
     }
 
-    private static string Row(UploadMode mode, string reference, string email = "  Parent@Example.COM  ", string urn = "123456")
+    private static string Row(
+        UploadMode mode,
+        string reference,
+        string email = "  Parent@Example.COM  ",
+        string urn = "123456",
+        string nationalInsuranceNumber = "ab123456c",
+        string nationalAsylumSeekerServiceNumber = "")
     {
         var fields = mode == UploadMode.Basic
-            ? new List<string> { "Smith", "1985-03-15", "ab123456c" }
-            : new List<string> { "John", "Smith", "1985-03-15", "ab123456c", "Emily", "Smith", "2015-09-10" };
+            ? new List<string> { "Smith", "1985-03-15", nationalInsuranceNumber, nationalAsylumSeekerServiceNumber }
+            : new List<string> { "John", "Smith", "1985-03-15", nationalInsuranceNumber, nationalAsylumSeekerServiceNumber, "Emily", "Smith", "2015-09-10" };
         if (mode != UploadMode.Basic)
         {
             if (mode != UploadMode.EnhancedSchool) fields.Add(urn);

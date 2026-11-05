@@ -155,8 +155,7 @@ namespace CheckYourEligibility.Admin.Helpers
                 ChildLastName = GetTrimmedField(csv, ChildLastNameHeader),
                 ChildDateOfBirth = ParseDate(GetTrimmedField(csv, ChildDateOfBirthHeader)),
                 ChildSchoolUrn = childSchoolUrn,
-                EmailAddress = GetOptionalEmailAddress(csv),
-                Reference = csv.GetField(ReferenceHeader),
+                EmailAddress = GetOptionalEmailAddress(csv)
             };
 
             return PopulateBaseFields(request, csv, sequence);
@@ -169,6 +168,7 @@ namespace CheckYourEligibility.Admin.Helpers
             request.DateOfBirth = ParseDate(GetTrimmedField(csv, ParentDateOfBirthHeader));
             request.NationalInsuranceNumber = GetTrimmedField(csv, ParentNINOHeader, isUpper: true);
             request.NationalAsylumSeekerServiceNumber = GetTrimmedField(csv, ParentNASSHeader);
+            request.Reference = csv.GetField(ReferenceHeader);
             request.Order = sequence;
 
             return request;
@@ -177,7 +177,7 @@ namespace CheckYourEligibility.Admin.Helpers
         private static string GetTrimmedField(IReaderRow csv, string header, bool isUpper = false)
         {
             string field = csv.GetField(header)?.Trim() ?? string.Empty;
-            if (string.IsNullOrEmpty(field) && isUpper) return field.ToUpper();
+            if (!string.IsNullOrEmpty(field) && isUpper) return field.ToUpper();
 
             return field;
         }

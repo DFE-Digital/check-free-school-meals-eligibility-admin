@@ -12,7 +12,9 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
         public const string ParentDateOfBirthHeader = "Parent Date of Birth";
 
         public const string ParentNINOHeader = "Parent National Insurance number";
+
         public const string ParentEmailAddressHeader = "Parent Email Address (optional)";
+
         public const string ReferenceHeader = "Reference (optional)";
 
         public const string ParentNASSHeader = "Parent Asylum Seeker Reference number";
@@ -33,6 +35,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
                 ParentLastNameHeader,
                 ParentDateOfBirthHeader,
                 ParentNINOHeader,
+                ParentNASSHeader,
                 ReferenceHeader };
 
         public static string[] enhancedHeaders = {
@@ -40,6 +43,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
                 ParentLastNameHeader,
                 ParentDateOfBirthHeader,
                 ParentNINOHeader,
+                ParentNASSHeader,
                 ChildFirstNameHeader,
                 ChildLastNameHeader,
                 ChildDateOfBirthHeader,
@@ -52,6 +56,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
                 ParentLastNameHeader,
                 ParentDateOfBirthHeader,
                 ParentNINOHeader,
+                ParentNASSHeader,
                 ChildFirstNameHeader,
                 ChildLastNameHeader,
                 ChildDateOfBirthHeader,
@@ -61,7 +66,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
         public static List<string> GuidanceItemsBasic = [
              "parent last name",
              "parent date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
-             "parent National Insurance number"
+             "parent National Insurance number or asylum support reference number"
             ];
 
         /// <summary>
@@ -75,7 +80,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
             "parent first name",
             "parent last name",
             "parent date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
-            "parent National Insurance number",
+            "parent National Insurance number or asylum support reference number",
             "child first name",
             "child last name",
             "child date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
