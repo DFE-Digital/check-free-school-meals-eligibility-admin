@@ -2,6 +2,7 @@
 using AutoMapper;
 using CheckYourEligibility.Admin.Boundary.Requests;
 using CheckYourEligibility.Admin.Boundary.Responses;
+using CheckYourEligibility.Admin.Models;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -201,5 +202,53 @@ internal class CheckGatewayTests
         // Assert
         result.Result.Data.Should().BeNull();
         _sut.apiErrorCount.Should().Be(1);
+    }
+
+    [Test]
+    public async Task LoadBulkCheckResults_ReturnsResultsInUploadedOrder()
+    {
+        var responseContent = new CheckEligibilityBulkResponse
+        {
+            Data =
+            [
+                new CheckEligibilityItem
+                {
+                    Order = 2,
+                    LastName = "SECOND"
+                },
+                new CheckEligibilityItem
+                {
+                    Order = 1,
+                    LastName = "FIRST"
+                }
+            ]
+        };
+
+        var responseMessage = new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(JsonConvert.SerializeObject(responseContent))
+        };
+
+        _httpMessageHandlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(responseMessage);
+
+        _mapperMock
+            .Setup(x => x.Map<BulkExportBase>(It.IsAny<CheckEligibilityItem>()))
+            .Returns((CheckEligibilityItem source) => new BulkExportBase
+            {
+                LastName = source.LastName
+            });
+
+        var result = (await _sut.LoadBulkCheckResults<BulkExportBase>("bulk-id"))
+            .ToList();
+
+        result.Select(x => x.LastName)
+            .Should()
+            .Equal("FIRST", "SECOND");
     }
 }

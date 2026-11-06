@@ -19,6 +19,17 @@
 
     <form asp-controller="Check" asp-action="Enter_Child_Details" method="post" novalidate>
 
+        <!-- Parent/guardian and outcome details carried forward via hidden fields (ELIG-3594) -->
+        <input type="hidden" asp-for="ParentFirstName" />
+        <input type="hidden" asp-for="ParentLastName" />
+        <input type="hidden" asp-for="ParentDateOfBirth" />
+        <input type="hidden" asp-for="ParentEmail" />
+        <input type="hidden" asp-for="ParentNino" />
+        <input type="hidden" asp-for="ParentNass" />
+        <input type="hidden" asp-for="Status" />
+        <input type="hidden" asp-for="Tier" />
+        <input type="hidden" asp-for="EligibilityEndDate" />
+
         @for (var i = 0; i < Model.ChildList.Count; i++)
         {
             <input type="hidden" asp-for="ChildList[i].ChildIndex" value="@(i + 1)" id="ChildIndex" />

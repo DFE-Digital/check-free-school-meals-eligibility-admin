@@ -4,6 +4,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.ErrorMessages;
 
 public static class ValidationMessages
 {
+    public const string ReferenceTooLong = "Reference must be 100 characters or fewer.";
     public const string FirstName = "Parent First Name is required";
     public const string LastName = "Parent Last Name is required";
     public const string DOB = "Date of birth is required:- (yyyy-mm-dd)";
@@ -15,4 +16,9 @@ public static class ValidationMessages
     public const string ChildDOB = "Child Date of birth is required:- (yyyy-mm-dd)";
     public const string InvalidSchoolUrnForLA = "School URN must be for a school in your local authority area";
     public const string InvalidSchoolUrnForMAT = "School URN must be for a school in your MAT";
+    public const string InvalidFirstName = "Parent First Name contains an invalid character";
+    public const string InvalidLastName = "Enter a parent last name with valid characters";
+    public const string InvalidChildFirstName = "Child First Name contains an invalid character";
+    public const string InvalidChildLastName = "Child Last Name contains an invalid character";
+    public const string InvalidEmailAddress = "Invalid email address";
 }

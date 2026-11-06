@@ -26,25 +26,27 @@ const createBulkCsv = (rowCount: number, includeSchoolURN: boolean): string => {
     "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth";
 
   const header = includeSchoolURN
-    ? `${baseHeader},Child School Urn`
-    : baseHeader;
+    ? `${baseHeader},Child School Urn,Parent Email Address (optional),Reference (optional)`
+    : `${baseHeader},Parent Email Address (optional),Reference (optional)`;
 
   const rows = Array.from({ length: rowCount }, (_, index) => {
     const day = ((index % 28) + 1).toString().padStart(2, "0");
 
     const baseRow = [
-      `John`,
-      `Smith`,
+      "John",
+      "Smith",
       `${day}/01/2000`,
-      `AB123456C`,
-      `Jay`,
-      `Smith`,
+      "AB123456C",
+      "Jay",
+      "Smith",
       `${day}/01/2010`,
     ];
 
     if (includeSchoolURN) {
-      baseRow.push("150716"); //Telford Park School URN
+      baseRow.push("150716"); // Telford Park School URN
     }
+
+    baseRow.push(`parent${index}@example.com`, "");
 
     return baseRow.join(",");
   });
@@ -119,7 +121,8 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
           month: "short",
           year: "numeric",
         })
-        .replace(",", "");
+        .replace(",", "")
+        .replace("Sept", "Sep");
 
       cy.contains("table tbody tr", "valid.csv")
         .first()
@@ -130,7 +133,7 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
             .invoke("text")
             .should("match", /\.csv$/i);
           cy.get("td").eq(1).should("have.text", "10");
-          cy.get("td").eq(2).should("have.text", "Smith");
+          cy.get("td").eq(2).should("have.text", "SMITH"); //API sets last name value.Trim().ToUpperInvariant()
           cy.get("td").eq(3).should("contain.text", today);
           cy.get("td").eq(4).invoke("text").should("not.be.empty");
           cy.get("td").eq(5).find("strong").should("have.class", "govuk-tag");

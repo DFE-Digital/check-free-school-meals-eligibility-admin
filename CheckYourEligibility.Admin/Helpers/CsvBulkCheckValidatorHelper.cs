@@ -29,6 +29,7 @@ namespace CheckYourEligibility.Admin.Helpers
         }
         public const string IncorrectHeadersErrorMessage = "The column headers in the selected file must exactly match the template";
         public const string MissingHeadersErrorMessage = "Invalid CSV format. Missing required header:";
+        public const string MissingReferenceHeaderErrorMessage = "The selected file must include the column heading Reference (optional).";
 
         public static async Task<CsvHeaderValidationResponse> ValidateHeadersAsync(CsvReader csv, string[] expectedHeaders)
         {
@@ -41,6 +42,15 @@ namespace CheckYourEligibility.Admin.Helpers
                 csv.ReadHeader();
                 var headers = csv.HeaderRecord;
 
+                // Identify the mandatory Reference header even when its absence changes the column count.
+                var requiresReference = expectedHeaders.Contains(ReferenceHeader);
+                if (requiresReference && headers != null && !headers.Contains(ReferenceHeader))
+                {
+                    validationResponse.isSuccess = false;
+                    validationResponse.error = MissingReferenceHeaderErrorMessage;
+                    return validationResponse;
+                }
+
                 if (headers == null || headers.Length != expectedHeaders.Length)
                 {
                     validationResponse.isSuccess = false;
@@ -48,7 +58,14 @@ namespace CheckYourEligibility.Admin.Helpers
                     return validationResponse;
                 }
 
-                // Normalize headers for comparison
+                if (requiresReference && headers.Last() != ReferenceHeader)
+                {
+                    validationResponse.isSuccess = false;
+                    validationResponse.error = IncorrectHeadersErrorMessage;
+                    return validationResponse;
+                }
+
+                // Normalize existing headers for comparison.
                 var normalizedHeaders = headers.Select(h => h.Trim().ToLowerInvariant()).ToArray();
 
                 // Check if all expected headers are present
@@ -109,19 +126,32 @@ namespace CheckYourEligibility.Admin.Helpers
             return dob;
         }
 
+        private static string? GetOptionalEmailAddress(IReaderRow csv)
+        {
+            var emailAddress = csv.GetField(ParentEmailAddressHeader)?.Trim();
+
+            return string.IsNullOrEmpty(emailAddress)
+                ? null
+                : emailAddress;
+        }
+
         public static CheckEligibilityRequestDataBase CreateRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
         {
             var dob = csv.GetField(ParentDateOfBirthHeader)?.Trim() ?? string.Empty;
             return new CheckEligibilityRequestDataBase
             {
                 LastName = csv.GetField(ParentLastNameHeader)?.Trim() ?? string.Empty,
+                Reference = csv.GetField(ReferenceHeader),
                 DateOfBirth = ParseDate(dob),
                 NationalInsuranceNumber = csv.GetField(ParentNINOHeader)?.Trim().ToUpper(),
-                Sequence = sequence
+                Order = sequence
             };
         }
 
-        public static CheckEligibilityRequestData_Enhanced CreateEnhancedRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
+        public static CheckEligibilityRequestData_Enhanced CreateEnhancedRequestItem(
+         IReaderRow csv,
+         int sequence,
+         string? schoolUrn)
         {
             return new CheckEligibilityRequestData_Enhanced
             {
@@ -133,7 +163,9 @@ namespace CheckYourEligibility.Admin.Helpers
                 ChildLastName = csv.GetField(ChildLastNameHeader)?.Trim() ?? string.Empty,
                 ChildDateOfBirth = ParseDate(csv.GetField(ChildDateOfBirthHeader)),
                 ChildSchoolUrn = csv.GetField(ChildSchoolUrnHeader)?.Trim() ?? string.Empty,
-                Sequence = sequence
+                EmailAddress = GetOptionalEmailAddress(csv),
+                Reference = csv.GetField(ReferenceHeader),
+                Order = sequence
             };
         }
 
@@ -149,7 +181,9 @@ namespace CheckYourEligibility.Admin.Helpers
                 ChildLastName = csv.GetField(ChildLastNameHeader)?.Trim() ?? string.Empty,
                 ChildDateOfBirth = ParseDate(csv.GetField(ChildDateOfBirthHeader)),
                 ChildSchoolUrn = schoolUrn,
-                Sequence = sequence
+                EmailAddress = GetOptionalEmailAddress(csv),
+                Reference = csv.GetField(ReferenceHeader),
+                Order = sequence
             };
         }
         /// <summary>

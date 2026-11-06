@@ -60,6 +60,18 @@
                             <li>@guidanceItem</li>
                         }
                     </ul>
+                    @if (Model.isEnhanced)
+                    {
+                        <p>There are 2 optional columns for adding:</p>
+                        <ul class="govuk-list govuk-list--bullet">
+                            <li>parent email address</li>
+                            <li>reference - for further information or reference numbers</li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>There is an optional ‘Reference’ column where you can add reference numbers or additional information.</p>
+                    }
                 </li>
                 <li> Save it as a CSV file.</li>
             </ol>

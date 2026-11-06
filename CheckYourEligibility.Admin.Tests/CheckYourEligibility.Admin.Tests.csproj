@@ -53,4 +53,8 @@
         </EmbeddedResource>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="..\CheckYourEligibility.Admin\wwwroot\documents\BulkCheckTemplate*.csv" Link="Templates\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
 </Project>

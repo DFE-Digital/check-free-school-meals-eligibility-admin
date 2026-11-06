@@ -12,6 +12,7 @@ namespace CheckYourEligibility.Admin.CsvMaps
             Map(m => m.NationalInsuranceNumber).Index(2).Name(BulkCheckConstants.ParentNINOHeader);
             Map(m => m.Outcome).Index(3).Name(BulkCheckConstants.Outcome);  
             Map(m => m.EligibilityEndDate).Ignore();
+            Map(m => m.Reference).Index(4).Name(BulkCheckConstants.ReferenceHeader);
         }
     }
     public sealed class BulkExportBaseExpandedCsvMap : ClassMap<BulkExportBase>
@@ -23,6 +24,7 @@ namespace CheckYourEligibility.Admin.CsvMaps
             Map(m => m.NationalInsuranceNumber).Index(2).Name(BulkCheckConstants.ParentNINOHeader);
             Map(m => m.Outcome).Index(3).Name(BulkCheckConstants.Outcome);
             Map(m => m.EligibilityEndDate).Index(4).Name(BulkCheckConstants.EligibilityEndDate);
+            Map(m => m.Reference).Index(5).Name(BulkCheckConstants.ReferenceHeader);
         }
     }
 }
