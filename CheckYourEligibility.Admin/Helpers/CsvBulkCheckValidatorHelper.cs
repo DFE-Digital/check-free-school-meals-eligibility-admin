@@ -7,28 +7,10 @@ namespace CheckYourEligibility.Admin.Helpers
 {
     public static class CsvBulkCheckValidatorHelper
     {
-        public class BulkCheckCsvResult<T>
-    where T : CheckEligibilityRequestDataBase
-        {
-            public List<T> ValidRequests { get; set; } = new();
-            public List<CsvRowError> Errors { get; set; } = new();
-            public string ErrorMessage { get; set; } = string.Empty;
-        }
-
-        public class CsvRowError
-        {
-            public int LineNumber { get; set; }
-            public string Message { get; set; } = string.Empty;
-        }
-
-        public class CsvHeaderValidationResponse
-        {
-
-            public bool isSuccess { get; set; }
-            public string error { get; set; }
-        }
         public const string IncorrectHeadersErrorMessage = "The column headers in the selected file must exactly match the template";
+
         public const string MissingHeadersErrorMessage = "Invalid CSV format. Missing required header:";
+
         public const string MissingReferenceHeaderErrorMessage = "The selected file must include the column heading Reference (optional).";
 
         public static async Task<CsvHeaderValidationResponse> ValidateHeadersAsync(CsvReader csv, string[] expectedHeaders)
@@ -77,12 +59,10 @@ namespace CheckYourEligibility.Admin.Helpers
                         validationResponse.error = MissingHeadersErrorMessage + $" '{expectedHeader}'";
                         return validationResponse;
                     }
-
                 }
             }
             catch (Exception ex)
             {
-
                 validationResponse.isSuccess = false;
                 validationResponse.error = $"Error reading CSV file headers: {ex.Message}";
                 return validationResponse;
@@ -117,6 +97,7 @@ namespace CheckYourEligibility.Admin.Helpers
 
             return await windows1252Reader.ReadToEndAsync();
         }
+
         public static string ParseDate(string dob)
         {
             if (DateTime.TryParse(dob, out var dtval))
@@ -124,6 +105,36 @@ namespace CheckYourEligibility.Admin.Helpers
                 return dtval.ToString("yyyy-MM-dd");
             }
             return dob;
+        }
+
+        public static CheckEligibilityRequestDataBase CreateRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
+        {
+            return PopulateBaseFields(new CheckEligibilityRequestDataBase(), csv, sequence);
+        }
+
+        public static CheckEligibilityRequestData_Enhanced CreateEnhancedRequestItem(
+         IReaderRow csv,
+         int sequence,
+         string? schoolUrn)
+        {
+            return BuildEnhancedRequestItem(csv, sequence, GetTrimmedField(csv, ChildSchoolUrnHeader));
+        }
+
+        public static CheckEligibilityRequestData_Enhanced CreateEnhancedSchoolRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
+        {
+            return BuildEnhancedRequestItem(csv, sequence, schoolUrn);
+        }
+
+        /// <summary>
+        /// Pass a hashset of shool ids for the organisation and check is the passed school urn exists in the list
+        /// True if school is found
+        /// False  is school is not found
+        /// </summary>
+        /// <returns></returns>
+        public static bool ValidateSchool(HashSet<int> schoolUrns, int schoolUrn)
+        {
+            if (schoolUrns.Contains(schoolUrn)) { return true; }
+            return false;
         }
 
         private static string? GetOptionalEmailAddress(IReaderRow csv)
@@ -135,68 +146,63 @@ namespace CheckYourEligibility.Admin.Helpers
                 : emailAddress;
         }
 
-        public static CheckEligibilityRequestDataBase CreateRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
+        private static CheckEligibilityRequestData_Enhanced BuildEnhancedRequestItem(IReaderRow csv, int sequence, string? childSchoolUrn)
         {
-            var dob = csv.GetField(ParentDateOfBirthHeader)?.Trim() ?? string.Empty;
-            return new CheckEligibilityRequestDataBase
+            var request = new CheckEligibilityRequestData_Enhanced
             {
-                LastName = csv.GetField(ParentLastNameHeader)?.Trim() ?? string.Empty,
-                Reference = csv.GetField(ReferenceHeader),
-                DateOfBirth = ParseDate(dob),
-                NationalInsuranceNumber = csv.GetField(ParentNINOHeader)?.Trim().ToUpper(),
-                Order = sequence
+                FirstName = GetTrimmedField(csv, ParentFirstNameHeader),
+                ChildFirstName = GetTrimmedField(csv, ChildFirstNameHeader),
+                ChildLastName = GetTrimmedField(csv, ChildLastNameHeader),
+                ChildDateOfBirth = ParseDate(GetTrimmedField(csv, ChildDateOfBirthHeader)),
+                ChildSchoolUrn = childSchoolUrn,
+                EmailAddress = GetOptionalEmailAddress(csv)
             };
+
+            return PopulateBaseFields(request, csv, sequence);
         }
 
-        public static CheckEligibilityRequestData_Enhanced CreateEnhancedRequestItem(
-         IReaderRow csv,
-         int sequence,
-         string? schoolUrn)
+        private static T PopulateBaseFields<T>(T request, IReaderRow csv, int sequence)
+            where T : CheckEligibilityRequestDataBase
         {
-            return new CheckEligibilityRequestData_Enhanced
-            {
-                FirstName = csv.GetField(ParentFirstNameHeader)?.Trim() ?? string.Empty,
-                LastName = csv.GetField(ParentLastNameHeader)?.Trim() ?? string.Empty,
-                DateOfBirth = ParseDate(csv.GetField(ParentDateOfBirthHeader)),
-                NationalInsuranceNumber = csv.GetField(ParentNINOHeader)?.Trim().ToUpper(),
-                ChildFirstName = csv.GetField(ChildFirstNameHeader)?.Trim() ?? string.Empty,
-                ChildLastName = csv.GetField(ChildLastNameHeader)?.Trim() ?? string.Empty,
-                ChildDateOfBirth = ParseDate(csv.GetField(ChildDateOfBirthHeader)),
-                ChildSchoolUrn = csv.GetField(ChildSchoolUrnHeader)?.Trim() ?? string.Empty,
-                EmailAddress = GetOptionalEmailAddress(csv),
-                Reference = csv.GetField(ReferenceHeader),
-                Order = sequence
-            };
+            request.LastName = GetTrimmedField(csv, ParentLastNameHeader);
+            request.DateOfBirth = ParseDate(GetTrimmedField(csv, ParentDateOfBirthHeader));
+            request.NationalInsuranceNumber = GetTrimmedField(csv, ParentNINOHeader, isUpper: true);
+            request.NationalAsylumSeekerServiceNumber = GetTrimmedField(csv, ParentNASSHeader);
+            request.Reference = csv.GetField(ReferenceHeader);
+            request.Order = sequence;
+
+            return request;
         }
 
-        public static CheckEligibilityRequestData_Enhanced CreateEnhancedSchoolRequestItem(IReaderRow csv, int sequence, string? schoolUrn)
+        private static string GetTrimmedField(IReaderRow csv, string header, bool isUpper = false)
         {
-            return new CheckEligibilityRequestData_Enhanced
-            {
-                FirstName = csv.GetField(ParentFirstNameHeader)?.Trim() ?? string.Empty,
-                LastName = csv.GetField(ParentLastNameHeader)?.Trim() ?? string.Empty,
-                DateOfBirth = ParseDate(csv.GetField(ParentDateOfBirthHeader)),
-                NationalInsuranceNumber = csv.GetField(ParentNINOHeader)?.Trim().ToUpper(),
-                ChildFirstName = csv.GetField(ChildFirstNameHeader)?.Trim() ?? string.Empty,
-                ChildLastName = csv.GetField(ChildLastNameHeader)?.Trim() ?? string.Empty,
-                ChildDateOfBirth = ParseDate(csv.GetField(ChildDateOfBirthHeader)),
-                ChildSchoolUrn = schoolUrn,
-                EmailAddress = GetOptionalEmailAddress(csv),
-                Reference = csv.GetField(ReferenceHeader),
-                Order = sequence
-            };
-        }
-        /// <summary>
-        /// Pass a hashset of shool ids for the organisation and check is the passed school urn exists in the list
-        /// True if school is found
-        /// False  is school is not found
-        /// </summary>
-        /// <returns></returns>
-        public static  bool ValidateSchool(HashSet<int> schoolUrns, int schoolUrn)
-        {
+            string field = csv.GetField(header)?.Trim() ?? string.Empty;
+            if (!string.IsNullOrEmpty(field) && isUpper) return field.ToUpper();
 
-            if (schoolUrns.Contains(schoolUrn)) { return true; }
-            return false;
+            return field;
+        }
+
+        public class BulkCheckCsvResult<T> where T : CheckEligibilityRequestDataBase
+        {
+            public List<T> ValidRequests { get; set; } = new();
+
+            public List<CsvRowError> Errors { get; set; } = new();
+
+            public string ErrorMessage { get; set; } = string.Empty;
+        }
+
+        public class CsvRowError
+        {
+            public int LineNumber { get; set; }
+
+            public string Message { get; set; } = string.Empty;
+        }
+
+        public class CsvHeaderValidationResponse
+        {
+            public bool isSuccess { get; set; }
+
+            public string error { get; set; }
         }
     }
 }

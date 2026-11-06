@@ -12,14 +12,15 @@ namespace CheckYourEligibility.Admin.CsvMaps
             Map(m => m.LastName).Index(1).Name(BulkCheckConstants.ParentLastNameHeader);
             Map(m => m.DateOfBirth).Index(2).Name(BulkCheckConstants.ParentDateOfBirthHeader);
             Map(m => m.NationalInsuranceNumber).Index(3).Name(BulkCheckConstants.ParentNINOHeader);
-            Map(m => m.ChildFirstName).Index(4).Name(BulkCheckConstants.ChildFirstNameHeader);
-            Map(m => m.ChildLastName).Index(5).Name(BulkCheckConstants.ChildLastNameHeader);
-            Map(m => m.ChildDateOfBirth).Index(6).Name(BulkCheckConstants.ChildDateOfBirthHeader);
-            Map(m => m.ChildSchoolUrn).Index(7).Name(BulkCheckConstants.ChildSchoolUrnHeader);
-            Map(m => m.EmailAddress).Index(8).Name(BulkCheckConstants.ParentEmailAddressHeader);
-            Map(m => m.Outcome).Index(9).Name(BulkCheckConstants.Outcome);
+            Map(m => m.NationalAsylumSeekerServiceNumber).Index(4).Name(BulkCheckConstants.ParentNASSHeader);
+            Map(m => m.ChildFirstName).Index(5).Name(BulkCheckConstants.ChildFirstNameHeader);
+            Map(m => m.ChildLastName).Index(6).Name(BulkCheckConstants.ChildLastNameHeader);
+            Map(m => m.ChildDateOfBirth).Index(7).Name(BulkCheckConstants.ChildDateOfBirthHeader);
+            Map(m => m.ChildSchoolUrn).Index(8).Name(BulkCheckConstants.ChildSchoolUrnHeader);
+            Map(m => m.EmailAddress).Index(9).Name(BulkCheckConstants.ParentEmailAddressHeader);
+            Map(m => m.Outcome).Index(10).Name(BulkCheckConstants.Outcome);
             Map(m => m.EligibilityEndDate).Ignore();
-            Map(m => m.Reference).Index(10).Name(BulkCheckConstants.ReferenceHeader);
+            Map(m => m.Reference).Index(11).Name(BulkCheckConstants.ReferenceHeader);
         }
     }
     public sealed class BulkExportExpandedCsvMap : ClassMap<BulkExport>
@@ -30,14 +31,15 @@ namespace CheckYourEligibility.Admin.CsvMaps
             Map(m => m.LastName).Index(1).Name(BulkCheckConstants.ParentLastNameHeader);
             Map(m => m.DateOfBirth).Index(2).Name(BulkCheckConstants.ParentDateOfBirthHeader);
             Map(m => m.NationalInsuranceNumber).Index(3).Name(BulkCheckConstants.ParentNINOHeader);
-            Map(m => m.ChildFirstName).Index(4).Name(BulkCheckConstants.ChildFirstNameHeader);
-            Map(m => m.ChildLastName).Index(5).Name(BulkCheckConstants.ChildLastNameHeader);
-            Map(m => m.ChildDateOfBirth).Index(6).Name(BulkCheckConstants.ChildDateOfBirthHeader);
-            Map(m => m.ChildSchoolUrn).Index(7).Name(BulkCheckConstants.ChildSchoolUrnHeader);
-            Map(m => m.EmailAddress).Index(8).Name(BulkCheckConstants.ParentEmailAddressHeader);
-            Map(m => m.Outcome).Index(9).Name(BulkCheckConstants.Outcome);
-            Map(m => m.EligibilityEndDate).Index(10).Name(BulkCheckConstants.EligibilityEndDate);
-            Map(m => m.Reference).Index(11).Name(BulkCheckConstants.ReferenceHeader);
+            Map(m => m.NationalAsylumSeekerServiceNumber).Index(4).Name(BulkCheckConstants.ParentNASSHeader);
+            Map(m => m.ChildFirstName).Index(5).Name(BulkCheckConstants.ChildFirstNameHeader);
+            Map(m => m.ChildLastName).Index(6).Name(BulkCheckConstants.ChildLastNameHeader);
+            Map(m => m.ChildDateOfBirth).Index(7).Name(BulkCheckConstants.ChildDateOfBirthHeader);
+            Map(m => m.ChildSchoolUrn).Index(8).Name(BulkCheckConstants.ChildSchoolUrnHeader);
+            Map(m => m.EmailAddress).Index(9).Name(BulkCheckConstants.ParentEmailAddressHeader);
+            Map(m => m.Outcome).Index(10).Name(BulkCheckConstants.Outcome);
+            Map(m => m.EligibilityEndDate).Index(11).Name(BulkCheckConstants.EligibilityEndDate);
+            Map(m => m.Reference).Index(12).Name(BulkCheckConstants.ReferenceHeader);
         }
     }
 }
