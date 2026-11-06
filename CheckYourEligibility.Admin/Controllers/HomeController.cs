@@ -113,8 +113,13 @@ public class HomeController : BaseController
         await IsExpandedFSMEnabled();
         ViewBag.IsEnhanced = _Claims.Roles[0].Code == DfeSignInRoles.RoleCodeBasic ? false : true;
 
+        if (TempData["organisationType"]?.ToString() == "Establishment" && ViewBag.IsEnhanced == true)
+        {
+            return View("Guidance_steps/Asylum_Check_School");
+        }
 
-        return View("Guidance_steps/Asylum_Check");} 
+        return View("Guidance_steps/Asylum_Check");
+    } 
 
     public IActionResult BatchCheck() => View("Guidance_steps/Batch_Check");
 
