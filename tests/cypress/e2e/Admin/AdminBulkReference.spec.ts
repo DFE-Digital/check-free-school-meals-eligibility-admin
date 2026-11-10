@@ -20,12 +20,15 @@ const enhancedParentHeaders = [
   "Parent Date of Birth",
   "Parent National Insurance number",
   "Parent Asylum Seeker Reference number",
+  "Child First Name",
+  "Child Last Name",
+  "Child Date of Birth",
 ];
-const childHeaders = ["Child First Name", "Child Last Name", "Child Date of Birth"];
 const basicResultHeaders = [
   "Parent Last Name",
   "Parent Date of Birth",
   "Parent National Insurance number",
+  "Parent Asylum Seeker Reference number",
   "Outcome",
 ];
 const enhancedResultHeaders = [
@@ -44,7 +47,6 @@ const enhancedResultHeaders = [
 
 const getUploadHeaders = (service: (typeof services)[number]): string[] => [
   ...(service.enhanced ? enhancedParentHeaders : basicParentHeaders),
-  ...(service.enhanced ? childHeaders : []),
   ...(service.enhanced && !service.school ? ["Child School Urn"] : []),
   ...(service.enhanced ? ["Parent Email Address (optional)"] : []),
   referenceHeader,
