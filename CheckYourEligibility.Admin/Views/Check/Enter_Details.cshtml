@@ -147,7 +147,7 @@
                     <span asp-validation-for="NationalInsuranceNumber"></span>
                 </p>
 
-                    <input class="@ninoInputClasses"
+                <input class="@ninoInputClasses"
                        id="NationalInsuranceNumber"
                        aria-describedby="NIN-hint"
                        asp-controller="Check"
@@ -159,12 +159,9 @@
 
             </div>
 
-            @if (!(orgType == OrganisationCategory.Establishment))
-            {
-                <p class="govuk-body">
-                    @Html.ActionLink("Parent or guardian is an asylum seeker", "AsylumCheck", "Home", null)
-                </p>
-            }
+            <p class="govuk-body">
+                <a target="_blank" href="https://www.gov.uk/government/publications/free-school-meals-guidance-for-schools-and-local-authorities/providing-free-school-meals-to-families-with-no-recourse-to-public-funds-nrpf">Parent or guardian has no recourse to public funds (NRPF)</a>
+            </p>
 
             <button class="govuk-button govuk-!-margin-top-5" data-module="govuk-button">
                 Run check
