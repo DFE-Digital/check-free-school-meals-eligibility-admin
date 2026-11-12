@@ -25,15 +25,20 @@ namespace CheckYourEligibility.Admin.Controllers;
 public class BulkCheckController : BaseController
 {
     private const int TotalErrorsToDisplay = 20;
+
     private readonly ICheckGateway _checkGateway;
+
     private readonly IConfiguration _config;
+
     private readonly IParseBulkCheckFileUseCase _parseBulkCheckFileUseCase;
+
     private readonly IGetBulkChecks _getBulkCheckStatusesUseCase;
+
     private readonly IDeleteBulkCheckFileUseCase _deleteBulkCheckFileUseCase;
+
     private readonly ILogger<BulkCheckController> _logger;
+
     private readonly IWebHostEnvironment _environment;
-    private (int id, OrganisationCategory type) _organisation =>
-        GetOrganisationIdandType();
 
     public BulkCheckController(
         ILogger<BulkCheckController> logger,
@@ -55,8 +60,10 @@ public class BulkCheckController : BaseController
         _parseBulkCheckFileUseCase = parseBulkCheckFileUseCase ?? throw new ArgumentNullException(nameof(parseBulkCheckFileUseCase));
         _getBulkCheckStatusesUseCase = getBulkCheckStatusesUseCase ?? throw new ArgumentNullException(nameof(getBulkCheckStatusesUseCase));
         _deleteBulkCheckFileUseCase = deleteBulkCheckFileUseCase ?? throw new ArgumentNullException(nameof(deleteBulkCheckFileUseCase));
-
     }
+
+    private (int id, OrganisationCategory type) _organisation =>
+            GetOrganisationIdandType();
 
     // GET: Upload page
     public IActionResult Bulk_Check()
@@ -74,6 +81,7 @@ public class BulkCheckController : BaseController
                     GuidanceItems = BulkCheckConstants.GuidanceItemsBasic
                 };
                 return View("Bulk_Check", viewModel);
+
             default:
 
                 bool isSchool = org == OrganisationCategory.Establishment ? true : false;
@@ -84,10 +92,8 @@ public class BulkCheckController : BaseController
                     GuidanceItems = BulkCheckConstants.GuidanceItemsEnhanced(isSchool)
                 };
 
-
                 return View("Bulk_Check", viewModelEnhanced);
         }
-
     }
 
     [HttpGet]
@@ -99,14 +105,15 @@ public class BulkCheckController : BaseController
             case (true, true):
                 fileName = "BulkCheckTemplate_Enhanced_School.csv";
                 break;
+
             case (true, false):
                 fileName = "BulkCheckTemplate_Enhanced.csv";
                 break;
+
             default:
                 fileName = "BulkCheckTemplate.csv";
                 break;
         }
-
 
         var path = Path.Combine(_environment.WebRootPath, "documents", fileName);
 
@@ -116,6 +123,7 @@ public class BulkCheckController : BaseController
 
         return PhysicalFile(path, "text/csv", fileName);
     }
+
     [HttpPost]
     public async Task<IActionResult> Bulk_Check(IFormFile fileUpload, BulkCheckUploadViewModel model)
     {
@@ -255,6 +263,7 @@ public class BulkCheckController : BaseController
             return RedirectToAction("Bulk_Check");
         }
     }
+
     // GET: Show completion message and link to history
     public IActionResult Bulk_Check_Complete(string bulkCheckId)
     {
@@ -275,7 +284,7 @@ public class BulkCheckController : BaseController
             }
 
             var allChecks = await _getBulkCheckStatusesUseCase.Execute(_organisation.id);
-            
+
             // Pagination
             var totalRecords = allChecks.Count();
             var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
@@ -300,7 +309,6 @@ public class BulkCheckController : BaseController
                 TotalPages = totalPages,
                 TotalRecords = totalRecords,
                 Enhanced = isEnhanced
-
             };
 
             return View(viewModel);
@@ -311,10 +319,10 @@ public class BulkCheckController : BaseController
             return View(new BulkCheckViewModel());
         }
     }
+
     [HttpPost]
     public async Task<IActionResult> Bulk_Check_Application(string bulkCheckId)
     {
-
         if (string.IsNullOrWhiteSpace(bulkCheckId))
         {
             TempData["ErrorMessage"] = "Bulk check ID is required.";
@@ -347,8 +355,8 @@ public class BulkCheckController : BaseController
 
             return RedirectToAction(nameof(Bulk_Check_History));
         }
-
     }
+
     // GET: View results for a specific bulk check
     public async Task<IActionResult> Bulk_Check_View_Results(string bulkCheckId)
     {
@@ -443,7 +451,6 @@ public class BulkCheckController : BaseController
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
             {
                 WriteBulkExportRecords(csv, results, isEnhanced, fsmPolicy.EligibilityCriteria);
-
             }
             var fileName = $"fsm-outcomes-{DateTime.UtcNow:yyyyMMddHHmmss}.csv";
             return File(memoryStream.ToArray(), "text/csv", fileName);
@@ -489,9 +496,8 @@ public class BulkCheckController : BaseController
         }
     }
 
-    private void WriteBulkExportRecords(CsvWriter csv,IEnumerable results, bool isEnhanced,EligibilityCriteria eligibilityCriteria)
+    private void WriteBulkExportRecords(CsvWriter csv, IEnumerable results, bool isEnhanced, EligibilityCriteria eligibilityCriteria)
     {
-
         // Select correct map
         var mapType = GetCsvMapType(isEnhanced, eligibilityCriteria);
 
@@ -557,6 +563,7 @@ public class BulkCheckController : BaseController
             bulkCheckId = bulkCheckId
         };
     }
+
     private IActionResult ValidateParseResult<T>(BulkCheckCsvResult<T> parseResult, string filename) where T : CheckEligibilityRequestDataBase
     {
         if (!string.IsNullOrEmpty(parseResult.ErrorMessage))

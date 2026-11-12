@@ -23,7 +23,7 @@ const sessionConfigs = {
 //dynamic CSV generator
 const createBulkCsv = (rowCount: number, includeSchoolURN: boolean): string => {
   const baseHeader =
-    "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth";
+    "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth";
 
   const header = includeSchoolURN
     ? `${baseHeader},Child School Urn,Parent Email Address (optional),Reference (optional)`
@@ -37,6 +37,7 @@ const createBulkCsv = (rowCount: number, includeSchoolURN: boolean): string => {
       "Smith",
       `${day}/01/2000`,
       "AB123456C",
+      "",
       "Jay",
       "Smith",
       `${day}/01/2010`,
@@ -49,6 +50,44 @@ const createBulkCsv = (rowCount: number, includeSchoolURN: boolean): string => {
     baseRow.push(`parent${index}@example.com`, "");
 
     return baseRow.join(",");
+  });
+
+  return [header, ...rows].join("\n");
+};
+
+const createIdentifierValidationCsv = (includeSchoolURN: boolean): string => {
+  const baseHeader =
+    "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth";
+  const header = includeSchoolURN
+    ? `${baseHeader},Child School Urn,Parent Email Address (optional),Reference (optional)`
+    : `${baseHeader},Parent Email Address (optional),Reference (optional)`;
+  const identifiers = [
+    { ni: "", nass: "" },
+    { ni: "AB123456C", nass: "123456789" },
+    { ni: "INVALID", nass: "" },
+    { ni: "AB123456C", nass: "" },
+    { ni: "", nass: "invalid" },
+    { ni: "", nass: "123456789" },
+  ];
+
+  const rows = identifiers.map(({ ni, nass }) => {
+    const row = [
+      "John",
+      "Smith",
+      "01/01/1980",
+      ni,
+      nass,
+      "Jay",
+      "Smith",
+      "01/01/2010",
+    ];
+
+    if (includeSchoolURN) {
+      row.push("150716");
+    }
+
+    row.push("parent@example.com", "");
+    return row.join(",");
   });
 
   return [header, ...rows].join("\n");
@@ -86,6 +125,49 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
         "contain",
         "The column headers in the selected file must exactly match the template",
       );
+    });
+
+    it("validates National Insurance and asylum support reference numbers", () => {
+      uploadFile(
+        createIdentifierValidationCsv(config.includeSchoolURN),
+        "identifier_validation.csv",
+      );
+
+      cy.contains("button", "Run a batch check").click();
+
+      const expectedErrors = [
+        {
+          line: "2",
+          message:
+            "National Insurance number or asylum support reference number is required",
+        },
+        {
+          line: "3",
+          message:
+            "Enter either a National Insurance number or asylum support reference number, not both",
+        },
+        {
+          line: "4",
+          message: "Enter a National Insurance number in the correct format",
+        },
+        {
+          line: "6",
+          message:
+            "Enter an asylum support reference number in the correct format",
+        },
+      ];
+
+      cy.get("#errors tbody tr").should("have.length", expectedErrors.length);
+      cy.get("#errors tbody tr").each(($row, index) => {
+        cy.wrap($row)
+          .find("td")
+          .eq(0)
+          .should("have.text", expectedErrors[index].line);
+        cy.wrap($row)
+          .find("td")
+          .eq(1)
+          .should("have.text", expectedErrors[index].message);
+      });
     });
 
     it("returns error when row limit exceeded", () => {

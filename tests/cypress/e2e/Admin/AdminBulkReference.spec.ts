@@ -7,18 +7,66 @@ const services = [
   { session: "school", enhanced: true, school: true, template: "BulkCheckTemplate_Enhanced_School.csv" },
 ];
 
+const referenceHeader = "Reference (optional)";
+const basicParentHeaders = [
+  "Parent Last Name",
+  "Parent Date of Birth",
+  "Parent National Insurance number",
+  "Parent Asylum Seeker Reference number",
+];
+const enhancedParentHeaders = [
+  "Parent First Name",
+  "Parent Last Name",
+  "Parent Date of Birth",
+  "Parent National Insurance number",
+  "Parent Asylum Seeker Reference number",
+  "Child First Name",
+  "Child Last Name",
+  "Child Date of Birth",
+];
+const basicResultHeaders = [
+  "Parent Last Name",
+  "Parent Date of Birth",
+  "Parent National Insurance number",
+  "Parent Asylum Seeker Reference number",
+  "Outcome",
+];
+const enhancedResultHeaders = [
+  "Parent First Name",
+  "Parent Last Name",
+  "Parent Date of Birth",
+  "Parent National Insurance number",
+  "Parent Asylum Seeker Reference number",
+  "Child First Name",
+  "Child Last Name",
+  "Child Date of Birth",
+  "Child School Urn",
+  "Parent Email Address (optional)",
+  "Outcome",
+];
+
+const getUploadHeaders = (service: (typeof services)[number]): string[] => [
+  ...(service.enhanced ? enhancedParentHeaders : basicParentHeaders),
+  ...(service.enhanced && !service.school ? ["Child School Urn"] : []),
+  ...(service.enhanced ? ["Parent Email Address (optional)"] : []),
+  referenceHeader,
+];
+
+const getResultHeaders = (
+  service: (typeof services)[number],
+  actualHeaders: string[],
+): string[] => [
+  ...(service.enhanced ? enhancedResultHeaders : basicResultHeaders),
+  ...(actualHeaders.includes("Eligibility End Date") ? ["Eligibility End Date"] : []),
+  referenceHeader,
+];
+
 services.forEach((service) => {
-  const headers = service.enhanced
-    ? ["Parent First Name", "Parent Last Name", "Parent Date of Birth", "Parent National Insurance number",
-        "Child First Name", "Child Last Name", "Child Date of Birth"]
-    : ["Parent Last Name", "Parent Date of Birth", "Parent National Insurance number"];
-  if (service.enhanced && !service.school) headers.push("Child School Urn");
-  if (service.enhanced) headers.push("Parent Email Address (optional)");
-  headers.push("Reference (optional)");
+  const headers = getUploadHeaders(service);
   const row = (reference: string, email = "") => {
     const fields = service.enhanced
-      ? ["John", "Smith", "1985-03-15", "AB123456C", "Emily", "Smith", "2015-09-10"]
-      : ["Smith", "1985-03-15", "AB123456C"];
+      ? ["John", "Smith", "1985-03-15", "AB123456C", "", "Emily", "Smith", "2015-09-10"]
+      : ["Smith", "1985-03-15", "AB123456C", ""];
     if (service.enhanced && !service.school) fields.push("150716"); // Telford Park School, as in existing journey tests.
     if (service.enhanced) fields.push(email);
     fields.push(reference);
@@ -86,13 +134,8 @@ services.forEach((service) => {
             expect(response.status).to.eq(200);
             const lines = String(response.body).replace(/^\uFEFF/, "").split(/\r?\n/).filter((line) => line.length > 0);
             const actualHeaders = lines[0].split(",");
-            const expectedHeaders = service.enhanced
-              ? ["Parent First Name", "Parent Last Name", "Parent Date of Birth", "Parent National Insurance number",
-                  "Child First Name", "Child Last Name", "Child Date of Birth", "Child School Urn", "Parent Email Address (optional)", "Outcome"]
-              : ["Parent Last Name", "Parent Date of Birth", "Parent National Insurance number", "Outcome"];
             // Live policy can be standard or expanded; NUnit verifies both controller/map selections explicitly.
-            if (actualHeaders.indexOf("Eligibility End Date") >= 0) expectedHeaders.push("Eligibility End Date");
-            expectedHeaders.push("Reference (optional)");
+            const expectedHeaders = getResultHeaders(service, actualHeaders);
             expect(actualHeaders).to.deep.eq(expectedHeaders);
             expect(lines).to.have.length(4);
             lines.slice(1).forEach((line, index) => {
@@ -100,7 +143,7 @@ services.forEach((service) => {
               const fields = line.split(",");
               expect(fields).to.have.length(expectedHeaders.length);
               expect(fields[fields.length - 1]).to.eq(expectedReferences[index]);
-              if (service.enhanced) expect(fields[8]).to.eq(emails[index]);
+              if (service.enhanced) expect(fields[9]).to.eq(emails[index]);
             });
           });
         });
