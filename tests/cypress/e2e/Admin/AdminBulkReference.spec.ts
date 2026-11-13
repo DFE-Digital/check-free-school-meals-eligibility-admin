@@ -96,7 +96,7 @@ services.forEach((service) => {
         cy.contains("li", "Make sure you include:").children("ul").first()
           .should("not.contain.text", "email");
       } else {
-        cy.contains("p", "There is an optional ‘Reference’ column where you can add reference numbers or additional information.")
+        cy.contains("p", "There is an optional 'Reference' column where you can add reference numbers or additional information.")
           .should("be.visible");
       }
       cy.contains("a", "batch check template").should("have.attr", "href").then((href) => {
