@@ -8,9 +8,9 @@
     <span class="govuk-caption-l">Reference @ViewBag.AppReference</span>
     <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
     <p>
-        Its status has now changed to ‘Sent for review’.
+        Its status has now changed to 'Sent for review'.
 
-        If you don’t hear back from the local authority, get in touch with them to ask for an update.
+        If you don't hear back from the local authority, get in touch with them to ask for an update.
     </p>
 
     @Html.ActionLink("Return to record", "ApplicationDetail", "application", new { id = TempData["AppAppealID"] }, new { @class = "govuk-button govuk-button--primary" })
