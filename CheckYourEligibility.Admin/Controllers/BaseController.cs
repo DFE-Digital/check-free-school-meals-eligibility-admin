@@ -63,6 +63,10 @@ public class BaseController : Controller
         {
             _Claims.Roles = await _dfeSignInApiService.GetUserRolesAsync(_Claims.User.Id, _Claims.Organisation.Id);
         }
+        else
+        {
+            //redirect to new access permissions view
+        }
     }
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
