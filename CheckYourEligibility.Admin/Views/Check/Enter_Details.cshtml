@@ -33,7 +33,7 @@
                     <span asp-validation-for="FirstName"></span>
                 </p>
                 <input class="govuk-input govuk-input--width-20 @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-for="FirstName" type="text">
+                       asp-for="FirstName" type="text" autocomplete="given-name">
             </div>
 
             <div class="govuk-form-group">
@@ -44,7 +44,7 @@
                     <span asp-validation-for="LastName"></span>
                 </p>
                 <input class="govuk-input govuk-input--width-20 @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-for="LastName" type="text">
+                       asp-for="LastName" type="text" autocomplete="family-name">
             </div>
 
             <div class="govuk-form-group">
@@ -55,7 +55,7 @@
                     <span asp-validation-for="EmailAddress"></span>
                 </p>
                 <input class="govuk-input govuk-input--width-20 @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-for="EmailAddress" type="text">
+                       asp-for="EmailAddress" type="text" autocomplete="email">
             </div>
 
             <div class="govuk-form-group">
@@ -92,7 +92,8 @@
                                        aria-describedby="dob-hint-day"
                                        type="text"
                                        inputmode="numeric"
-                                       maxlength="2" />
+                                       maxlength="2" 
+                                       autocomplete="bday-day" />
                             </div>
                         </div>
 
@@ -108,7 +109,8 @@
                                        aria-describedby="dob-hint-month"
                                        type="text"
                                        inputmode="numeric"
-                                       maxlength="2" />
+                                       maxlength="2" 
+                                       autocomplete="bday-month" />
                             </div>
                         </div>
 
@@ -124,7 +126,8 @@
                                        aria-describedby="dob-hint-year"
                                        type="text"
                                        inputmode="numeric"
-                                       maxlength="4" />
+                                       maxlength="4" 
+                                       autocomplete="bday-year" />
                             </div>
                         </div>
 
@@ -154,7 +157,6 @@
                        asp-for="NationalInsuranceNumber"
                        type="text"
                        spellcheck="false"
-                       autocomplete="text"
                        maxlength="9">
 
             </div>
