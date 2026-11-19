@@ -1,23 +1,47 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CheckYourEligibility.Admin.Domain.Constants;
+using CheckYourEligibility.Admin.Domain.Constants.ErrorMessages;
+using CheckYourEligibility.Admin.Models;
 using CheckYourEligibility.API.Domain.Validation;
+using System.ComponentModel.DataAnnotations;
+
+namespace CheckYourEligibility.Admin.Attributes;
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class NinValidatorAttribute : ValidationAttribute
+public class NinoAttribute : ValidationAttribute
 {
-    public NinValidatorAttribute()
+    public NinoAttribute()
     {
-        ErrorMessage = "Enter a National Insurance number in the correct format";
+        ErrorMessage = ValidationMessages.InvalidNI;
     }
 
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
-        if (value is not string nino)
+        if (validationContext.ObjectInstance is ParentGuardian check &&
+            IdentifierTypeConstants.ShouldValidateNass(check.IdentifierType))
         {
-            return new ValidationResult("National Insurance number is required");
+            return ValidationResult.Success;
         }
 
-        return DataValidation.BeAValidNi(nino)
-            ? ValidationResult.Success
-            : new ValidationResult("Enter a National Insurance number in the correct format");
+        if (value is null || value is string { Length: 0 })
+        {
+            return new ValidationResult(ValidationMessages.NI_or_NASS);
+        }
+
+        var nino = value.ToString()!;
+        var despacedNino = NinoValidation.RemoveSpaces(nino)!;
+        var normalizedNino = NinoValidation.Normalize(nino)!;
+
+        if (normalizedNino.Length > 9)
+        {
+            return new ValidationResult(
+                "National Insurance number should contain no more than 9 alphanumeric characters");
+        }
+
+        if (!NinoValidation.IsValidInput(despacedNino))
+        {
+            return new ValidationResult(ValidationMessages.InvalidNI);
+        }
+
+        return ValidationResult.Success;
     }
 }

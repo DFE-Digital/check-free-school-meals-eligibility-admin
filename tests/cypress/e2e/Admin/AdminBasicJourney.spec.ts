@@ -22,12 +22,33 @@ describe('BasicLAHappyPath', () => {
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
+        cy.get('#identifierType-nino').check();
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Run check').click();
 
         //eligible outcome
         cy.get('h2.govuk-notification-banner__title', { timeout: 80000 }).should('include.text', 'Children eligible');
         cy.contains('a.govuk-link', 'Do another check');
+    });
+
+    it('Will allow a basic user to run a check with an asylum support reference', () => {
+        cy.contains('Run a check for one parent or guardian').click();
+        cy.url().should('include', '/Check/Enter_Details');
+        cy.get('#FirstName').type(parentFirstName);
+        cy.get('#LastName').type(parentLastName);
+        cy.get('[id="DateOfBirth.Day"]').type('01');
+        cy.get('[id="DateOfBirth.Month"]').type('01');
+        cy.get('[id="DateOfBirth.Year"]').type('1990');
+        cy.get('#identifierType-nass').check();
+
+        cy.get('#NationalAsylumSeekerServiceNumber')
+            .should('be.visible')
+            .and('be.enabled')
+            .type('120156789');
+        cy.get('#NationalInsuranceNumber').should('be.disabled');
+        cy.contains('button', 'Run check').click();
+
+        cy.get('h2.govuk-notification-banner__title', { timeout: 80000 }).should('be.visible');
     });
     
     it('Will show updated guidance when a basic user check is not eligible', () => {
@@ -45,6 +66,7 @@ describe('BasicLAHappyPath', () => {
         cy.get('[id="DateOfBirth.Day"]').clear().type('01');
         cy.get('[id="DateOfBirth.Month"]').clear().type('01');
         cy.get('[id="DateOfBirth.Year"]').clear().type('1990');
+        cy.get('#identifierType-nino').check();
         cy.get('#NationalInsuranceNumber').clear().type('PN123456A');
     
         cy.contains('button', 'Run check').click();

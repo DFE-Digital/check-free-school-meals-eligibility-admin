@@ -1,8 +1,8 @@
-using System.Text;
 using CheckYourEligibility.Admin.Boundary.Requests;
 using CheckYourEligibility.Admin.Boundary.Responses;
 using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Models;
+using CheckYourEligibility.API.Domain.Validation;
 
 namespace CheckYourEligibility.Admin.UseCases;
 
@@ -31,19 +31,20 @@ public class PerformEligibilityCheckUseCase : IPerformEligibilityCheckUseCase
             int.Parse(parentRequest.Month),
             int.Parse(parentRequest.Day)
         ).ToString("yyyy-MM-dd");
-
-        // Build ECS request
+        
+        // Note: this need be refactored as part of the' check to application'  journey TempData removal work
+        parentRequest.NationalInsuranceNumber =  NinoValidation.Normalize(parentRequest.NationalInsuranceNumber);;
         var checkEligibilityRequest = new CheckEligibilityRequest_Enhanced
         {
             Data = new CheckEligibilityRequestData_Enhanced
             {
                 LastName = parentRequest.LastName,
-                NationalInsuranceNumber = parentRequest.NationalInsuranceNumber?.ToUpper(),
+                NationalInsuranceNumber =  parentRequest.NationalInsuranceNumber,
+                NationalAsylumSeekerServiceNumber = parentRequest.NationalAsylumSeekerServiceNumber ?? string.Empty,
                 DateOfBirth = dobString
             }
         };
 
-        // Call ECS check
         var response = await _checkGateway.PostCheck(checkEligibilityRequest);
 
         return response;

@@ -16,6 +16,7 @@ describe('Test that approved accented characters are accepted in name input fiel
         cy.get('#submitButton').click();
 
         cy.url().should('include', '/Check/Enter_Details');
+        cy.get('#identifierType-nino').check();
 
         let approvedChars = "OBrien" + //plain letters
             "O'Brien" + //straight apostrophe (U+0027)
