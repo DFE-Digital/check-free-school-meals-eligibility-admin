@@ -3,15 +3,16 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace CheckYourEligibility.Admin.UseCases;
 
-public class ValidationResult
-{
-    public bool IsValid { get; set; }
-    public Dictionary<string, List<string>> Errors { get; set; }
-}
-
 public interface IValidateParentDetailsUseCase
 {
     ValidationResult Execute(ParentGuardian request, ModelStateDictionary modelState);
+}
+
+public class ValidationResult
+{
+    public bool IsValid { get; set; }
+
+    public Dictionary<string, List<string>> Errors { get; set; }
 }
 
 public class ValidateParentDetailsUseCase : IValidateParentDetailsUseCase
@@ -25,16 +26,6 @@ public class ValidateParentDetailsUseCase : IValidateParentDetailsUseCase
 
     public ValidationResult Execute(ParentGuardian request, ModelStateDictionary modelState)
     {
-        var errors = ProcessModelStateErrors(modelState);
-        if (!modelState.IsValid)
-        {
-            return new ValidationResult { IsValid = false, Errors = errors };
-        }
-        return new ValidationResult { IsValid = true, Errors = errors };
-    }
-
-    private Dictionary<string, List<string>> ProcessModelStateErrors(ModelStateDictionary modelState)
-    {
         var errors = modelState
             .Where(x => x.Value.Errors.Count > 0)
             .ToDictionary(
@@ -42,18 +33,10 @@ public class ValidateParentDetailsUseCase : IValidateParentDetailsUseCase
                 v => v.Value.Errors.Select(e => e.ErrorMessage).ToList()
             );
 
-        const string targetValue = "Please select one option";
-
-        if (errors.ContainsKey("NationalInsuranceNumber") &&
-            errors.ContainsKey("NationalAsylumSeekerServiceNumber"))
-            if (errors["NationalInsuranceNumber"].Contains(targetValue) &&
-                errors["NationalAsylumSeekerServiceNumber"].Contains(targetValue))
-            {
-                errors.Remove("NationalInsuranceNumber");
-                errors.Remove("NationalAsylumSeekerServiceNumber");
-                errors["NINAS"] = new List<string> { targetValue };
-            }
-
-        return errors;
+        if (!modelState.IsValid)
+        {
+            return new ValidationResult { IsValid = false, Errors = errors };
+        }
+        return new ValidationResult { IsValid = true, Errors = errors };
     }
 }

@@ -1,8 +1,10 @@
+@using CheckYourEligibility.Admin.Domain.Constants
 @using CheckYourEligibility.Admin.Domain.DfeSignIn
 @model ParentGuardian
 
 @{
     ViewData["Title"] = "Run a check for one parent or guardian";
+
     var orgType = TempData["organisationType"] as OrganisationCategory?;
 
     var ninoInputClasses = "govuk-input govuk-!-width-one-third js-nino-input";
@@ -11,6 +13,15 @@
     {
         ninoInputClasses += " govuk-input--error";
     }
+
+@functions {
+    string InputClass(string fieldName)
+    {
+        return ViewData.ModelState[fieldName]?.Errors.Any() == true
+            ? "govuk-input govuk-!-width-one-third govuk-input--error"
+            : "govuk-input govuk-!-width-one-third";
+    }
+}
 }
 
 <div class="govuk-grid-column-two-thirds">
@@ -134,32 +145,77 @@
                     </div>
                 </fieldset>
             </div>
-
             <div class="govuk-form-group">
-                <h1 class="govuk-label-wrapper">
-                    <label class="govuk-label govuk-label--m" for="NationalInsuranceNumber">
-                        National Insurance number
-                    </label>
-                </h1>
+                <fieldset class="govuk-fieldset" aria-describedby="identifierType-hint">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                        National Insurance number or asylum support reference
+                    </legend>
 
-                <div id="NIN-hint" class="govuk-hint">
-                    For example, 'QQ 12 34 56 C'
-                </div>
+                    <div id="identifierType-hint" class="govuk-hint">
+                        Select one option.
+                    </div>
 
-                <p class="govuk-error-message">
-                    <span asp-validation-for="NationalInsuranceNumber"></span>
-                </p>
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="identifierType-nino" asp-for="IdentifierType" type="radio" value="@IdentifierTypeConstants.Nino"
+                                   data-aria-controls="conditional-identifierType-nino">
+                            <label class="govuk-label govuk-radios__label" for="identifierType-nino">
+                                National Insurance number
+                            </label>
+                        </div>
+                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-identifierType-nino">
+                            <div class="govuk-form-group">
+                                <h1 class="govuk-label-wrapper">
+                                    <label class="govuk-label" for="NationalInsuranceNumber">
+                                        National Insurance number
+                                    </label>
+                                </h1>
 
-                <input class="@ninoInputClasses"
-                       id="NationalInsuranceNumber"
-                       aria-describedby="NIN-hint"
-                       asp-controller="Check"
-                       asp-for="NationalInsuranceNumber"
-                       type="text"
-                       spellcheck="false"
-                       maxlength="9">
+                                <div id="NIN-hint" class="govuk-hint">
+                                    For example, ‘QQ 12 34 56 C’
+                                </div>
 
+                                <p class="govuk-error-message">
+                                    <span asp-validation-for="NationalInsuranceNumber"></span>
+                                </p>
+                                <input class="@InputClass(nameof(Model.NationalInsuranceNumber))"
+                                       id="NationalInsuranceNumber"
+                                       aria-describedby="NIN-hint"
+                                       asp-for="NationalInsuranceNumber"
+                                       type="text"
+                                       spellcheck="false" />
+                            </div>
+                        </div>
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="identifierType-nass" asp-for="IdentifierType" type="radio" value="@IdentifierTypeConstants.Nass"
+                                   data-aria-controls="conditional-identifierType-nass">
+                            <label class="govuk-label govuk-radios__label" for="identifierType-nass">
+                                Asylum support reference
+                            </label>
+                        </div>
+                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-identifierType-nass">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label" for="NationalAsylumSeekerServiceNumber">
+                                    Asylum support reference
+                                </label>
+                                <div id="ASRN-hint" class="govuk-hint">
+                                    For example, 123456789 or 12/34/56789
+                                </div>
+                                <p class="govuk-error-message">
+                                    <span asp-validation-for="NationalAsylumSeekerServiceNumber"></span>
+                                </p>
+                                <input class="@InputClass(nameof(Model.NationalAsylumSeekerServiceNumber))"
+                                       id="NationalAsylumSeekerServiceNumber"
+                                       aria-describedby="ASRN-hint"
+                                       asp-for="NationalAsylumSeekerServiceNumber"
+                                       type="text"
+                                       spellcheck="false" />
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
             </div>
+            <script src="/js/identifier.js"></script>
 
             <p class="govuk-body">
                 <a target="_blank" href="https://www.gov.uk/government/publications/free-school-meals-guidance-for-schools-and-local-authorities/providing-free-school-meals-to-families-with-no-recourse-to-public-funds-nrpf">Parent or guardian has no recourse to public funds (NRPF)</a>

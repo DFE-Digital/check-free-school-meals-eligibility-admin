@@ -1,5 +1,4 @@
-﻿
-namespace CheckYourEligibility.Admin.Models
+﻿namespace CheckYourEligibility.Admin.Models
 {
     public class TieredOutcome
     {
