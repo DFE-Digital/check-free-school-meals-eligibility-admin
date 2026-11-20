@@ -48,14 +48,16 @@ public class CheckEligibilityRequestDataValidatorNameTests : CheckEligibilityReq
             Is.EqualTo(new[] { ValidationMessages.LastName }));
     }
 
-    [Test]
-    public async Task Validate_EnhancedSupportedNames_Passes()
+    [TestCase("Zoë", "O'Connor")]
+    [TestCase("Søren", "O'Connor")]
+    [TestCase("Zoë", "Østergaard")]
+    public async Task Validate_EnhancedSupportedNames_Passes(string childFirstName, string childLastName)
     {
         var request = CreateValidEnhancedRequest();
         request.FirstName = "José";
         request.LastName = "García";
-        request.ChildFirstName = "Zoë";
-        request.ChildLastName = "O'Connor";
+        request.ChildFirstName = childFirstName;
+        request.ChildLastName = childLastName;
 
         var result = await Validator.ValidateAsync(request);
 
