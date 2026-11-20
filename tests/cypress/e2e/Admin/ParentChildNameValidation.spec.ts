@@ -48,7 +48,7 @@ describe('Test that approved accented characters are accepted in name input fiel
         //Verify that we did successfully submit the form because we received validation errors for the two unfilled inputs
         cy.get('#error-summary')
             .should('contain.text', 'Enter a date of birth')
-            .and('contain.text', 'Enter a National Insurance number');
+            .and('contain.text', 'National Insurance number or asylum support reference number is required');
 
         //Continue to Add_Child_Details to check the Child Name validation with valid Parent Details
         //Replace Last name as we need to use 'Tester' for the check to proceed.
