@@ -7,6 +7,8 @@
     ViewData["Title"] = parentName;
     var orgType = TempData["organisationType"] as OrganisationCategory?;
     var errorMessage = TempData["ErrorMessage"] as string;
+    var decisionErrorMessage = TempData["DecisionErrorMessage"] as string;
+
 }
 
 <div class="govuk-grid-column-full">
@@ -38,6 +40,28 @@
                 </h2>
                 <div class="govuk-error-summary__body">
                     <p>You can no longer make changes to this record.</p>
+                </div>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(decisionErrorMessage))
+    {
+        <div id="error-summary"
+             class="govuk-error-summary"
+             data-module="govuk-error-summary">
+            <div role="alert">
+                <h2 class="govuk-error-summary__title">
+                    There is a problem
+                </h2>
+
+                <div class="govuk-error-summary__body">
+                    <ul class="govuk-list govuk-error-summary__list">
+                        <li>
+                            <a href="#Decision">
+                                @decisionErrorMessage
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -116,8 +140,15 @@
         <form asp-controller="Application" asp-action="ApplicationDecision" method="post">
             <input type="hidden" name="Id" value="@Model.Id" />
 
-            <div class="govuk-form-group" data-type="Decision-form-group">
-                <fieldset class="govuk-fieldset" role="group" aria-describedby="Decision-hint">
+            <div class="govuk-form-group @(string.IsNullOrEmpty(decisionErrorMessage) ? "" : "govuk-form-group--error")">
+                <fieldset id="Decision" class="govuk-fieldset" role="group" aria-describedby="Decision-hint @(string.IsNullOrEmpty(decisionErrorMessage) ? "" : "Decision-error")">
+                    @if (!string.IsNullOrEmpty(decisionErrorMessage))
+                    {
+                        <p id="Decision-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span>
+                            @decisionErrorMessage
+                        </p>
+                    }
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
                         Record a decision
                     </legend>
