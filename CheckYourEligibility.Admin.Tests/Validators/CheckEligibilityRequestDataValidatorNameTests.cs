@@ -6,16 +6,8 @@ using FluentValidation;
 namespace CheckYourEligibility.Admin.Tests.Validators;
 
 [TestFixture]
-public class CheckEligibilityRequestDataValidatorNameTests
+public class CheckEligibilityRequestDataValidatorNameTests : CheckEligibilityRequestDataValidatorTestBase
 {
-    private IValidator<IEligibilityServiceType> _validator = null!;
-
-    [SetUp]
-    public void Setup()
-    {
-        _validator = new CheckEligibilityRequestDataValidator();
-    }
-
     [TestCase("García")]
     [TestCase("O'Connor")]
     [TestCase("O’Connor")]
@@ -25,7 +17,7 @@ public class CheckEligibilityRequestDataValidatorNameTests
         var request = CreateValidBasicRequest();
         request.LastName = lastName;
 
-        var result = await _validator.ValidateAsync(request);
+        var result = await Validator.ValidateAsync(request);
 
         Assert.That(result.Errors, Is.Empty);
     }
@@ -36,7 +28,7 @@ public class CheckEligibilityRequestDataValidatorNameTests
         var request = CreateValidBasicRequest();
         request.LastName = "Smith@";
 
-        var result = await _validator.ValidateAsync(request);
+        var result = await Validator.ValidateAsync(request);
 
         Assert.That(
             result.Errors.Select(x => x.ErrorMessage),
@@ -49,7 +41,7 @@ public class CheckEligibilityRequestDataValidatorNameTests
         var request = CreateValidBasicRequest();
         request.LastName = string.Empty;
 
-        var result = await _validator.ValidateAsync(request);
+        var result = await Validator.ValidateAsync(request);
 
         Assert.That(
             result.Errors.Select(x => x.ErrorMessage),
@@ -65,7 +57,7 @@ public class CheckEligibilityRequestDataValidatorNameTests
         request.ChildFirstName = "Zoë";
         request.ChildLastName = "O'Connor";
 
-        var result = await _validator.ValidateAsync(request);
+        var result = await Validator.ValidateAsync(request);
 
         Assert.That(result.Errors, Is.Empty);
     }
@@ -85,7 +77,7 @@ public class CheckEligibilityRequestDataValidatorNameTests
         var request = CreateValidEnhancedRequest();
         SetName(request, propertyName, "Smith@");
 
-        var result = await _validator.ValidateAsync(request);
+        var result = await Validator.ValidateAsync(request);
 
         Assert.That(
             result.Errors.Select(x => x.ErrorMessage),

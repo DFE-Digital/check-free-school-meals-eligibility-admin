@@ -60,13 +60,13 @@
                         {
                             <input asp-for="ChildList[i].FirstName" id="ChildList[@i].FirstName"
                                    class="govuk-input @(ViewData.ModelState[$"ChildList[{i}].FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                   type="text" aria-label="First name" autofocus />
+                                   type="text" aria-label="First name" autofocus autocomplete="given-name" />
                         }
                         else
                         {
                             <input asp-for="ChildList[i].FirstName" id="ChildList[@i].FirstName"
                                    class="govuk-input @(ViewData.ModelState[$"ChildList[{i}].FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                   type="text" aria-label="First name" />
+                                   type="text" aria-label="First name" autocomplete="given-name" />
                         }
                     </div>
 
@@ -79,7 +79,7 @@
                         </p>
                         <input asp-for="ChildList[i].LastName" id="ChildList[@i].LastName"
                                class="govuk-input @(ViewData.ModelState[$"ChildList[{i}].LastName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                               type="text">
+                               type="text" autocomplete="family-name">
                     </div>
 
                     <div class="govuk-form-group" data-type="dob-form-group">
@@ -106,7 +106,7 @@
                                         </label>
                                         <input asp-for="ChildList[i].Day" id="ChildList[@i].DateOfBirth.Day" data-type="dob"
                                                class="govuk-input govuk-date-input__input govuk-input--width-2 @(ViewData.ModelState[$"ChildList[{i}].DateOfBirth.Day"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                               type="text" inputmode="numeric" maxlength="2" aria-label="Day">
+                                               type="text" inputmode="numeric" maxlength="2" aria-label="Day" autocomplete="bday-day">
                                     </div>
                                 </div>
 
@@ -117,7 +117,7 @@
                                         </label>
                                         <input asp-for="ChildList[i].Month" id="ChildList[@i].DateOfBirth.Month" data-type="dob"
                                                class="govuk-input govuk-date-input__input govuk-input--width-2 @(ViewData.ModelState[$"ChildList[{i}].DateOfBirth.Month"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                               type="text" inputmode="numeric" maxlength="2" aria-label="Month">
+                                               type="text" inputmode="numeric" maxlength="2" aria-label="Month" autocomplete="bday-month">
                                     </div>
                                 </div>
 
@@ -128,7 +128,7 @@
                                         </label>
                                         <input asp-for="ChildList[i].Year" id="ChildList[@i].DateOfBirth.Year" data-type="dob"
                                                class="govuk-input govuk-date-input__input govuk-input--width-4 @(ViewData.ModelState[$"ChildList[{i}].DateOfBirth.Year"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                                               type="text" inputmode="numeric" maxlength="4" aria-label="Year">
+                                               type="text" inputmode="numeric" maxlength="4" aria-label="Year" autocomplete="bday-year">
                                     </div>
                                 </div>
                             </div>
@@ -159,9 +159,9 @@
                                        value="@(Model.ChildList[i].School != null && !string.IsNullOrEmpty(Model.ChildList[i].School.URN) ? string.Join(", ", Model.ChildList[i].School.Name, Model.ChildList[i].School.URN, Model.ChildList[i].School.Postcode, Model.ChildList[i].School.LA) : "")"
                                        type="text"
                                        autocomplete="off"
+                                       aria-autocomplete="list"
                                        aria-label="School Search"
                                        role="combobox"
-                                       aria-autocomplete="list"
                                        aria-expanded="false"
                                        aria-controls="schoolList@(i)"
                                        aria-activedescendant="" />

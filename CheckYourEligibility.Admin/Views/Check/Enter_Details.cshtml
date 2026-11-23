@@ -1,8 +1,10 @@
+@using CheckYourEligibility.Admin.Domain.Constants
 @using CheckYourEligibility.Admin.Domain.DfeSignIn
 @model ParentGuardian
 
 @{
     ViewData["Title"] = "Run a check for one parent or guardian";
+
     var orgType = TempData["organisationType"] as OrganisationCategory?;
 
     var ninoInputClasses = "govuk-input govuk-!-width-one-third js-nino-input";
@@ -11,6 +13,15 @@
     {
         ninoInputClasses += " govuk-input--error";
     }
+
+@functions {
+    string InputClass(string fieldName)
+    {
+        return ViewData.ModelState[fieldName]?.Errors.Any() == true
+            ? "govuk-input govuk-!-width-one-third govuk-input--error"
+            : "govuk-input govuk-!-width-one-third";
+    }
+}
 }
 
 <div class="govuk-grid-column-two-thirds">
@@ -33,7 +44,7 @@
                     <span asp-validation-for="FirstName"></span>
                 </p>
                 <input class="govuk-input govuk-input--width-20 @(ViewData.ModelState["FirstName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-for="FirstName" type="text">
+                       asp-for="FirstName" type="text" autocomplete="given-name">
             </div>
 
             <div class="govuk-form-group">
@@ -44,7 +55,7 @@
                     <span asp-validation-for="LastName"></span>
                 </p>
                 <input class="govuk-input govuk-input--width-20 @(ViewData.ModelState["LastName"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-for="LastName" type="text">
+                       asp-for="LastName" type="text" autocomplete="family-name">
             </div>
 
             <div class="govuk-form-group">
@@ -55,7 +66,7 @@
                     <span asp-validation-for="EmailAddress"></span>
                 </p>
                 <input class="govuk-input govuk-input--width-20 @(ViewData.ModelState["EmailAddress"]?.Errors.Count > 0 ? "govuk-input--error" : "")"
-                       asp-for="EmailAddress" type="text">
+                       asp-for="EmailAddress" type="text" autocomplete="email">
             </div>
 
             <div class="govuk-form-group">
@@ -92,7 +103,8 @@
                                        aria-describedby="dob-hint-day"
                                        type="text"
                                        inputmode="numeric"
-                                       maxlength="2" />
+                                       maxlength="2" 
+                                       autocomplete="bday-day" />
                             </div>
                         </div>
 
@@ -108,7 +120,8 @@
                                        aria-describedby="dob-hint-month"
                                        type="text"
                                        inputmode="numeric"
-                                       maxlength="2" />
+                                       maxlength="2" 
+                                       autocomplete="bday-month" />
                             </div>
                         </div>
 
@@ -124,47 +137,89 @@
                                        aria-describedby="dob-hint-year"
                                        type="text"
                                        inputmode="numeric"
-                                       maxlength="4" />
+                                       maxlength="4" 
+                                       autocomplete="bday-year" />
                             </div>
                         </div>
 
                     </div>
                 </fieldset>
             </div>
-
             <div class="govuk-form-group">
-                <h1 class="govuk-label-wrapper">
-                    <label class="govuk-label govuk-label--m" for="NationalInsuranceNumber">
-                        National Insurance number
-                    </label>
-                </h1>
+                <fieldset class="govuk-fieldset" aria-describedby="identifierType-hint">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                        National Insurance number or asylum support reference
+                    </legend>
 
-                <div id="NIN-hint" class="govuk-hint">
-                    For example, ‘QQ 12 34 56 C’
-                </div>
+                    <div id="identifierType-hint" class="govuk-hint">
+                        Select one option.
+                    </div>
 
-                <p class="govuk-error-message">
-                    <span asp-validation-for="NationalInsuranceNumber"></span>
-                </p>
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="identifierType-nino" asp-for="IdentifierType" type="radio" value="@IdentifierTypeConstants.Nino"
+                                   data-aria-controls="conditional-identifierType-nino">
+                            <label class="govuk-label govuk-radios__label" for="identifierType-nino">
+                                National Insurance number
+                            </label>
+                        </div>
+                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-identifierType-nino">
+                            <div class="govuk-form-group">
+                                <h1 class="govuk-label-wrapper">
+                                    <label class="govuk-label" for="NationalInsuranceNumber">
+                                        National Insurance number
+                                    </label>
+                                </h1>
 
-                    <input class="@ninoInputClasses"
-                       id="NationalInsuranceNumber"
-                       aria-describedby="NIN-hint"
-                       asp-controller="Check"
-                       asp-for="NationalInsuranceNumber"
-                       type="text"
-                       spellcheck="false"
-                       autocomplete="text"
-                       maxlength="9">
+                                <div id="NIN-hint" class="govuk-hint">
+                                    For example, ‘QQ 12 34 56 C’
+                                </div>
 
+                                <p class="govuk-error-message">
+                                    <span asp-validation-for="NationalInsuranceNumber"></span>
+                                </p>
+                                <input class="@InputClass(nameof(Model.NationalInsuranceNumber))"
+                                       id="NationalInsuranceNumber"
+                                       aria-describedby="NIN-hint"
+                                       asp-for="NationalInsuranceNumber"
+                                       type="text"
+                                       spellcheck="false" />
+                            </div>
+                        </div>
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="identifierType-nass" asp-for="IdentifierType" type="radio" value="@IdentifierTypeConstants.Nass"
+                                   data-aria-controls="conditional-identifierType-nass">
+                            <label class="govuk-label govuk-radios__label" for="identifierType-nass">
+                                Asylum support reference
+                            </label>
+                        </div>
+                        <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-identifierType-nass">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label" for="NationalAsylumSeekerServiceNumber">
+                                    Asylum support reference
+                                </label>
+                                <div id="ASRN-hint" class="govuk-hint">
+                                    For example, 123456789 or 12/34/56789
+                                </div>
+                                <p class="govuk-error-message">
+                                    <span asp-validation-for="NationalAsylumSeekerServiceNumber"></span>
+                                </p>
+                                <input class="@InputClass(nameof(Model.NationalAsylumSeekerServiceNumber))"
+                                       id="NationalAsylumSeekerServiceNumber"
+                                       aria-describedby="ASRN-hint"
+                                       asp-for="NationalAsylumSeekerServiceNumber"
+                                       type="text"
+                                       spellcheck="false" />
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
             </div>
+            <script src="/js/identifier.js"></script>
 
-            @if (!(orgType == OrganisationCategory.Establishment))
-            {
-                <p class="govuk-body">
-                    @Html.ActionLink("Parent or guardian is an asylum seeker", "AsylumCheck", "Home", null)
-                </p>
-            }
+            <p class="govuk-body">
+                <a target="_blank" href="https://www.gov.uk/government/publications/free-school-meals-guidance-for-schools-and-local-authorities/providing-free-school-meals-to-families-with-no-recourse-to-public-funds-nrpf">Parent or guardian has no recourse to public funds (NRPF)</a>
+            </p>
 
             <button class="govuk-button govuk-!-margin-top-5" data-module="govuk-button">
                 Run check

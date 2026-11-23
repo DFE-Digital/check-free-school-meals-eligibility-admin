@@ -9,11 +9,26 @@ const bulkBasicOverLimitRowCount = Number(
 
 const createBasicBulkCsv = (rowCount: number): string => {
   const header =
-    "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)";
+    "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Reference (optional)";
   const rows = Array.from({ length: rowCount }, (_, index) => {
     const day = ((index % 28) + 1).toString().padStart(2, "0");
-    return `Tester,${day}/01/2000,AB123456C,`;
+    return `Tester,${day}/01/2000,AB123456C,,`;
   });
+  return [header, ...rows].join("\n");
+};
+
+const createIdentifierValidationCsv = (): string => {
+  const header =
+    "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Reference (optional)";
+  const rows = [
+    "Tester,01/01/2000,,,",
+    "Tester,01/01/2000,AB123456C,123456789,",
+    "Tester,01/01/2000,INVALID,,",
+    "Tester,01/01/2000,AB123456C,,",
+    "Tester,01/01/2000,,invalid,",
+    "Tester,01/01/2000,,123456789,",
+  ];
+
   return [header, ...rows].join("\n");
 };
 
@@ -80,7 +95,7 @@ describe("BasicLAHappyPath", () => {
     const overLimitCsv = createBasicBulkCsv(bulkBasicOverLimitRowCount + 1);
     cy.get('input[type="file"]').attachFile([
       {
-        fileContent: overLimitCsv,
+        fileContent: new Blob([overLimitCsv], { type: "text/csv" }),
         fileName: "bulkcheck_over_limit.csv",
         mimeType: "text/csv",
       },
@@ -90,6 +105,54 @@ describe("BasicLAHappyPath", () => {
     cy.get("#file-upload-1-error")
       .should(($el) => {
         expect($el.text()).to.match(/CSV file cannot contain more than\s+\d+\s+records/);
+      });
+  });
+
+  it("validates National Insurance and asylum support reference numbers", () => {
+    const expectedErrors = [
+      {
+        line: "2",
+        message:
+          "National Insurance number or asylum support reference number is required",
+      },
+      {
+        line: "3",
+        message:
+          "Enter either a National Insurance number or asylum support reference number, not both",
+      },
+      {
+        line: "4",
+        message: "Enter a National Insurance number in the correct format",
+      },
+      {
+        line: "6",
+        message:
+          "Enter an asylum support reference number in the correct format",
+      },
+    ];
+
+    cy.get('input[type="file"]').attachFile([
+      {
+        fileContent: new Blob([createIdentifierValidationCsv()], {
+          type: "text/csv",
+        }),
+        fileName: "basic_identifier_validation.csv",
+        mimeType: "text/csv",
+      },
+    ]);
+
+    cy.contains("button", "Run a batch check").click();
+    cy.get("#errors tbody tr")
+      .should("have.length", expectedErrors.length)
+      .each(($row, index) => {
+        cy.wrap($row)
+          .find("td")
+          .eq(0)
+          .should("have.text", expectedErrors[index].line);
+        cy.wrap($row)
+          .find("td")
+          .eq(1)
+          .should("have.text", expectedErrors[index].message);
       });
   });
 
@@ -251,7 +314,7 @@ it("will run a successful batch check", () => {
         const csv = createBasicBulkCsv(1);
         cy.get('input[type="file"]').attachFile([
           {
-            fileContent: csv,
+            fileContent: new Blob([csv], { type: "text/csv" }),
             fileName: `basic-valid-${i}.csv`,
             mimeType: "text/csv",
           },

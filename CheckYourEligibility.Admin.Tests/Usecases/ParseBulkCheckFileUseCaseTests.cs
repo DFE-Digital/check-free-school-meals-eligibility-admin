@@ -19,11 +19,23 @@ namespace CheckYourEligibility.Admin.Tests.Usecases;
 [TestFixture]
 public class ParseBulkCheckFileUseCaseTests
 {
+    private const string BasicCsvHeader =
+        "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Reference (optional)";
+    private const string EnhancedCsvHeader =
+        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional),Reference (optional)";
+    private const string EnhancedSchoolCsvHeader =
+        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address (optional),Reference (optional)";
+
     private Mock<IValidator<CheckEligibilityRequestDataBase>> _validatorMock = null!;
+
     private Mock<IValidator<CheckEligibilityRequestData_Enhanced>> _enhancedValidatorMock = null!;
+
     private Mock<IServiceProvider> _serviceProviderMock = null!;
+
     private Mock<IConfiguration> _configurationMock = null!;
+
     private Mock<ICheckGateway> _checkGatewayMock = null!;
+
     private ParseBulkCheckFileUseCase _useCase = null!;
 
     #region Setup
@@ -63,10 +75,9 @@ public class ParseBulkCheckFileUseCaseTests
 
         CultureInfo.CurrentCulture = culture;
         CultureInfo.CurrentUICulture = culture;
-
     }
 
-    #endregion
+    #endregion Setup
 
     #region Valid File Tests
 
@@ -75,10 +86,10 @@ public class ParseBulkCheckFileUseCaseTests
     {
         SetupValidatorValid();
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
-Smith,1985-03-15,AB123456C,
-Doe,1990-06-20,CD987654D,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            "Smith,1985-03-15,AB123456C,,",
+            "Doe,1990-06-20,CD987654D,,"));
 
         Assert.That(result.ValidRequests.Count, Is.EqualTo(2));
         Assert.That(result.Errors, Is.Empty);
@@ -95,10 +106,10 @@ Doe,1990-06-20,CD987654D,");
     {
         SetupValidatorValid();
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
-Smith,15/03/1985,AB123456C,
-Doe,20/10/1990,CD987654D,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            "Smith,15/03/1985,AB123456C,,",
+            "Doe,20/10/1990,CD987654D,,"));
 
         Assert.That(result.ValidRequests[0].DateOfBirth, Is.EqualTo("1985-03-15"));
         Assert.That(result.ValidRequests[1].DateOfBirth, Is.EqualTo("1990-10-20"));
@@ -109,9 +120,9 @@ Doe,20/10/1990,CD987654D,");
     {
         SetupValidatorValid();
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
-Smith,1985-03-15,ab123456c,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            "Smith,1985-03-15,ab123456c,,"));
 
         Assert.That(result.ValidRequests[0].NationalInsuranceNumber, Is.EqualTo("AB123456C"));
     }
@@ -121,9 +132,9 @@ Smith,1985-03-15,ab123456c,");
     {
         SetupValidatorValid();
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
- Smith  ,  1985-03-15  ,  AB123456C  ,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            " Smith  ,  1985-03-15  ,  AB123456C  ,,"));
 
         var request = result.ValidRequests[0];
 
@@ -132,7 +143,7 @@ Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference
         Assert.That(request.NationalInsuranceNumber, Is.EqualTo("AB123456C"));
     }
 
-    #endregion
+    #endregion Valid File Tests
 
     #region Enhanced File Tests
 
@@ -141,9 +152,9 @@ Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference
     {
         SetupValidatorValid();
 
-        var result = await ExecuteEnhanced(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional),Reference (optional)
-John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,  Parent@Example.COM  ");
+        var result = await ExecuteEnhanced(CreateCsv(
+            EnhancedCsvHeader,
+            "John,Smith,1985-03-15,AB123456C,,Emily,Smith,2015-09-10,123456,  Parent@Example.COM  ,"));
 
         Assert.That(result.Errors, Is.Empty);
         Assert.That(result.ValidRequests, Has.Count.EqualTo(1));
@@ -156,9 +167,9 @@ John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,  Parent@Example.C
     {
         SetupValidatorValid();
 
-        var result = await ExecuteEnhanced(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address (optional),Reference (optional)
-John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,  Parent@Example.COM  ",
+        var result = await ExecuteEnhanced(CreateCsv(
+            EnhancedSchoolCsvHeader,
+            "John,Smith,1985-03-15,AB123456C,,Emily,Smith,2015-09-10,  Parent@Example.COM  ,"),
             isSchool: true);
 
         Assert.That(result.Errors, Is.Empty);
@@ -173,15 +184,12 @@ John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,  Parent@Example.COM  ",
     {
         SetupValidatorValid();
 
-        var csv = isSchool
-            ? @"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address (optional),Reference (optional)
-John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,"
-            : @"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional),Reference (optional)
-John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,";
+        var header = isSchool ? EnhancedSchoolCsvHeader : EnhancedCsvHeader;
+        var row = isSchool
+            ? "John,Smith,1985-03-15,AB123456C,,Emily,Smith,2015-09-10,,"
+            : "John,Smith,1985-03-15,AB123456C,,Emily,Smith,2015-09-10,123456,,";
 
-        var result = await ExecuteEnhanced(csv, isSchool);
+        var result = await ExecuteEnhanced(CreateCsv(header, row), isSchool);
 
         Assert.That(result.Errors, Is.Empty);
         Assert.That(result.ValidRequests, Has.Count.EqualTo(1));
@@ -194,15 +202,13 @@ John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456,";
     {
         SetupValidatorValid();
 
-        var csv = isSchool
-            ? @"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Reference (optional)
-John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10"
-            : @"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Reference (optional)
-John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456";
+        var header = (isSchool ? EnhancedSchoolCsvHeader : EnhancedCsvHeader)
+            .Replace(",Parent Email Address (optional)", string.Empty);
+        var row = isSchool
+            ? "John,Smith,1985-03-15,AB123456C,,Emily,Smith,2015-09-10,"
+            : "John,Smith,1985-03-15,AB123456C,,Emily,Smith,2015-09-10,123456,";
 
-        var result = await ExecuteEnhanced(csv, isSchool);
+        var result = await ExecuteEnhanced(CreateCsv(header, row), isSchool);
 
         Assert.That(
             result.ErrorMessage,
@@ -210,7 +216,7 @@ John,Smith,1985-03-15,AB123456C,Emily,Smith,2015-09-10,123456";
         Assert.That(result.ValidRequests, Is.Empty);
     }
 
-    #endregion
+    #endregion Enhanced File Tests
 
     #region Header Tests
 
@@ -236,7 +242,7 @@ Smith,1985-03-15");
 First Name,Last Name,DOB,NI Number,Reference (optional)
 John,Smith,1985-03-15,AB123456C,");
 
-        Assert.That(result.ErrorMessage, Does.Contain("The column headers in the selected file must exactly match the template"));
+        Assert.That(result.ErrorMessage, Does.Contain("Missing required header"));
     }
 
     [Test]
@@ -249,7 +255,7 @@ John,Smith,1985-03-15,AB123456C,");
         Assert.That(result.ErrorMessage, Is.Not.Empty);
     }
 
-    #endregion
+    #endregion Header Tests
 
     #region Validation Tests
 
@@ -258,12 +264,12 @@ John,Smith,1985-03-15,AB123456C,");
     {
         SetupValidatorFailures(
             new ValidationFailure(nameof(CheckEligibilityRequestDataBase.DateOfBirth), ValidationMessages.DOB),
-            new ValidationFailure(nameof(CheckEligibilityRequestDataBase.NationalInsuranceNumber), ValidationMessages.NI)
+            new ValidationFailure(nameof(CheckEligibilityRequestDataBase.NationalInsuranceNumber), ValidationMessages.InvalidNI)
         );
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
-John,Smith,invalid-date,BADNI,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            "John,Smith,invalid-date,BADNI,,"));
 
         Assert.That(result.ValidRequests, Is.Empty);
         Assert.That(result.Errors.Count, Is.EqualTo(2));
@@ -285,11 +291,11 @@ John,Smith,invalid-date,BADNI,");
             .ReturnsAsync(invalid)
             .ReturnsAsync(valid);
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
-John,Smith,1985-03-15,AB123456C,
-Jane,Doe,bad-date,BADNI,
-Bob,Jones,1988-01-10,EF654321F,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            "John,Smith,1985-03-15,AB123456C,,",
+            "Jane,Doe,bad-date,BADNI,,",
+            "Bob,Jones,1988-01-10,EF654321F,,"));
 
         Assert.That(result.ValidRequests.Count, Is.EqualTo(2));
         Assert.That(result.Errors.Count, Is.EqualTo(1));
@@ -303,14 +309,14 @@ Bob,Jones,1988-01-10,EF654321F,");
             new ValidationFailure("LastName", "Last name is required")
         );
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
-John,Smith,1985-03-15,AB123456C,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            "John,Smith,1985-03-15,AB123456C,,"));
 
         Assert.That(result.Errors.Count, Is.EqualTo(1));
     }
 
-    #endregion
+    #endregion Validation Tests
 
     #region Limits & Edge Cases
 
@@ -322,11 +328,11 @@ John,Smith,1985-03-15,AB123456C,");
         _useCase = new ParseBulkCheckFileUseCase(_serviceProviderMock.Object, _configurationMock.Object, _checkGatewayMock.Object);
         SetupValidatorValid();
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
-Smith,1985-03-15,AB123456C,
-Doe,1990-06-20,CD987654D,
-Jones,1988-01-10,EF654321F,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            "Smith,1985-03-15,AB123456C,,",
+            "Doe,1990-06-20,CD987654D,,",
+            "Jones,1988-01-10,EF654321F,,"));
 
         Assert.That(result.ErrorMessage, Does.Contain("more than 2 records"));
     }
@@ -336,8 +342,7 @@ Jones,1988-01-10,EF654321F,");
     {
         SetupValidatorValid();
 
-        var result = await Execute(@"
-Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)");
+        var result = await Execute(BasicCsvHeader);
 
         Assert.That(result.ValidRequests, Is.Empty);
         Assert.That(result.Errors, Is.Empty);
@@ -350,16 +355,19 @@ Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insuranc
             new ValidationFailure("LastName", "Last name is required")
         );
 
-        var result = await Execute(@"
-Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference (optional)
-,,,,");
+        var result = await Execute(CreateCsv(
+            BasicCsvHeader,
+            ",,,,"));
 
         Assert.That(result.Errors.Count, Is.EqualTo(1));
     }
 
-    #endregion
+    #endregion Limits & Edge Cases
 
     #region Helpers
+
+    private static string CreateCsv(string header, params string[] rows) =>
+        string.Join(Environment.NewLine, new[] { header }.Concat(rows));
 
     private async Task<BulkCheckCsvResult<CheckEligibilityRequestDataBase>> Execute(string csv)
     {
@@ -431,5 +439,5 @@ Parent Last Name,Parent Date of Birth,Parent National Insurance number,Reference
             schoolUrn: isSchool ? "123456" : null);
     }
 
-    #endregion
+    #endregion Helpers
 }

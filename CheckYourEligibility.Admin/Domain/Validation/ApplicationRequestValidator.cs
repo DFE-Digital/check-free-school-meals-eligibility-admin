@@ -33,6 +33,6 @@ public class ApplicationRequestValidator : AbstractValidator<ApplicationRequest>
         RuleFor(x => x.Data.ParentNationalInsuranceNumber)
             .NotEmpty()
             .Must(DataValidation.BeAValidNi)
-            .WithMessage(ValidationMessages.NI);
+            .WithMessage(ValidationMessages.InvalidNI);
     }
 }

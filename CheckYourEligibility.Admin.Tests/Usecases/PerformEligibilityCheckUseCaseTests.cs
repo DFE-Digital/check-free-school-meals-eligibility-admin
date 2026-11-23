@@ -56,6 +56,18 @@ public class PerformEligibilityCheckUseCaseTests
     }
 
     [Test]
+    public async Task Execute_NormalizesNinoOnParentRequest()
+    {
+        _parent.NationalInsuranceNumber = "ab 123-456 c";
+        _checkGatewayMock.Setup(s => s.PostCheck(It.IsAny<CheckEligibilityRequest_Enhanced>()))
+            .ReturnsAsync(_eligibilityResponse);
+
+        await _sut.Execute(_parent);
+
+        _parent.NationalInsuranceNumber.Should().Be("AB123456C");
+    }
+
+    [Test]
     public async Task Execute_WhenApiThrowsException_ShouldThrow()
     {
         // Arrange

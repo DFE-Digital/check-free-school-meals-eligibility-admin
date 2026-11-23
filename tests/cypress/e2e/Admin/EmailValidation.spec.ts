@@ -64,6 +64,7 @@ describe("email address validation", () => {
     const visitPrefilledForm = () => {
         cy.visit("/Check/Enter_Details");
         cy.get('#FirstName').should('exist');
+        cy.get('#identifierType-nino').check();
 
         cy.window().then(win => {
             // Get the DOM elements and set their values

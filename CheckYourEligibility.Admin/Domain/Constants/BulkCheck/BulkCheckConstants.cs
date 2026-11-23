@@ -6,32 +6,44 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
     {
         //CSV headers
         public const string ParentFirstNameHeader = "Parent First Name";
+
         public const string ParentLastNameHeader = "Parent Last Name";
+
         public const string ParentDateOfBirthHeader = "Parent Date of Birth";
+
         public const string ParentNINOHeader = "Parent National Insurance number";
+
         public const string ParentEmailAddressHeader = "Parent Email Address (optional)";
+
         public const string ReferenceHeader = "Reference (optional)";
 
+        public const string ParentNASSHeader = "Parent Asylum Seeker Reference number";
+
         public const string ChildFirstNameHeader = "Child First Name";
+
         public const string ChildLastNameHeader = "Child Last Name";
+
         public const string ChildDateOfBirthHeader = "Child Date of Birth";
+
         public const string ChildSchoolUrnHeader = "Child School Urn";
 
         public const string Outcome = "Outcome";
+
         public const string EligibilityEndDate = "Eligibility End Date";
 
         public static string[] Headers = {
                 ParentLastNameHeader,
                 ParentDateOfBirthHeader,
                 ParentNINOHeader,
+                ParentNASSHeader,
                 ReferenceHeader };
-
 
         public static string[] enhancedHeaders = {
                 ParentFirstNameHeader,
                 ParentLastNameHeader,
                 ParentDateOfBirthHeader,
                 ParentNINOHeader,
+                ParentNASSHeader,
                 ChildFirstNameHeader,
                 ChildLastNameHeader,
                 ChildDateOfBirthHeader,
@@ -44,18 +56,17 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
                 ParentLastNameHeader,
                 ParentDateOfBirthHeader,
                 ParentNINOHeader,
+                ParentNASSHeader,
                 ChildFirstNameHeader,
                 ChildLastNameHeader,
                 ChildDateOfBirthHeader,
                 ParentEmailAddressHeader,
                 ReferenceHeader };
 
-        
-
         public static List<string> GuidanceItemsBasic = [
              "parent last name",
              "parent date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
-             "parent National Insurance number"
+             "parent National Insurance number or asylum support reference number"
             ];
 
         /// <summary>
@@ -65,12 +76,11 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
         /// <returns></returns>
         public static List<string> GuidanceItemsEnhanced(bool isSchool)
         {
-
             List<string> GuidanceItemsEnhanced = [
             "parent first name",
             "parent last name",
             "parent date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
-            "parent National Insurance number",
+            "parent National Insurance number or asylum support reference number",
             "child first name",
             "child last name",
             "child date of birth (format DD/MM/YYYY or YYYY-MM-DD)",
@@ -82,8 +92,6 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
             }
 
             return GuidanceItemsEnhanced;
-
         }
     }
-
 }

@@ -27,6 +27,13 @@ namespace CheckYourEligibility.Admin.Tests.Controllers;
 [TestFixture]
 public class BulkReferenceExportTests : TestBase
 {
+    private const string BasicHeaders =
+        "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Outcome";
+    private const string EnhancedHeaders =
+        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional),Outcome";
+    private const string EligibilityEndDateHeader = "Eligibility End Date";
+    private const string ReferenceHeader = "Reference (optional)";
+
     [Test]
     public async Task Download_Preserves_Reference_Row_Order_Email_And_Policy_Columns(
         [Values(DfeSignInRoles.RoleCodeBasic, DfeSignInRoles.RoleCodeLA,
@@ -54,6 +61,7 @@ public class BulkReferenceExportTests : TestBase
                     ["LastName"] = "Parent" + (i + 1),
                     ["DateOfBirth"] = "1985-03-15",
                     ["NationalInsuranceNumber"] = "AB123456C",
+                    ["NationalAsylumSeekerServiceNumber"] = "123456789",
                     ["ChildFirstName"] = "Emily",
                     ["ChildLastName"] = "Parent" + (i + 1),
                     ["ChildDateOfBirth"] = "2015-09-10",
@@ -126,12 +134,9 @@ public class BulkReferenceExportTests : TestBase
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         csv.Read().Should().BeTrue();
         csv.ReadHeader();
-        var headers = enhanced
-            ? new List<string> { "Parent First Name", "Parent Last Name", "Parent Date of Birth", "Parent National Insurance number",
-                "Child First Name", "Child Last Name", "Child Date of Birth", "Child School Urn", "Parent Email Address (optional)", "Outcome" }
-            : new List<string> { "Parent Last Name", "Parent Date of Birth", "Parent National Insurance number", "Outcome" };
-        if (criteria == EligibilityCriteria.expanded) headers.Add("Eligibility End Date");
-        headers.Add("Reference (optional)");
+        var headers = (enhanced ? EnhancedHeaders : BasicHeaders).Split(',').ToList();
+        if (criteria == EligibilityCriteria.expanded) headers.Add(EligibilityEndDateHeader);
+        headers.Add(ReferenceHeader);
         csv.HeaderRecord.Should().Equal(headers);
         var rows = new List<string[]>();
         while (csv.Read()) rows.Add(csv.Parser.Record!.ToArray());
@@ -142,7 +147,11 @@ public class BulkReferenceExportTests : TestBase
                 ? new List<string> { "John", "Parent" + (i + 1), "1985-03-15", "AB123456C", "Emily",
                     "Parent" + (i + 1), "2015-09-10", "123456", emails[i] ?? "", outcomes[i] }
                 : new List<string> { "Parent" + (i + 1), "1985-03-15", "AB123456C", outcomes[i] };
-            if (criteria == EligibilityCriteria.expanded) expected.Add("2027-07-31");
+            if (enhanced)
+                expected.Insert(4, "123456789");
+            else
+                expected.Insert(3, "123456789");
+            if (criteria == EligibilityCriteria.expanded) expected.Insert(enhanced ? 11 : 5, "2027-07-31");
             expected.Add(scenario == "legacy" ? "" : references[i]?.Trim() ?? "");
             rows[i].Should().Equal(expected);
         }

@@ -27,11 +27,12 @@ const visitPrefilledForm = (onlyfill?: boolean) => {
         if (yearEl) yearEl.value = '1990';
         if (ninEl) ninEl.value = NIN;
         if (emailEl) emailEl.value = parentEmailAddress;
-
-        // Check the NIN radio button
-        const ninRadioEl = win.document.getElementById('nin-asrn-radios-1') as HTMLInputElement;
-        if (ninRadioEl) ninRadioEl.checked = true;
     });
+
+    cy.get('#identifierType-nino').check();
+    cy.get('#NationalInsuranceNumber')
+        .should('be.enabled')
+        .and('have.value', NIN);
 };
 
 describe("Links on not eligible page route to the intended locations", () => {

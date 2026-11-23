@@ -5,16 +5,8 @@ using FluentAssertions;
 namespace CheckYourEligibility.Admin.Tests.Validators;
 
 [TestFixture]
-public class CheckEligibilityRequestDataValidatorDateTests
+public class CheckEligibilityRequestDataValidatorDateTests : CheckEligibilityRequestDataValidatorTestBase
 {
-    private CheckEligibilityRequestDataValidator _validator = null!;
-
-    [SetUp]
-    public void Setup()
-    {
-        _validator = new CheckEligibilityRequestDataValidator();
-    }
-
     [Test]
     public async Task Validate_ImpossibleDate_ReturnsError()
     {
@@ -25,7 +17,7 @@ public class CheckEligibilityRequestDataValidatorDateTests
             NationalInsuranceNumber = "AB123456C"
         };
 
-        var result = await _validator.ValidateAsync(request);
+        var result = await Validator.ValidateAsync(request);
 
         result.Errors
             .Should()

@@ -18,26 +18,44 @@ namespace CheckYourEligibility.Admin.Controllers;
 public class CheckController : BaseController
 {
     private readonly IAddChildUseCase _addChildUseCase;
-    private readonly IChangeChildDetailsUseCase _changeChildDetailsUseCase;
-    private readonly ICheckGateway _checkGateway;
-    private readonly IConfiguration _config;
-    private readonly ICreateUserUseCase _createUserUseCase;
-    private readonly IEnterChildDetailsUseCase _enterChildDetailsUseCase;
-    private readonly IGetCheckStatusUseCase _getCheckStatusUseCase;
-    private readonly IGetCheckUseCase _getCheckUseCase;
-    private readonly ILoadParentDetailsUseCase _loadParentDetailsUseCase;
-    private readonly ILogger<CheckController> _logger;
-    private readonly IPerformEligibilityCheckUseCase _performEligibilityCheckUseCase;
-    private readonly IProcessChildDetailsUseCase _processChildDetailsUseCase;
-    private readonly IRemoveChildUseCase _removeChildUseCase;
-    private readonly ISearchSchoolsUseCase _searchSchoolsUseCase;
-    private readonly ISubmitApplicationUseCase _submitApplicationUseCase;
-    private readonly IValidateParentDetailsUseCase _validateParentDetailsUseCase;
-    private readonly IUploadEvidenceFileUseCase _uploadEvidenceFileUseCase;
-    private readonly IValidateEvidenceFileUseCase _validateEvidenceFileUse;
-    private readonly ISendNotificationUseCase _sendNotificationUseCase;
-    private readonly IDeleteEvidenceFileUseCase _deleteEvidenceFileUseCase;
 
+    private readonly IChangeChildDetailsUseCase _changeChildDetailsUseCase;
+
+    private readonly ICheckGateway _checkGateway;
+
+    private readonly IConfiguration _config;
+
+    private readonly ICreateUserUseCase _createUserUseCase;
+
+    private readonly IEnterChildDetailsUseCase _enterChildDetailsUseCase;
+
+    private readonly IGetCheckStatusUseCase _getCheckStatusUseCase;
+
+    private readonly IGetCheckUseCase _getCheckUseCase;
+
+    private readonly ILoadParentDetailsUseCase _loadParentDetailsUseCase;
+
+    private readonly ILogger<CheckController> _logger;
+
+    private readonly IPerformEligibilityCheckUseCase _performEligibilityCheckUseCase;
+
+    private readonly IProcessChildDetailsUseCase _processChildDetailsUseCase;
+
+    private readonly IRemoveChildUseCase _removeChildUseCase;
+
+    private readonly ISearchSchoolsUseCase _searchSchoolsUseCase;
+
+    private readonly ISubmitApplicationUseCase _submitApplicationUseCase;
+
+    private readonly IValidateParentDetailsUseCase _validateParentDetailsUseCase;
+
+    private readonly IUploadEvidenceFileUseCase _uploadEvidenceFileUseCase;
+
+    private readonly IValidateEvidenceFileUseCase _validateEvidenceFileUse;
+
+    private readonly ISendNotificationUseCase _sendNotificationUseCase;
+
+    private readonly IDeleteEvidenceFileUseCase _deleteEvidenceFileUseCase;
 
     public CheckController(
         ILogger<CheckController> logger,
@@ -123,6 +141,22 @@ public class CheckController : BaseController
     [HttpPost]
     public async Task<IActionResult> Enter_Details(ParentGuardian request)
     {
+        switch (request.IdentifierType?.ToLowerInvariant())
+        {
+            case IdentifierTypeConstants.Nino:
+                request.NationalAsylumSeekerServiceNumber = null;
+                break;
+
+            case IdentifierTypeConstants.Nass:
+                request.NationalInsuranceNumber = null;
+                break;
+
+            default:
+                request.NationalInsuranceNumber = null;
+                request.NationalAsylumSeekerServiceNumber = null;
+                break;
+        }
+
         var validationResult = _validateParentDetailsUseCase.Execute(request, ModelState);
 
         if (!validationResult.IsValid)
@@ -173,82 +207,6 @@ public class CheckController : BaseController
         return await ProcessLoaderStatus(responseJson, request, saveToTempDataForNoScript: false);
     }
 
-    private async Task<IActionResult> ProcessLoaderStatus(string responseJson, ParentGuardian request, bool saveToTempDataForNoScript)
-    {
-        try
-        {
-            // Cache the organisation type for use in the view
-            OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
-            TempData["organisationType"] = organisationType;
-
-            // Cache the role for use in the view
-            TempData["organisationRole"] = OrgRole.enhanced; //default to enhanced
-            if (_Claims?.Roles?.Any(x => x.Code == DfeSignInRoles.RoleCodeBasic) == true)
-            {
-                TempData["organisationRole"] = OrgRole.basic; // set only if basic
-            }
-
-            var outcome = await _getCheckStatusUseCase.Execute(responseJson);
-
-            // If the check is still queued, show the loader again. TempData is only kept here for the
-            // <noscript> meta-refresh fallback; JS-enabled polling instead re-posts the values embedded
-            // in the LoaderState model below, so it never depends on TempData/Session. See ELIG-3594.
-            if (outcome.Status == "queuedForProcessing")
-            {
-                if (saveToTempDataForNoScript)
-                {
-                    TempData["Response"] = responseJson;
-                    TempData["ParentGuardianRequest"] = JsonConvert.SerializeObject(request);
-                }
-
-                return View("Loader", new LoaderState
-                {
-                    ResponseJson = responseJson,
-                    ParentGuardianJson = JsonConvert.SerializeObject(request)
-                });
-            }
-            
-            // Get current FSM policy 
-            await IsExpandedFSMEnabled();
-
-            var tieredOutcome = new TieredOutcome
-            {
-                Status = outcome.Status,
-                Tier = outcome.Tier,
-                ParentGuardian = request
-            };
-
-            // If check is now complete and eligible, retrieve the full check data
-            if (outcome.Status == "eligible")
-            {
-                var checkData = await _getCheckUseCase.Execute(responseJson);
-                tieredOutcome.Tier = checkData.Data.Tier;
-                tieredOutcome.EligibilityEndDate = checkData.Data.EligibilityEndDate;
-            }
-
-            // ELIG-3594: pass the outcome as the view model (rather than caching it in Session) so it can be
-            // carried forward via hidden fields, instead of being read back from shared per-browser state later.
-            switch (outcome.Status)
-            {
-                case "eligible":
-                    return View("Outcome/Eligible", tieredOutcome);
-                case "notEligible":
-                    return View("Outcome/Not_Eligible", tieredOutcome);
-                case "parentNotFound":
-                    return View("Outcome/Not_Found");
-                default:
-                    ViewData["CorrelationID"] = outcome.CorrelationID;
-                    ViewData["ErrorCode"] = outcome.ErrorCode;
-                    return View("Outcome/Technical_Error");
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error processing check status in Loader action");
-            return View("Outcome/Technical_Error");
-        }
-    }
-
     [HttpGet]
     public IActionResult Start_Child_Details()
     {
@@ -282,6 +240,7 @@ public class CheckController : BaseController
             ParentDateOfBirth = dobString,
             ParentEmail = model.ParentGuardian?.EmailAddress,
             ParentNino = model.ParentGuardian?.NationalInsuranceNumber,
+            ParentNass = model.ParentGuardian?.NationalAsylumSeekerServiceNumber,
             Status = model.Status,
             Tier = model.Tier,
             EligibilityEndDate = model.EligibilityEndDate
@@ -387,7 +346,6 @@ public class CheckController : BaseController
 
             return RedirectToAction("Enter_Child_Details");
         }
-
         catch (RemoveChildValidationException e)
         {
             ModelState.AddModelError(string.Empty, e.Message);
@@ -437,8 +395,8 @@ public class CheckController : BaseController
             return BadRequest("An error occurred while searching for schools.");
         }
     }
-    [HttpGet]
 
+    [HttpGet]
     public async Task<IActionResult> Check_Answers()
     {
         if (TempData["FsmApplication"] != null)
@@ -456,6 +414,7 @@ public class CheckController : BaseController
         // Fallback - empty model
         return View("Check_Answers");
     }
+
     //
     [HttpPost]
     [ActionName("Check_Answers")]
@@ -522,7 +481,6 @@ public class CheckController : BaseController
             responses.FirstOrDefault()?.Data.Status == ApplicationStatus.Entitled
                 ? "ApplicationsRegistered"
                 : "AppealsRegistered");
-                
     }
 
     [HttpPost]
@@ -579,7 +537,6 @@ public class CheckController : BaseController
         return View("Enter_Child_Details", model);
     }
 
-
     [HttpGet]
     public IActionResult ApplicationsRegistered()
     {
@@ -612,7 +569,6 @@ public class CheckController : BaseController
 
         return View("ApplicationsRegistered", vm);
     }
-
 
     [HttpGet]
     public IActionResult AppealsRegistered()
@@ -791,5 +747,84 @@ public class CheckController : BaseController
         OrganisationCategory organisationTypeForContinue = _Claims.Organisation.Category.Id;
         TempData["organisationType"] = organisationTypeForContinue;
         return View("Check_Answers", application);
+    }
+
+    private async Task<IActionResult> ProcessLoaderStatus(string responseJson, ParentGuardian request, bool saveToTempDataForNoScript)
+    {
+        try
+        {
+            // Cache the organisation type for use in the view
+            OrganisationCategory organisationType = _Claims.Organisation.Category.Id;
+            TempData["organisationType"] = organisationType;
+
+            // Cache the role for use in the view
+            TempData["organisationRole"] = OrgRole.enhanced; //default to enhanced
+            if (_Claims?.Roles?.Any(x => x.Code == DfeSignInRoles.RoleCodeBasic) == true)
+            {
+                TempData["organisationRole"] = OrgRole.basic; // set only if basic
+            }
+
+            var outcome = await _getCheckStatusUseCase.Execute(responseJson);
+
+            // If the check is still queued, show the loader again. TempData is only kept here for the
+            // <noscript> meta-refresh fallback; JS-enabled polling instead re-posts the values embedded
+            // in the LoaderState model below, so it never depends on TempData/Session. See ELIG-3594.
+            if (outcome.Status == "queuedForProcessing")
+            {
+                if (saveToTempDataForNoScript)
+                {
+                    TempData["Response"] = responseJson;
+                    TempData["ParentGuardianRequest"] = JsonConvert.SerializeObject(request);
+                }
+
+                return View("Loader", new LoaderState
+                {
+                    ResponseJson = responseJson,
+                    ParentGuardianJson = JsonConvert.SerializeObject(request)
+                });
+            }
+
+            // Get current FSM policy
+            await IsExpandedFSMEnabled();
+
+            var tieredOutcome = new TieredOutcome
+            {
+                Status = outcome.Status,
+                Tier = outcome.Tier,
+                ParentGuardian = request,
+            };
+
+            // If check is now complete and eligible, retrieve the full check data
+            if (outcome.Status == "eligible")
+            {
+                var checkData = await _getCheckUseCase.Execute(responseJson);
+                tieredOutcome.Tier = checkData.Data.Tier;
+                tieredOutcome.EligibilityEndDate = checkData.Data.EligibilityEndDate;
+            }
+
+            // ELIG-3594: pass the outcome as the view model (rather than caching it in Session) so it can be
+            // carried forward via hidden fields, instead of being read back from shared per-browser state later.
+            switch (outcome.Status)
+            {
+                case "eligible":
+                    return View("Outcome/Eligible", tieredOutcome);
+
+                case "notEligible":
+                    return View("Outcome/Not_Eligible", tieredOutcome);
+
+                case "parentNotFound":
+                    return View("Outcome/Not_Found");
+
+                default:
+                    ViewData["CorrelationID"] = outcome.CorrelationID;
+                    ViewData["ErrorCode"] = outcome.ErrorCode;
+                    return View("Outcome/Technical_Error");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing check status in Loader action");
+            return View("Outcome/Technical_Error");
+        }
     }
 }
