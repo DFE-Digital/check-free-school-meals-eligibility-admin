@@ -1,4 +1,5 @@
 @using CheckYourEligibility.Admin.Domain.Constants
+@using CheckYourEligibility.Admin.Domain.Constants.ErrorMessages
 @using CheckYourEligibility.Admin.Domain.DfeSignIn
 @model ParentGuardian
 
@@ -13,6 +14,13 @@
     {
         ninoInputClasses += " govuk-input--error";
     }
+
+    var identifierRequiredError = new[]
+    {
+        nameof(Model.NationalInsuranceNumber),
+        nameof(Model.NationalAsylumSeekerServiceNumber)
+    }.Any(field => ViewData.ModelState[field]?.Errors.Any(
+        error => error.ErrorMessage == ValidationMessages.NI_or_NASS) == true);
 
 @functions {
     string InputClass(string fieldName)
@@ -145,8 +153,8 @@
                     </div>
                 </fieldset>
             </div>
-            <div class="govuk-form-group">
-                <fieldset class="govuk-fieldset" aria-describedby="identifierType-hint">
+            <div class="govuk-form-group @(identifierRequiredError ? "govuk-form-group--error" : "")">
+                <fieldset class="govuk-fieldset" aria-describedby="identifierType-hint @(identifierRequiredError ? "identifierType-error" : "")">
                     <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
                         National Insurance number or asylum support reference
                     </legend>
@@ -154,6 +162,14 @@
                     <div id="identifierType-hint" class="govuk-hint">
                         Select one option.
                     </div>
+
+                    @if (identifierRequiredError)
+                    {
+                        <p class="govuk-error-message" id="identifierType-error">
+                            <span class="govuk-visually-hidden">Error:</span>
+                            @ValidationMessages.NI_or_NASS
+                        </p>
+                    }
 
                     <div class="govuk-radios" data-module="govuk-radios">
                         <div class="govuk-radios__item">
@@ -175,9 +191,13 @@
                                     For example, ‘QQ 12 34 56 C’
                                 </div>
 
-                                <p class="govuk-error-message">
-                                    <span asp-validation-for="NationalInsuranceNumber"></span>
-                                </p>
+                                @if (!identifierRequiredError)
+                                {
+                                    <p class="govuk-error-message">
+                                        <span asp-validation-for="NationalInsuranceNumber"></span>
+                                    </p>
+                                }
+                                
                                 <input class="@InputClass(nameof(Model.NationalInsuranceNumber))"
                                        id="NationalInsuranceNumber"
                                        aria-describedby="NIN-hint"
@@ -201,9 +221,14 @@
                                 <div id="ASRN-hint" class="govuk-hint">
                                     For example, 123456789 or 12/34/56789
                                 </div>
-                                <p class="govuk-error-message">
-                                    <span asp-validation-for="NationalAsylumSeekerServiceNumber"></span>
-                                </p>
+
+                                @if (!identifierRequiredError)
+                                {
+                                    <p class="govuk-error-message">
+                                        <span asp-validation-for="NationalAsylumSeekerServiceNumber"></span>
+                                    </p>
+
+                                }
                                 <input class="@InputClass(nameof(Model.NationalAsylumSeekerServiceNumber))"
                                        id="NationalAsylumSeekerServiceNumber"
                                        aria-describedby="ASRN-hint"
