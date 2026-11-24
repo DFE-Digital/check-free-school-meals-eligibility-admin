@@ -288,7 +288,7 @@ public class ApplicationController : BaseController
                                   "Parent Email," +
                                   "Parent DOB," +
                                   "Parent NI Number," +
-                                  "Parent Asylum Seeker Reference Number," +
+                                  "Parent asylum support reference number," +
                                   "Child First Name," +
                                   "Child Last Name," +
                                   "Child DOB," +

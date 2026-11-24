@@ -261,8 +261,8 @@ public class BulkReferenceUploadTests
     private static string Header(UploadMode mode)
     {
         if (mode == UploadMode.Basic)
-            return "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Reference (optional)";
-        var header = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth";
+            return "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Reference (optional)";
+        var header = "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Child First Name,Child Last Name,Child Date of Birth";
         if (mode != UploadMode.EnhancedSchool) header += ",Child School Urn";
         return header + ",Parent Email Address (optional),Reference (optional)";
     }

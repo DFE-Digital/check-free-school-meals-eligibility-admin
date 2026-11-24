@@ -28,9 +28,9 @@ namespace CheckYourEligibility.Admin.Tests.Controllers;
 public class BulkReferenceExportTests : TestBase
 {
     private const string BasicHeaders =
-        "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Outcome";
+        "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Outcome";
     private const string EnhancedHeaders =
-        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional),Outcome";
+        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional),Outcome";
     private const string EligibilityEndDateHeader = "Eligibility End Date";
     private const string ReferenceHeader = "Reference (optional)";
 
