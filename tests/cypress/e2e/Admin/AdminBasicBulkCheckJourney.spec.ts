@@ -9,7 +9,7 @@ const bulkBasicOverLimitRowCount = Number(
 
 const createBasicBulkCsv = (rowCount: number): string => {
   const header =
-    "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Reference (optional)";
+    "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Reference (optional)";
   const rows = Array.from({ length: rowCount }, (_, index) => {
     const day = ((index % 28) + 1).toString().padStart(2, "0");
     return `Tester,${day}/01/2000,AB123456C,,`;
@@ -19,7 +19,7 @@ const createBasicBulkCsv = (rowCount: number): string => {
 
 const createIdentifierValidationCsv = (): string => {
   const header =
-    "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Reference (optional)";
+    "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Reference (optional)";
   const rows = [
     "Tester,01/01/2000,,,",
     "Tester,01/01/2000,AB123456C,123456789,",
