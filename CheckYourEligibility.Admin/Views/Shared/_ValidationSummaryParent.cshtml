@@ -26,6 +26,11 @@ foreach (var m in Model)
         {
             field = originalField.Replace("School.URN", "School");
         }
+        else if (originalField == nameof(ParentGuardian.NationalInsuranceNumber) ||
+                 originalField == nameof(ParentGuardian.NationalAsylumSeekerServiceNumber))
+        {
+            field = "radios-identifierType";
+        }
 
         errors.Add(new ValidationError
         {

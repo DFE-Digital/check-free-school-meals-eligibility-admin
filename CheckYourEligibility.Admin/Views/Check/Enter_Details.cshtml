@@ -169,9 +169,9 @@
                             <span class="govuk-visually-hidden">Error:</span>
                             @ValidationMessages.NI_or_NASS
                         </p>
-                    }
 
-                    <div class="govuk-radios" data-module="govuk-radios">
+                    }
+                    <div class="govuk-radios" data-module="govuk-radios" id="radios-identifierType">
                         <div class="govuk-radios__item">
                             <input class="govuk-radios__input" id="identifierType-nino" asp-for="IdentifierType" type="radio" value="@IdentifierTypeConstants.Nino"
                                    data-aria-controls="conditional-identifierType-nino">
@@ -216,7 +216,7 @@
                         <div class="govuk-radios__conditional govuk-radios__conditional--hidden" id="conditional-identifierType-nass">
                             <div class="govuk-form-group">
                                 <label class="govuk-label" for="NationalAsylumSeekerServiceNumber">
-                                    Asylum support reference
+                                    Asylum support reference number
                                 </label>
                                 <div id="ASRN-hint" class="govuk-hint">
                                     For example, 123456789 or 12/34/56789
