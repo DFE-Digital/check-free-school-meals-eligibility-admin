@@ -17,7 +17,7 @@ namespace CheckYourEligibility.Admin.Domain.Constants.BulkCheck
 
         public const string ReferenceHeader = "Reference (optional)";
 
-        public const string ParentNASSHeader = "Parent Asylum Seeker Reference number";
+        public const string ParentNASSHeader = "Parent asylum support reference number";
 
         public const string ChildFirstNameHeader = "Child First Name";
 

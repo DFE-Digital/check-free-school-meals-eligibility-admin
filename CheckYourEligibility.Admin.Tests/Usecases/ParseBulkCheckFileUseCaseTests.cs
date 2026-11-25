@@ -20,11 +20,11 @@ namespace CheckYourEligibility.Admin.Tests.Usecases;
 public class ParseBulkCheckFileUseCaseTests
 {
     private const string BasicCsvHeader =
-        "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Reference (optional)";
+        "Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Reference (optional)";
     private const string EnhancedCsvHeader =
-        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional),Reference (optional)";
+        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Child First Name,Child Last Name,Child Date of Birth,Child School Urn,Parent Email Address (optional),Reference (optional)";
     private const string EnhancedSchoolCsvHeader =
-        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address (optional),Reference (optional)";
+        "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Child First Name,Child Last Name,Child Date of Birth,Parent Email Address (optional),Reference (optional)";
 
     private Mock<IValidator<CheckEligibilityRequestDataBase>> _validatorMock = null!;
 

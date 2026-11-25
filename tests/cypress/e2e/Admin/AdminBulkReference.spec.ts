@@ -12,14 +12,14 @@ const basicParentHeaders = [
   "Parent Last Name",
   "Parent Date of Birth",
   "Parent National Insurance number",
-  "Parent Asylum Seeker Reference number",
+  "Parent asylum support reference number",
 ];
 const enhancedParentHeaders = [
   "Parent First Name",
   "Parent Last Name",
   "Parent Date of Birth",
   "Parent National Insurance number",
-  "Parent Asylum Seeker Reference number",
+  "Parent asylum support reference number",
   "Child First Name",
   "Child Last Name",
   "Child Date of Birth",
@@ -28,7 +28,7 @@ const basicResultHeaders = [
   "Parent Last Name",
   "Parent Date of Birth",
   "Parent National Insurance number",
-  "Parent Asylum Seeker Reference number",
+  "Parent asylum support reference number",
   "Outcome",
 ];
 const enhancedResultHeaders = [
@@ -36,7 +36,7 @@ const enhancedResultHeaders = [
   "Parent Last Name",
   "Parent Date of Birth",
   "Parent National Insurance number",
-  "Parent Asylum Seeker Reference number",
+  "Parent asylum support reference number",
   "Child First Name",
   "Child Last Name",
   "Child Date of Birth",

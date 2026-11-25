@@ -23,7 +23,7 @@ const sessionConfigs = {
 //dynamic CSV generator
 const createBulkCsv = (rowCount: number, includeSchoolURN: boolean): string => {
   const baseHeader =
-    "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth";
+    "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Child First Name,Child Last Name,Child Date of Birth";
 
   const header = includeSchoolURN
     ? `${baseHeader},Child School Urn,Parent Email Address (optional),Reference (optional)`
@@ -57,7 +57,7 @@ const createBulkCsv = (rowCount: number, includeSchoolURN: boolean): string => {
 
 const createIdentifierValidationCsv = (includeSchoolURN: boolean): string => {
   const baseHeader =
-    "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent Asylum Seeker Reference number,Child First Name,Child Last Name,Child Date of Birth";
+    "Parent First Name,Parent Last Name,Parent Date of Birth,Parent National Insurance number,Parent asylum support reference number,Child First Name,Child Last Name,Child Date of Birth";
   const header = includeSchoolURN
     ? `${baseHeader},Child School Urn,Parent Email Address (optional),Reference (optional)`
     : `${baseHeader},Parent Email Address (optional),Reference (optional)`;
