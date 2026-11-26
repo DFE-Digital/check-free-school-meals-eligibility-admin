@@ -6,6 +6,7 @@ using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Models;
 using CheckYourEligibility.Admin.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -111,6 +112,12 @@ public class HomeController : BaseController
     public IActionResult EvidenceGuidance() => View("Guidance_steps/Evidence_Guidance");
 
     public IActionResult Rechecks() => View("Guidance_steps/Rechecks");
+
+    [AllowAnonymous]
+    public IActionResult OrganisationError()
+    {
+        return View();
+    }
 
     public async Task<IActionResult> Expansion()
     {

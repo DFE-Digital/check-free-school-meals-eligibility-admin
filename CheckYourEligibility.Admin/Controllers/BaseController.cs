@@ -58,23 +58,41 @@ public class BaseController : Controller
     {
         _Claims = DfeSignInExtensions.GetDfeClaims(HttpContext.User.Claims);
 
-        // Fetch roles from DfE Sign-in API
-        if (_Claims.Organisation.Id != Guid.Empty && !string.IsNullOrEmpty(_Claims.User?.Id))
+        var organisationId = _Claims?.Organisation?.Id;
+        var userId = _Claims?.User?.Id;
+
+        if (organisationId.HasValue && organisationId.Value != Guid.Empty && !string.IsNullOrWhiteSpace(userId))
         {
-            _Claims.Roles = await _dfeSignInApiService.GetUserRolesAsync(_Claims.User.Id, _Claims.Organisation.Id);
-        }
-        else
-        {
-            //redirect to new access permissions view
+            _Claims.Roles = await _dfeSignInApiService.GetUserRolesAsync(userId, organisationId.Value);
         }
     }
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         await GetDfeClaimsAsync();
+
+        var controllerName = context.RouteData.Values["controller"]?.ToString();
+        var actionName = context.RouteData.Values["action"]?.ToString();
+
+        if (_Claims?.Organisation == null)
+        {
+            if (!(controllerName == "Home" && actionName == "OrganisationError"))
+            {
+                context.Result = RedirectToAction(
+                    "OrganisationError",
+                    "Home");
+
+                return;
+            }
+        }
+
         ViewBag.Claims = _Claims;
-        ViewBag.SchoolMenuContext = await _schoolMenuContextResolver.ResolveAsync(_Claims);
-        await base.OnActionExecutionAsync(context, next);
+
+        if (_Claims?.Organisation != null)
+        {
+            ViewBag.SchoolMenuContext = await _schoolMenuContextResolver.ResolveAsync(_Claims);
+        }
+        await next();
     }
 
     /// <summary>
