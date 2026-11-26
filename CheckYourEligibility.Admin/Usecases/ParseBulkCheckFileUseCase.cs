@@ -10,12 +10,11 @@ using static CheckYourEligibility.Admin.Helpers.CsvBulkCheckValidatorHelper;
 
 namespace CheckYourEligibility.Admin.Usecases
 {
-
     public interface IParseBulkCheckFileUseCase
     {
-        Task<BulkCheckCsvResult<TRequest>> Execute<TRequest>(Stream csvStream, 
-            Func<IReaderRow, int,string?, TRequest> createRequestItem,
-            string[] expectedHeaders, 
+        Task<BulkCheckCsvResult<TRequest>> Execute<TRequest>(Stream csvStream,
+            Func<IReaderRow, int, string?, TRequest> createRequestItem,
+            string[] expectedHeaders,
             int organisationId,
             OrganisationCategory organisationType,
             string? schoolUrn = null) where TRequest : CheckEligibilityRequestDataBase;
@@ -24,8 +23,11 @@ namespace CheckYourEligibility.Admin.Usecases
     public class ParseBulkCheckFileUseCase : IParseBulkCheckFileUseCase
     {
         private readonly IConfiguration _config;
+
         private readonly ICheckGateway _checkGateway;
+
         private readonly IServiceProvider _serviceProvider;
+
         private readonly int _rowCountLimit;
 
         public ParseBulkCheckFileUseCase(IServiceProvider serviceProvider, IConfiguration configuration, ICheckGateway checkGateway)
@@ -38,12 +40,11 @@ namespace CheckYourEligibility.Admin.Usecases
 
         public async Task<BulkCheckCsvResult<TRequest>> Execute<TRequest>(Stream csvStream,
             Func<IReaderRow, int, string?, TRequest> createRequestItem,
-            string[] expectedHeaders, 
+            string[] expectedHeaders,
             int organisationId,
             OrganisationCategory organisationType,
             string? schoolUrn = null) where TRequest : CheckEligibilityRequestDataBase
         {
-
             var validator = _serviceProvider.GetService<IValidator<TRequest>>()
                         ?? throw new InvalidOperationException($"No IValidator<{typeof(TRequest).Name}> registered");
 
@@ -51,20 +52,19 @@ namespace CheckYourEligibility.Admin.Usecases
             //retrieve list of school urn for the org
             if (organisationType == OrganisationCategory.LocalAuthority)
             {
-                // call endpoint anad generate hashset
+                // call endpoint and generate hashset
                 var schools = await _checkGateway.GetSchoolsAsync(organisationId);
-                schoolUrnHashSet =  new HashSet<int>(schools.Data.Select(s => s.URN));
-
+                schoolUrnHashSet = new HashSet<int>(schools.Data.Select(s => s.URN));
             }
-            else if (organisationType == OrganisationCategory.MultiAcademyTrust) {
-
+            else if (organisationType == OrganisationCategory.MultiAcademyTrust)
+            {
                 // call endpoint and generate hashset
                 var academies = await _checkGateway.GetAcademiesAsync(organisationId);
                 schoolUrnHashSet = new HashSet<int>(academies.Data.Select(s => s.URN));
             }
 
-          var result = await ParseBulkCsvAsync(csvStream,
-              validator, expectedHeaders, createRequestItem, _rowCountLimit, schoolUrn, schoolUrnHashSet, organisationType);
+            var result = await ParseBulkCsvAsync(csvStream,
+                validator, expectedHeaders, createRequestItem, _rowCountLimit, schoolUrn, schoolUrnHashSet, organisationType);
             return result;
         }
 
@@ -95,7 +95,7 @@ namespace CheckYourEligibility.Admin.Usecases
                 BadDataFound = null,
                 MissingFieldFound = null
             };
- 
+
             using var csv = new CsvReader(reader, config);
             var headerValidationResponse = await ValidateHeadersAsync(csv, expectedHeaders);
 
@@ -163,7 +163,5 @@ namespace CheckYourEligibility.Admin.Usecases
 
             return result;
         }
-
-
     }
 }

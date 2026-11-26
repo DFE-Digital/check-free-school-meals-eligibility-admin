@@ -22,6 +22,7 @@ public class BulkExportBase : IBulkExport
     public string LastName { get; set; }
     public string DateOfBirth { get; set; }
     public string NationalInsuranceNumber { get; set; }
+    public string NationalAsylumSeekerServiceNumber { get; set; }
     public string Outcome { get; set; }
     public string? EligibilityEndDate { get; set; }
     public string? Tier { get; set; }

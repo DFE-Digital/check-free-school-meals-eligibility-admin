@@ -27,6 +27,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
+        cy.get('#identifierType-nino').check();
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Run check').click();
 
@@ -93,6 +94,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
+        cy.get('#identifierType-nino').check();
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Run check').click();
 
@@ -136,6 +138,7 @@ describe('Full journey of creating an application through school portal through 
         cy.get('[id="DateOfBirth.Day"]').type('01');
         cy.get('[id="DateOfBirth.Month"]').type('01');
         cy.get('[id="DateOfBirth.Year"]').type('1990');
+        cy.get('#identifierType-nino').check();
         cy.get('#NationalInsuranceNumber').type(NIN);
         cy.contains('button', 'Run check').click();
 

@@ -1,27 +1,72 @@
 ﻿using CheckYourEligibility.Admin.Boundary.Requests;
 using CheckYourEligibility.Admin.Domain.Constants.ErrorMessages;
 using CheckYourEligibility.Admin.Domain.DfeSignIn;
-using CheckYourEligibility.Admin.Domain.Validation;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CheckYourEligibility.Admin.Tests.Validators
 {
     [TestFixture]
-    public class CheckEligibilityEnhancedValidatorTests
+    public class CheckEligibilityEnhancedValidatorTests : CheckEligibilityRequestDataValidatorTestBase
     {
-        private IValidator<CheckEligibilityRequestDataBase> _validator;
-
-        [SetUp]
-        public void Setup()
+        [Test]
+        public async Task Validate_MissingNationalInsuranceAndAsylumNumbers_ReturnsRequiredMessage()
         {
-            _validator = new CheckEligibilityRequestDataValidator();
+            var model = CreateValidModel(null);
+            model.NationalInsuranceNumber = null;
+            model.NationalAsylumSeekerServiceNumber = null;
+
+            var result = await Validator.ValidateAsync(CreateContext(model));
+
+            Assert.That(
+                result.Errors.Select(error => error.ErrorMessage),
+                Does.Contain(ValidationMessages.NI_or_NASS));
         }
-        
+
+        [Test]
+        public async Task Validate_NationalInsuranceAndAsylumNumbersBothSupplied_ReturnsMutuallyExclusiveMessage()
+        {
+            var model = CreateValidModel(null);
+            model.NationalAsylumSeekerServiceNumber = "123456789";
+
+            var result = await Validator.ValidateAsync(CreateContext(model));
+
+            Assert.That(
+                result.Errors.Select(error => error.ErrorMessage),
+                Does.Contain(ValidationMessages.NI_and_NASS));
+        }
+
+        [TestCase("AA123456C", null, null)]
+        [TestCase("invalid", null, ValidationMessages.InvalidNI)]
+        public async Task Validate_NationalInsuranceNumberWhenSupplied_ValidatesItsFormat(
+            string nationalInsuranceNumber,
+            string? asylumNumber,
+            string? expectedError)
+        {
+            var model = CreateValidModel(null);
+            model.NationalInsuranceNumber = nationalInsuranceNumber;
+            model.NationalAsylumSeekerServiceNumber = asylumNumber;
+
+            var result = await Validator.ValidateAsync(CreateContext(model));
+
+            AssertIdentifierError(result, expectedError);
+        }
+
+        [TestCase("123456789", null)]
+        [TestCase("12/34/56789", null)]
+        [TestCase("invalid", ValidationMessages.InvalidNASS)]
+        public async Task Validate_AsylumNumberWhenSupplied_ValidatesItsFormat(
+            string asylumNumber,
+            string? expectedError)
+        {
+            var model = CreateValidModel(null);
+            model.NationalInsuranceNumber = null;
+            model.NationalAsylumSeekerServiceNumber = asylumNumber;
+
+            var result = await Validator.ValidateAsync(CreateContext(model));
+
+            AssertIdentifierError(result, expectedError);
+        }
+
         [TestCase("abc")]
         [TestCase("0")]
         [TestCase("-1")]
@@ -42,13 +87,13 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 ChildSchoolUrn = urn
             };
 
-
             var context = CreateContext(model, new HashSet<int> { 123456 });
 
-            var result = await _validator.ValidateAsync(context);
+            var result = await Validator.ValidateAsync(context);
 
             Assert.That(result.Errors.Any(e => e.ErrorMessage == ValidationMessages.ChildSchoolUrn), Is.True);
         }
+
         [Test]
         public async Task Validate_UrnNotInList_ForLocalAuthority_ReturnsLAMessage()
         {
@@ -66,17 +111,17 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 ChildSchoolUrn = "999999"
             };
 
-
             var context = CreateContext(
                 model,
                 validUrns: new HashSet<int> { 123456 },
                 orgType: OrganisationCategory.LocalAuthority);
 
-            var result = await _validator.ValidateAsync(context);
+            var result = await Validator.ValidateAsync(context);
 
             Assert.That(result.Errors.Any(e =>
                 e.ErrorMessage == ValidationMessages.InvalidSchoolUrnForLA), Is.True);
         }
+
         [Test]
         public async Task Validate_UrnNotInList_ForMAT_ReturnsMATMessage()
         {
@@ -99,16 +144,16 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 validUrns: new HashSet<int> { 123456 },
                 orgType: OrganisationCategory.MultiAcademyTrust);
 
-            var result = await _validator.ValidateAsync(context);
+            var result = await Validator.ValidateAsync(context);
 
             Assert.That(result.Errors.Any(e =>
                 e.ErrorMessage == ValidationMessages.InvalidSchoolUrnForMAT), Is.True);
         }
+
         [TestCase(OrganisationCategory.LocalAuthority)]
         [TestCase(OrganisationCategory.MultiAcademyTrust)]
         public async Task Validate_ValidUrnInList_Passes(OrganisationCategory orgType)
         {
-
             var model = new CheckEligibilityRequestData_Enhanced
             {
                 NationalInsuranceNumber = "AA123456C",
@@ -128,7 +173,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 validUrns: new HashSet<int> { 123456 },
                 orgType: orgType);
 
-            var result = await _validator.ValidateAsync(context);
+            var result = await Validator.ValidateAsync(context);
 
             Assert.That(result.Errors, Is.Empty);
         }
@@ -152,7 +197,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
 
             var context = new ValidationContext<CheckEligibilityRequestDataBase>(model);
 
-            var result = await _validator.ValidateAsync(context);
+            var result = await Validator.ValidateAsync(context);
 
             Assert.That(result.Errors, Is.Empty);
         }
@@ -164,7 +209,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
             var model = CreateValidModel(emailAddress);
             var context = CreateContext(model);
 
-            var result = await _validator.ValidateAsync(context);
+            var result = await Validator.ValidateAsync(context);
 
             Assert.That(
                 result.Errors.Any(e =>
@@ -178,7 +223,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
             var model = CreateValidModel(null);
             var context = CreateContext(model);
 
-            var result = await _validator.ValidateAsync(context);
+            var result = await Validator.ValidateAsync(context);
 
             Assert.That(
                 result.Errors.Any(e =>
@@ -196,7 +241,7 @@ namespace CheckYourEligibility.Admin.Tests.Validators
             var model = CreateValidModel(emailAddress);
             var context = CreateContext(model);
 
-            var result = await _validator.ValidateAsync(context);
+            var result = await Validator.ValidateAsync(context);
 
             Assert.That(
                 result.Errors.Any(e =>
@@ -206,21 +251,6 @@ namespace CheckYourEligibility.Admin.Tests.Validators
         }
 
         #region Helpers
-        private ValidationContext<CheckEligibilityRequestDataBase> CreateContext(
-            CheckEligibilityRequestData_Enhanced model,
-            HashSet<int>? validUrns = null,
-            OrganisationCategory? orgType = null)
-        {
-            var context = new ValidationContext<CheckEligibilityRequestDataBase>(model);
-
-            if (validUrns != null)
-                context.RootContextData["validSchoolUrns"] = validUrns;
-
-            if (orgType != null)
-                context.RootContextData["organisationType"] = orgType;
-
-            return context;
-        }
 
         private static CheckEligibilityRequestData_Enhanced CreateValidModel(string? emailAddress)
         {
@@ -238,7 +268,44 @@ namespace CheckYourEligibility.Admin.Tests.Validators
                 EmailAddress = emailAddress
             };
         }
-        #endregion
-    }
 
+        private static void AssertIdentifierError(
+            FluentValidation.Results.ValidationResult result,
+            string? expectedError)
+        {
+            var identifierErrors = result.Errors
+                .Where(error => error.ErrorMessage == ValidationMessages.NI_or_NASS
+                    || error.ErrorMessage == ValidationMessages.NI_and_NASS
+                    || error.ErrorMessage == ValidationMessages.InvalidNI
+                    || error.ErrorMessage == ValidationMessages.InvalidNASS)
+                .Select(error => error.ErrorMessage);
+
+            if (expectedError is null)
+            {
+                Assert.That(identifierErrors, Is.Empty);
+            }
+            else
+            {
+                Assert.That(identifierErrors, Is.EqualTo(new[] { expectedError }));
+            }
+        }
+
+        private ValidationContext<CheckEligibilityRequestDataBase> CreateContext(
+                            CheckEligibilityRequestData_Enhanced model,
+            HashSet<int>? validUrns = null,
+            OrganisationCategory? orgType = null)
+        {
+            var context = new ValidationContext<CheckEligibilityRequestDataBase>(model);
+
+            if (validUrns != null)
+                context.RootContextData["validSchoolUrns"] = validUrns;
+
+            if (orgType != null)
+                context.RootContextData["organisationType"] = orgType;
+
+            return context;
+        }
+
+        #endregion Helpers
+    }
 }

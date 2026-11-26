@@ -3,8 +3,14 @@ using System.Text.Json.Serialization;
 
 namespace CheckYourEligibility.Admin.Boundary.Requests;
 
+public interface IEligibilityServiceType
+{
+}
+
 public class CheckEligibilityRequestDataBase : IEligibilityServiceType
 {
+    protected CheckEligibilityType baseType = CheckEligibilityType.FreeSchoolMeals;
+
     private string? reference;
 
     public string? Reference
@@ -13,34 +19,39 @@ public class CheckEligibilityRequestDataBase : IEligibilityServiceType
         set => reference = value?.Trim();
     }
 
-    protected CheckEligibilityType baseType = CheckEligibilityType.FreeSchoolMeals;
     public string? NationalInsuranceNumber { get; set; }
+
+    public string? NationalAsylumSeekerServiceNumber { get; set; }
+
     public string LastName { get; set; } = string.Empty;
+
     public string DateOfBirth { get; set; } = string.Empty;
+
     public int? Order { get; set; }
 }
-public class CheckEligibilityRequestBulkBase {
 
-    public CheckEligibilityRequestBulkMeta Meta { get; set; } = new();
-}
-
-public interface IEligibilityServiceType
+public class CheckEligibilityRequestBulkBase
 {
+    public CheckEligibilityRequestBulkMeta Meta { get; set; } = new();
 }
 
 #region FreeSchoolMeals Enhanced Type
 
 public class CheckEligibilityRequestData_Enhanced : CheckEligibilityRequestDataBase
 {
+    public string FirstName { get; set; }
 
-    public string FirstName { get;set; }
     public string ChildFirstName { get; set; }
-    public string ChildLastName { get; set; }
-    public string ChildDateOfBirth   { get; set; }
-    public string ChildSchoolUrn { get; set; }
-    public string? EmailAddress { get; set; }
 
+    public string ChildLastName { get; set; }
+
+    public string ChildDateOfBirth { get; set; }
+
+    public string ChildSchoolUrn { get; set; }
+
+    public string? EmailAddress { get; set; }
 }
+
 public class CheckEligibilityRequest_Enhanced
 {
     public CheckEligibilityRequestData_Enhanced? Data { get; set; }
@@ -51,7 +62,7 @@ public class CheckEligibilityRequestBulk_Enhanced : CheckEligibilityRequestBulkB
     public IEnumerable<CheckEligibilityRequestData_Enhanced> Data { get; set; } = Enumerable.Empty<CheckEligibilityRequestData_Enhanced>();
 }
 
-#endregion
+#endregion FreeSchoolMeals Enhanced Type
 
 #region FSM Type
 
@@ -68,8 +79,10 @@ public class CheckEligibilityRequestBulk : CheckEligibilityRequestBulkBase
 public class CheckEligibilityRequestBulkMeta
 {
     public string Filename { get; set; } = string.Empty;
+
     public string SubmittedBy { get; set; } = string.Empty;
+
     public string? LocalAuthorityId { get; set; }
 }
 
-#endregion
+#endregion FSM Type
