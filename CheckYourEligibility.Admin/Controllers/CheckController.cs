@@ -461,9 +461,12 @@ public class CheckController : BaseController
                     }
                 };
 
-                await _sendNotificationUseCase.Execute(notificationRequest);
-                _logger.LogInformation("Notification sent successfully for application reference: {Reference}",
-                    response.Data.Reference);
+                var notificationResponse = await _sendNotificationUseCase.Execute(notificationRequest);
+                if (notificationResponse != null)
+                {
+                    _logger.LogInformation("Notification sent successfully for application reference: {Reference}",
+                        response.Data.Reference);
+                }
             }
             catch (Exception ex)
             {

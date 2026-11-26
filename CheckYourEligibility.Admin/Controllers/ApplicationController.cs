@@ -496,8 +496,11 @@ public class ApplicationController : BaseController
                 }
             };
 
-            await _sendNotificationUseCase.Execute(notificationRequest);
-            _logger.LogInformation($"Notification sent for application {application.Data.Reference}");
+            var notificationResponse = await _sendNotificationUseCase.Execute(notificationRequest);
+            if (notificationResponse != null)
+            {
+                _logger.LogInformation($"Notification sent for application {application.Data.Reference}");
+            }
         }
         catch (Exception ex)
         {
@@ -781,8 +784,11 @@ public class ApplicationController : BaseController
                 }
             };
 
-            await _sendNotificationUseCase.Execute(notificationRequest);
-            _logger.LogInformation("Notification sent for application {Reference}", application.Data.Reference);
+            var notificationResponse = await _sendNotificationUseCase.Execute(notificationRequest);
+            if (notificationResponse != null)
+            {
+                _logger.LogInformation("Notification sent for application {Reference}", application.Data.Reference);
+            }
         }
         catch (Exception ex)
         {
