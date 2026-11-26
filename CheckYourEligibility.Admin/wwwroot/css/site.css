@@ -604,6 +604,27 @@ hr {
 
 /* END - Make GOV.UK tags match the size of the text around them */
 
+/* Table text size override. .govuk-tag is deliberately not listed here: tags inherit their size
+   from the cell they sit in (see rule above), so they still match this text without a separate !important size. */
+.govuk-table-\!-font-size-16 :is(TD, TH, .govuk-link) {
+    font-size: 14px !important;
+    line-height: 1.33333 !important;
+}
+
+@media (min-width: 40.0625em) {
+    .govuk-table-\!-font-size-16 :is(TD, TH, .govuk-link) {
+        font-size: 16px !important;
+        line-height: 1.33333 !important;
+    }
+}
+
+@media print {
+    .govuk-table-\!-font-size-16 :is(TD, TH, .govuk-link) {
+        font-size: 14pt !important;
+        line-height: 1.2 !important;
+    }
+}
+
 .expando-select {
     display: none;
 }
