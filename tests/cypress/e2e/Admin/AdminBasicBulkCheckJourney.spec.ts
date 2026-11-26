@@ -61,7 +61,7 @@ describe("BasicLAHappyPath", () => {
       ]);
     });
     cy.contains("button", "Run a batch check").click();
-    cy.get("#file-upload-1-error").as("errorMessage");
+    cy.get(".govuk-error-message").as("errorMessage");
     cy.get("@errorMessage").should(($p) => {
       expect($p.first()).to.contain(
         "Invalid CSV format. Missing required header: 'Parent Date of Birth'",
@@ -83,7 +83,7 @@ describe("BasicLAHappyPath", () => {
       ]);
     });
     cy.contains("button", "Run a batch check").click();
-    cy.get("#file-upload-1-error").as("errorMessage");
+    cy.get(".govuk-error-message").as("errorMessage");
     cy.get("@errorMessage").should(($p) => {
       expect($p.first()).to.contain(
         "The column headers in the selected file must exactly match the template",
@@ -102,7 +102,7 @@ describe("BasicLAHappyPath", () => {
     ]);
     cy.contains("button", "Run a batch check").click();
 
-    cy.get("#file-upload-1-error")
+    cy.get(".govuk-error-message")
       .should(($el) => {
         expect($el.text()).to.match(/CSV file cannot contain more than\s+\d+\s+records/);
       });
@@ -286,7 +286,7 @@ it("will run a successful batch check", () => {
       });
       cy.contains("button", "Run a batch check").click();
 
-      cy.get("#file-upload-1-error")
+      cy.get(".govuk-error-message")
         .should(
           "contain",
           "Invalid CSV format. Missing required header: 'Parent Date of Birth'",
