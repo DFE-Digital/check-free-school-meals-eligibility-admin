@@ -6,7 +6,8 @@ namespace CheckYourEligibility.Admin.UseCases;
 
 public interface ISendNotificationUseCase
 {
-    Task<NotificationItemResponse> Execute(NotificationRequest notificationRequest);
+    /// <returns>The notification response, or null when no recipient email is supplied.</returns>
+    Task<NotificationItemResponse?> Execute(NotificationRequest notificationRequest);
 }
 
 public class SendNotificationUseCase : ISendNotificationUseCase
@@ -22,10 +23,16 @@ public class SendNotificationUseCase : ISendNotificationUseCase
         _notificationGateway = notificationGateway ?? throw new ArgumentNullException(nameof(notificationGateway));
     }
 
-    public async Task<NotificationItemResponse> Execute(NotificationRequest notificationRequest)
+    public async Task<NotificationItemResponse?> Execute(NotificationRequest notificationRequest)
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(notificationRequest.Data.Email))
+            {
+                _logger.LogInformation("Notification skipped because no recipient email was supplied");
+                return null;
+            }
+
             _logger.LogInformation("Sending notification request");
             
             var response = await _notificationGateway.SendNotification(notificationRequest);

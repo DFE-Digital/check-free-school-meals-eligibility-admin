@@ -812,6 +812,40 @@ public class ApplicationControllerTests : TestBase
         )), Times.Once);
     }
 
+    [TestCase("appeal", ApplicationStatus.SentForReview, "ApplicationDetailAppealConfirmationSent")]
+    [TestCase("approve", ApplicationStatus.ReviewedEntitled, "ApplicationApproved")]
+    [TestCase("decline", ApplicationStatus.ReviewedNotEntitled, "ApplicationDeclined")]
+    public async Task ApplicationNotification_WhenSkipped_PreservesStatusAndRedirectWithoutLoggingSuccess(
+        string action, ApplicationStatus expectedStatus, string expectedRedirect)
+    {
+        var id = "f41e59a2-9847-4084-9e17-0511e77571fb";
+        var response = _fixture.Create<ApplicationItemResponse>();
+        response.Data.Id = id;
+        response.Data.Establishment.Id = 123456;
+        _adminGatewayMock.Setup(x => x.GetApplication(id)).ReturnsAsync(response);
+        _sendNotificationUseCaseMock.Setup(x => x.Execute(It.IsAny<NotificationRequest>()))
+            .ReturnsAsync((NotificationItemResponse?)null);
+
+        var result = action switch
+        {
+            "appeal" => await _sut.ApplicationDetailAppealSend(id),
+            "approve" => await _sut.ApplicationApproveSend(id, "expanded"),
+            "decline" => await _sut.ApplicationDeclineSend(id),
+            _ => throw new ArgumentOutOfRangeException(nameof(action))
+        };
+
+        result.Should().BeOfType<RedirectToActionResult>()
+            .Which.ActionName.Should().Be(expectedRedirect);
+        EligibilityTier? expectedTier = action == "approve" ? EligibilityTier.expanded : null;
+        _adminGatewayMock.Verify(x => x.PatchApplicationStatus(id, expectedStatus, expectedTier), Times.Once);
+        Mock.Get(_loggerMock).Verify(x => x.Log(
+            LogLevel.Information,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((value, type) => value.ToString()!.Contains("Notification sent")),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Never);
+    }
+
     [Test]
     public async Task Given_FinaliseApplications_Results_Page_Returns_Valid_Data()
     {

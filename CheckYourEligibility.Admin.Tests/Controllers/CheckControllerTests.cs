@@ -662,6 +662,47 @@ public class CheckControllerTests : TestBase
         _sendNotificationUseCaseMock.Verify(x => x.Execute(It.IsAny<NotificationRequest>()), Times.Once);
     }
 
+    [TestCase(ApplicationStatus.Entitled, "ApplicationsRegistered")]
+    [TestCase(ApplicationStatus.SentForReview, "AppealsRegistered")]
+    public async Task Check_Answers_Post_WhenNotificationIsSkipped_ContinuesWithoutLoggingSuccess(
+        ApplicationStatus status, string expectedAction)
+    {
+        var request = _fixture.Create<FsmApplication>();
+        var responses = new List<ApplicationSaveItemResponse>
+        {
+            new()
+            {
+                Data = new ApplicationResponse
+                {
+                    Status = status,
+                    Reference = "REF12345"
+                }
+            }
+        };
+        _submitApplicationUseCaseMock
+            .Setup(x => x.Execute(request, It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(responses);
+        var notificationGatewayMock = new Mock<INotificationGateway>(MockBehavior.Strict);
+        var notificationUseCase = new SendNotificationUseCase(
+            Mock.Of<ILogger<SendNotificationUseCase>>(), notificationGatewayMock.Object);
+        _sendNotificationUseCaseMock
+            .Setup(x => x.Execute(It.IsAny<NotificationRequest>()))
+            .Returns<NotificationRequest>(notificationUseCase.Execute);
+
+        var result = await _sut.Check_Answers_Post(request);
+
+        result.Should().BeOfType<RedirectToActionResult>()
+            .Which.ActionName.Should().Be(expectedAction);
+        notificationGatewayMock.Verify(x => x.SendNotification(It.IsAny<NotificationRequest>()), Times.Never);
+        Mock.Get(_loggerMock).Verify(x => x.Log(
+            LogLevel.Information,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((value, type) =>
+                value.ToString()!.Contains("Notification sent successfully")),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Never);
+    }
+
     [Test]
     public async Task Check_Answers_Post_Should_Send_Notification_For_Each_Application()
     {
