@@ -590,27 +590,19 @@ hr {
         isolation: isolate;
     }
 
-.govuk-table-\!-font-size-16 :is(TD, TH, .govuk-tag, .govuk-link) {
-    font-size: 14px !important;
-    font-size: 0.875 !important;
-    line-height: 1.33333 !important;
+/* BEGIN - Make GOV.UK tags match the size of the text around them
+   By default .govuk-tag uses its own fixed font size and line height, so it can look
+   smaller or larger than the surrounding text (e.g. in table cells or body copy).
+   
+   Inheriting from the parent means tags follow whatever size that text uses at each
+   breakpoint, including print, without needing separate media queries or !important.
+   The phase banner tag is excluded so it keeps the standard GOV.UK banner sizing. */
+.govuk-tag:not(.govuk-phase-banner__content__tag) {
+    font-size: inherit;
+    line-height: inherit;
 }
 
-@media (min-width: 40.0625em) {
-    .govuk-table-\!-font-size-16 :is(TD, TH, .govuk-tag, .govuk-link) {
-        font-size: 16px !important;
-        font-size: 1 !important;
-        line-height: 1.33333 !important;
-    }
-}
-
-@media print {
-    .govuk-table-\!-font-size-16 :is(TD, TH, .govuk-tag, .govuk-link) {
-        font-size: 14pt !important;
-        line-height: 1.2 !important;
-    }
-}
-
+/* END - Make GOV.UK tags match the size of the text around them */
 
 .expando-select {
     display: none;
@@ -620,5 +612,3 @@ hr {
     display: block;
 }
 /*END - Changes to trable structure for batch check history table since multiple action hyperlinks inhabit the same cell*/
-
-
