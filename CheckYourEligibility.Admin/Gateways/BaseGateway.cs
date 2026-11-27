@@ -59,12 +59,18 @@ public class BaseGateway
             }
             else
             {
+                var claims = DfeSignInExtensions.GetDfeClaims( _httpContextAccessor.HttpContext.User.Claims);
+
+                if (claims?.Organisation?.Category == null)
+                {
+                    return;
+                }
                 var establishment = (DfeSignInExtensions.GetDfeClaims(_httpContextAccessor.HttpContext.User.Claims)).Organisation;
                 var email = (DfeSignInExtensions.GetDfeClaims(_httpContextAccessor.HttpContext.User.Claims)).User.Email;
 
 
                 string scope = _configuration["Api:AuthorisationScope"];
-
+               
                 switch (establishment.Category.Id)
                 {
                     // NOTE: will not remove local_authority from basescope as part of this work

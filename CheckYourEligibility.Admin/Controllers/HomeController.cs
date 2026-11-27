@@ -4,6 +4,7 @@ using CheckYourEligibility.Admin.Gateways.Interfaces;
 using CheckYourEligibility.Admin.Infrastructure;
 using CheckYourEligibility.Admin.Models;
 using CheckYourEligibility.Admin.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -116,9 +117,15 @@ public class HomeController : BaseController
 
 	public IActionResult Rechecks() => View("Guidance_steps/Rechecks");
 
-	public async Task<IActionResult> Expansion()
-	{
-		await IsExpandedFSMEnabled();
+    [AllowAnonymous]
+    public IActionResult OrganisationError()
+    {
+        return View();
+    }
+
+    public async Task<IActionResult> Expansion()
+    {
+        await IsExpandedFSMEnabled();
 
 		return View("Guidance_steps/Expansion");
 	}
