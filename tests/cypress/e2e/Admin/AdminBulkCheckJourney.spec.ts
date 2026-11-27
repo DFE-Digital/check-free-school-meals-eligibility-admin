@@ -121,7 +121,7 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
 
       cy.contains("button", "Run a batch check").click();
 
-      cy.get("#file-upload-1-error").should(
+      cy.get(".govuk-error-message").should(
         "contain",
         "The column headers in the selected file must exactly match the template",
       );
@@ -180,7 +180,7 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
 
       cy.contains("button", "Run a batch check").click();
 
-    cy.get("#file-upload-1-error")
+    cy.get(".govuk-error-message")
       .should(($el) => {
         expect($el.text()).to.match(/CSV file cannot contain more than\s+\d+\s+records/);
       });
@@ -249,7 +249,7 @@ Object.entries(sessionConfigs).forEach(([sessionType, config]) => {
 
         cy.contains("button", "Run a batch check").click();
 
-        cy.get("#file-upload-1-error")
+        cy.get(".govuk-error-message")
           .should(
             "contain",
             "The column headers in the selected file must exactly match the template",
