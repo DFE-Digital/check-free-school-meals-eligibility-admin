@@ -454,7 +454,10 @@ public class ApplicationController : BaseController
             case "ApproveExpanded": return RedirectToAction("ApproveConfirmation", new { request.Id, tier = "expanded" });
             case "ApproveTargeted": return RedirectToAction("ApproveConfirmation", new { request.Id, tier = "targeted" });
         }
-        throw new InvalidOperationException($"Invalid decision value: {request.Decision}");
+        TempData["DecisionErrorMessage"] = "Select a decision";
+        var response = await _adminGateway.GetApplication(request.Id);
+        var expanded = await IsExpandedFSMEnabled();
+        return View("ApplicationDetailLa", GetViewData(response));
     }
 
 
